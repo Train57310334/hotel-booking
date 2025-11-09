@@ -1,0 +1,1 @@
+export default function RoomCard({ name, avail, children }){return (<div className='card p-4 mb-4 dark:bg-gray-800 border dark:border-gray-700'><div className='flex items-center justify-between mb-2'><h4 className='text-lg font-medium'>{name}</h4>{avail>0 && avail<=3 && <span className='text-red-600 text-xs font-semibold'>Only {avail} left!</span>}</div>{children}</div>)}

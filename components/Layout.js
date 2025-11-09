@@ -1,0 +1,2 @@
+import NavBar from '@/components/NavBar'
+export default function Layout({ children }){return (<div className="min-h-screen flex flex-col"><NavBar/><main className="flex-1">{children}</main><footer className="text-center text-xs text-ink-500 py-8">© BookingKub</footer></div>)}
