@@ -1,11 +1,18 @@
-import { useMemo, useState } from 'react'
+// ✅ pages/search.js (layout เดิม + รับ query จาก /search)
+import { useRouter } from 'next/router'
+import { useMemo, useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import Hero from '@/components/Hero'
 import SearchBar from '@/components/SearchBar'
 import FiltersSidebar from '@/components/FiltersSidebar'
 import HotelCard from '@/components/HotelCard'
 
-export default function SearchPage({ initialHotels, queryParams, amenitiesOptions }){
+export default function SearchPage(){
+  const router = useRouter();
+  const { destination = '', checkIn = '', checkOut = '', guests = 1 } = router.query;
+
+  const [initialHotels, setInitialHotels] = useState([]);
+  const [amenitiesOptions, setAmenitiesOptions] = useState([]);
   const [showMap, setShowMap] = useState(false);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -13,7 +20,47 @@ export default function SearchPage({ initialHotels, queryParams, amenitiesOption
   const [amenities, setAmenities] = useState([]);
   const [sortKey, setSortKey] = useState('priceAsc');
 
-  const filtered = useMemo(()=>{
+  const queryParams = { destination, checkIn, checkOut, guests };
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const backend = process.env.NEXT_PUBLIC_BACKEND_API_BASE;
+        const res = await fetch(backend+'/api/search?city=' + destination + '&checkIn=' + checkIn + '&checkOut=' + checkOut);
+        const hotels = await res.json();
+        let nights = 1;
+        if (checkIn && checkOut){
+          const diff = (new Date(checkOut) - new Date(checkIn)) / (1000*60*60*24);
+          if (diff >= 1) nights = diff;
+        }
+        const enriched = hotels.map((h, idx) => {
+          let avg = 0, num = 0;
+          if (Array.isArray(h.reviews) && h.reviews.length){
+            num = h.reviews.length;
+            avg = h.reviews.reduce((s,r)=>s+(r.rating||0),0)/num;
+          }
+          let minPrice = 0;
+          if (Array.isArray(h.roomTypes) && h.roomTypes.length){
+            const base = h.roomTypes.map((rt,i)=> 1200 + i*600);
+            minPrice = Math.min(...base) * nights;
+          } else {
+            minPrice = (1200 + (idx%5)*400) * nights;
+          }
+          return { ...h, avgRating: avg, numReviews: num, minPrice };
+        });
+        const amenitySet = new Set();
+        enriched.forEach(h => Array.isArray(h.amenities) && h.amenities.forEach(a => amenitySet.add(a)));
+        setInitialHotels(enriched);
+        setAmenitiesOptions(Array.from(amenitySet));
+      } catch (e){
+        setInitialHotels([]);
+        setAmenitiesOptions([]);
+      }
+    };
+    if (destination && checkIn && checkOut){ load(); }
+  }, [destination, checkIn, checkOut]);
+
+  const filtered = useMemo(() => {
     let list = [...initialHotels];
     const floor = minPrice !== '' ? Number(minPrice) : 0;
     const ceil = maxPrice !== '' ? Number(maxPrice) : Infinity;
@@ -56,35 +103,4 @@ export default function SearchPage({ initialHotels, queryParams, amenitiesOption
       </div>
     </Layout>
   )
-}
-
-export async function getServerSideProps({ query }){
-  const { destination, checkIn, checkOut, guests } = query;
-  let hotels = [];
-  try{ 
-    const backend = process.env.NEXT_PUBLIC_BACKEND_API_BASE;
-    const res = await fetch(backend+'/hotels'); hotels = await res.json(); 
-  }catch{ 
-    hotels = []; 
-  }
-  if (destination){
-    const d = String(destination).toLowerCase();
-    hotels = hotels.filter(h => (h.city && h.city.toLowerCase().includes(d)) || (h.name && h.name.toLowerCase().includes(d)));
-  }
-  let nights = 1;
-  if (checkIn && checkOut){
-    const diff = (new Date(checkOut) - new Date(checkIn)) / (1000*60*60*24);
-    if (diff >= 1) nights = diff;
-  }
-  hotels = hotels.map((h, idx) => {
-    let avg = 0, num = 0;
-    if (Array.isArray(h.reviews) && h.reviews.length){ num = h.reviews.length; avg = h.reviews.reduce((s,r)=>s+(r.rating||0),0)/num; }
-    let minPrice = 0;
-    if (Array.isArray(h.roomTypes) && h.roomTypes.length){ const base = h.roomTypes.map((rt,i)=> 1200 + i*600); minPrice = Math.min(...base) * nights; }
-    else { minPrice = (1200 + (idx%5)*400) * nights; }
-    return { ...h, avgRating: avg, numReviews: num, minPrice };
-  });
-  const amenitySet = new Set();
-  hotels.forEach(h => Array.isArray(h.amenities) && h.amenities.forEach(a=>amenitySet.add(a)));
-  return { props: { initialHotels: hotels, amenitiesOptions: Array.from(amenitySet), queryParams: { destination: destination||'', checkIn: checkIn||'', checkOut: checkOut||'', guests: guests||1 } } }
-}
+}    

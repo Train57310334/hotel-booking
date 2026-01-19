@@ -1,41 +1,43 @@
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+// ✅ pages/booking/confirmation.js
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import Layout from '@/components/Layout';
 
-export default function Confirmation(){
+export default function ConfirmationPage() {
   const router = useRouter();
-  const [sel, setSel] = useState(null);
+  const { id } = router.query;
+  const [booking, setBooking] = useState(null);
 
-  useEffect(()=>{
-    if (typeof window !== 'undefined'){
-      const s = localStorage.getItem('bookingSelection');
-      if (s) setSel(JSON.parse(s));
-      else router.replace('/');
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/bookings/${id}`)
+        .then(res => res.json())
+        .then(data => setBooking(data));
     }
-  }, [router]);
+  }, [id]);
 
-  if (!sel) return <div className="p-4">Loading...</div>;
+  if (!id) return <Layout><div className="p-6">ไม่มีรหัสการจอง</div></Layout>;
+  if (!booking) return <Layout><div className="p-6">กำลังโหลดข้อมูล...</div></Layout>;
 
   return (
-    <div className="container mx-auto p-4 max-w-md text-center">
-      <h2 className="text-2xl font-bold mb-2 text-green-600">Booking Confirmed!</h2>
-      <p className="mb-4">Thank you. Your reservation is confirmed.</p>
-      <div className="bg-gray-100 p-3 rounded mb-4 text-left text-sm">
-        <p><strong>Booking ID:</strong> {sel.bookingId}</p>
-        <p><strong>Hotel:</strong> {sel.hotelName}</p>
-        <p><strong>Room:</strong> {sel.roomTypeName}</p>
-        <p><strong>Dates:</strong> {sel.checkIn || 'N/A'} – {sel.checkOut || 'N/A'} ({sel.guests} guests)</p>
-        {sel.leadName && <p><strong>Lead Guest:</strong> {sel.leadName} ({sel.leadEmail})</p>}
-        {sel.specialRequests && <p><strong>Special Requests:</strong> {sel.specialRequests}</p>}
-        <p><strong>Total Paid:</strong> ฿{Number(sel.totalPrice).toFixed(0)}</p>
+    <Layout>
+      <div className="max-w-xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">ยืนยันการจองเรียบร้อย</h1>
+        <p>รหัสการจองของคุณคือ:</p>
+        <p className="text-xl font-semibold my-2">{booking.id}</p>
+
+        <div className="mt-4 space-y-2">
+          <p><strong>โรงแรม:</strong> {booking.hotelName}</p>
+          <p><strong>ห้อง:</strong> {booking.roomTypeName}</p>
+          <p><strong>วันที่เข้าพัก:</strong> {booking.checkIn} - {booking.checkOut}</p>
+          <p><strong>จำนวนผู้เข้าพัก:</strong> {booking.guests}</p>
+          <p><strong>ยอดรวม:</strong> {booking.totalPrice?.toLocaleString()} บาท</p>
+        </div>
+
+        <div className="mt-6">
+          <button className="btn btn-outline w-full" onClick={() => router.push('/')}>กลับหน้าแรก</button>
+        </div>
       </div>
-      {sel.bookingId && (
-        <img
-          alt="QR"
-          className="mx-auto mb-4"
-          src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(sel.bookingId)}`}
-        />
-      )}
-      <a href="/" className="inline-block bg-blue-600 text-white px-4 py-2 rounded">Back to Home</a>
-    </div>
-  )
+    </Layout>
+  );
 }
