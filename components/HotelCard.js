@@ -1,21 +1,82 @@
 import Link from 'next/link'
-export default function HotelCard({ hotel, queryParams }){
-  const rating = hotel.avgRating ?? 0;
-  const reviews = hotel.numReviews ?? 0;
-  const price = hotel.minPrice;
+import { MapPin, Star } from 'lucide-react'
+
+export default function HotelCard({ hotel, queryParams }) {
+  const rating = hotel.avgRating ?? 0
+  const reviews = hotel.numReviews ?? 0
+  const price = hotel.minPrice
+
   return (
-    <div className="card p-4 flex flex-col md:flex-row gap-4">
-      <img src={hotel.imageUrl || `https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop`} className="w-full md:w-64 h-44 object-cover rounded-xl" alt={hotel.name}/>
-      <div className="flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <div><h3 className="text-lg font-semibold">{hotel.name}</h3><p className="text-ink-500 text-sm">{hotel.city}{hotel.country ? `, ${hotel.country}` : ''}</p></div>
-          {price !== undefined && (<div className="text-right"><p className="text-sm text-ink-500">from</p><p className="text-xl font-semibold text-brand-700">฿{Number(price).toLocaleString()}</p><p className="text-xs text-ink-500">{queryParams?.checkIn && queryParams?.checkOut ? 'total' : '/night'}</p></div>)}
+    <div className="group bg-white rounded-3xl p-3 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col md:flex-row gap-4">
+      {/* Image Container */}
+      <div className="relative w-full md:w-72 h-48 md:h-auto rounded-2xl overflow-hidden shrink-0">
+        <img
+          src={hotel.imageUrl || `https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop`}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          alt={hotel.name}
+        />
+        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-semibold text-slate-700 shadow-sm">
+          Recommended
         </div>
-        <div className="mt-2 flex items-center gap-2">
-          {reviews > 0 ? (<><span className="text-yellow-500">{'★'.repeat(Math.round(rating))}</span><span className="text-ink-500 text-sm">({reviews} reviews)</span></>) : <span className="text-ink-400 text-sm">No reviews yet</span>}
-          {Array.isArray(hotel.amenities) && hotel.amenities.slice(0,4).map(a => (<span key={a} className="badge">{a}</span>))}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 py-2 flex flex-col justify-between">
+        <div>
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-xl font-display font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
+                {hotel.name}
+              </h3>
+              <div className="flex items-center text-slate-500 text-sm mt-1 gap-1">
+                <MapPin size={14} className="text-primary-500" />
+                {hotel.city}{hotel.country ? `, ${hotel.country}` : ''}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+              <Star size={14} className="fill-yellow-400 text-yellow-400" />
+              <span className="font-bold text-slate-800">{rating.toFixed(1)}</span>
+              <span className="text-xs text-slate-500">({reviews})</span>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {Array.isArray(hotel.amenities) && hotel.amenities.slice(0, 4).map(a => (
+              <span key={a} className="px-2.5 py-1 rounded-md bg-slate-50 text-xs font-medium text-slate-600 border border-slate-100">
+                {a}
+              </span>
+            ))}
+            {(hotel.amenities?.length || 0) > 4 && (
+              <span className="px-2.5 py-1 rounded-md bg-slate-50 text-xs font-medium text-slate-400 border border-slate-100">
+                +{hotel.amenities.length - 4} more
+              </span>
+            )}
+          </div>
         </div>
-        <div className="mt-3"><Link className="btn btn-primary" href={`/hotel/${hotel.id}?checkIn=${encodeURIComponent(queryParams?.checkIn || '')}&checkOut=${encodeURIComponent(queryParams?.checkOut || '')}&guests=${encodeURIComponent(queryParams?.guests || 1)}`}>View Details</Link></div>
+
+        <div className="mt-4 pt-4 border-t border-slate-100 flex items-end justify-between">
+          <div>
+            {price !== undefined ? (
+              <>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Start from</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-primary-600 font-display">฿{Number(price).toLocaleString()}</span>
+                  <span className="text-sm text-slate-400">/{queryParams?.checkIn && queryParams?.checkOut ? 'total' : 'night'}</span>
+                </div>
+              </>
+            ) : (
+              <p className="text-slate-400 text-sm">Check availability</p>
+            )}
+          </div>
+
+          <Link
+            href={`/hotel/${hotel.id}?checkIn=${encodeURIComponent(queryParams?.checkIn || '')}&checkOut=${encodeURIComponent(queryParams?.checkOut || '')}&guests=${encodeURIComponent(queryParams?.guests || 1)}`}
+            className="btn-primary"
+          >
+            View Deal
+          </Link>
+        </div>
       </div>
     </div>
   )
