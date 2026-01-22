@@ -6,15 +6,17 @@ export default function Hero({ children }) {
     <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden mb-12">
       {/* Background with overlay */}
       {/* Background with overlay */}
-      <div className="absolute inset-x-0 top-0 h-[85vh] rounded-b-[3rem] overflow-hidden -z-10 bg-[#0B1121]">
-        <div className="absolute inset-0 bg-[#0B1121]" /> {/* Fallback color layer */}
+      {/* Background with overlay */}
+      {/* Background with overlay */}
+      <div className="absolute inset-x-0 top-0 h-[85vh] rounded-b-[3rem] overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
         <img
-          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2000&auto=format&fit=crop" /* Classic Dark Luxury Hotel */
+          src="/images/hero-bg.png"
           alt="Luxury Hotel"
-          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0F172A]/80 via-transparent to-[#0F172A]/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-black/30" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">

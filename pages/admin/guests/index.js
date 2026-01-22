@@ -1,7 +1,127 @@
-import AdminLayout from '@/components/admin/AdminLayout'
-export default function Page(){
-  return (<AdminLayout title="Guest">
-    <h1 className="text-2xl font-semibold mb-4">Guest</h1>
-    <div className="bg-white border rounded-2xl p-4">Coming soon — Guest management CRUD will be wired to API.</div>
-  </AdminLayout>)
+import AdminLayout from '@/components/AdminLayout'
+import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api'
+import { Search, User, Mail, Phone, Calendar, MapPin, ExternalLink, Clock } from 'lucide-react'
+
+export default function GuestManagement() {
+  const [guests, setGuests] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchGuests()
+    }, 300)
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchTerm])
+
+  const fetchGuests = async () => {
+    setLoading(true)
+    try {
+      const query = searchTerm ? `?search=${searchTerm}` : ''
+      const data = await apiFetch(`/users${query}`)
+      setGuests(data)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatDate = (date) => new Date(date).toLocaleDateString('en-GB')
+
+  return (
+    <AdminLayout>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Guest Management</h1>
+          <p className="text-slate-500 dark:text-slate-400">View and manage registered guests</p>
+        </div>
+      </div>
+
+      {/* Filter */}
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search by name, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Guest Profile</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Contact</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Bookings</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Last Activity</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
+              {loading ? (
+                <tr><td colSpan="5" className="p-8 text-center text-slate-400">Loading guests...</td></tr>
+              ) : guests.length === 0 ? (
+                <tr><td colSpan="5" className="p-8 text-center text-slate-400">No guests found.</td></tr>
+              ) : (
+                guests.map((guest) => (
+                  <tr key={guest.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                          {guest.name ? guest.name[0].toUpperCase() : <User size={20} />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 dark:text-white">{guest.name || 'Unknown Guest'}</p>
+                          <p className="text-xs text-slate-400">ID: {guest.id.slice(0, 8)}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="flex items-center gap-2"><Mail size={14} className="text-slate-400" /> {guest.email}</span>
+                        {guest.phone && <span className="flex items-center gap-2"><Phone size={14} className="text-slate-400" /> {guest.phone}</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300">
+                        <Calendar size={14} />
+                        {guest._count?.bookings || 0}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                      {guest.bookings && guest.bookings.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <Clock size={14} />
+                          {formatDate(guest.bookings[0].createdAt)}
+                        </div>
+                      ) : (
+                        'New User'
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
+                        title="View History (Coming Soon)"
+                      >
+                        <ExternalLink size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </AdminLayout>
+  )
 }

@@ -11,9 +11,10 @@ export default function HotelCard({ hotel, queryParams }) {
       {/* Image Container */}
       <div className="relative w-full md:w-72 h-48 md:h-auto rounded-2xl overflow-hidden shrink-0">
         <img
-          src={hotel.imageUrl || `https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop`}
+          src={hotel.imageUrl || "/images/hero-bg.png"}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           alt={hotel.name}
+          onError={(e) => { e.target.onerror = null; e.target.src = '/images/hero-bg.png' }}
         />
         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-semibold text-slate-700 shadow-sm">
           Recommended

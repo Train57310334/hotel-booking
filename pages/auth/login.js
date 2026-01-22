@@ -4,8 +4,11 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 
+import { useAuth } from '@/contexts/AuthContext'
+
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -16,24 +19,12 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
 
-    try {
-      const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000/api'
-      const res = await fetch(backend + '/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-      const data = await res.json()
+    const res = await login(email, password)
 
-      if (res.ok && data?.token) {
-        localStorage.setItem('token', data.token)
-        router.push('/')
-      } else {
-        setError(data.message || 'Invalid email or password')
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
-    } finally {
+    if (res.success) {
+      router.push('/')
+    } else {
+      setError(res.error || 'Invalid email or password')
       setLoading(false)
     }
   }
