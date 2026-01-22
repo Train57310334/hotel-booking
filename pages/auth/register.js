@@ -4,8 +4,11 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import { User, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 
+import { useAuth } from '@/contexts/AuthContext'
+
 export default function RegisterPage() {
   const router = useRouter()
+  const { register } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,24 +20,12 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
 
-    try {
-      const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000/api'
-      const res = await fetch(backend + '/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      })
-      const data = await res.json()
+    const res = await register({ name, email, password })
 
-      if (res.ok && data?.token) {
-        localStorage.setItem('token', data.token)
-        router.push('/')
-      } else {
-        setError(data.message || 'Registration failed')
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
-    } finally {
+    if (res.success) {
+      router.push('/')
+    } else {
+      setError(res.error || 'Registration failed')
       setLoading(false)
     }
   }

@@ -70,8 +70,9 @@ export default function HotelDetail() {
       <div className="relative h-[50vh] lg:h-[60vh] overflow-hidden">
         <img
           alt={hotel.name}
-          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1920&auto=format&fit=crop"
+          src={hotel.imageUrl || "/images/hero-bg.png"}
           className="w-full h-full object-cover"
+          onError={(e) => { e.target.onerror = null; e.target.src = '/images/hero-bg.png' }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent" />
 
@@ -121,11 +122,20 @@ export default function HotelDetail() {
               <h3 className="text-2xl font-bold font-display text-slate-900 mb-6">Available Rooms</h3>
               <div className="space-y-6">
                 {roomTypes.map((rt, idx) => {
+                  // Fallback pricing logic if backend overrides aren't fully synced or exposed
                   const base = 1500 + idx * 600
-                  const plans = [
-                    { name: 'Standard Rate', includesBreakfast: false, cancellation: 'Non-refundable', pricePerNight: base },
-                    { name: 'Flexible Rate', includesBreakfast: true, cancellation: 'Free cancellation', pricePerNight: base + 300 }
-                  ]
+                  const plans = Array.isArray(rt.ratePlans) && rt.ratePlans.length > 0
+                    ? rt.ratePlans.map(rp => ({
+                      name: rp.name,
+                      includesBreakfast: rp.includesBreakfast,
+                      cancellation: rp.cancellationRule || 'Non-refundable',
+                      pricePerNight: base + (rp.includesBreakfast ? 300 : 0) // Mock price adjustment
+                    }))
+                    : [
+                      { name: 'Standard Rate', includesBreakfast: false, cancellation: 'Non-refundable', pricePerNight: base },
+                      { name: 'Flexible Rate', includesBreakfast: true, cancellation: 'Free cancellation', pricePerNight: base + 300 }
+                    ]
+
                   return (
                     <RoomCard
                       key={rt.id}
