@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Plus, User, Mail, Phone, MoreHorizontal, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react'
 
+import ConfirmationModal from '@/components/ConfirmationModal'
+
 export default function OwnerManagement() {
   const [owners, setOwners] = useState([])
   const [loading, setLoading] = useState(true)
@@ -55,12 +57,27 @@ export default function OwnerManagement() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this owner?')) return
-    try {
-      await apiFetch(`/owners/${id}`, { method: 'DELETE' })
-      fetchOwners()
-    } catch (e) { alert('Delete failed') }
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'warning',
+    onConfirm: () => { }
+  })
+
+  const handleDelete = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Owner',
+      message: 'Are you sure you want to delete this owner? This action cannot be undone.',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await apiFetch(`/owners/${id}`, { method: 'DELETE' })
+          fetchOwners()
+        } catch (e) { alert('Delete failed') }
+      }
+    })
   }
 
   const openCreateModal = () => {
@@ -272,6 +289,14 @@ export default function OwnerManagement() {
           </div>
         </div>
       )}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        onConfirm={confirmModal.onConfirm}
+      />
     </AdminLayout>
   )
 }

@@ -2,6 +2,7 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function RoomManagement() {
   const [activeTab, setActiveTab] = useState('inventory') // 'inventory' | 'types'
@@ -32,6 +33,7 @@ export default function RoomManagement() {
     sizeSqm: '',
     maxAdults: 2,
     maxChildren: 0,
+    isFeatured: false,
     amenities: [] // Array of strings
   })
 
@@ -50,7 +52,12 @@ export default function RoomManagement() {
         apiFetch('/hotels')
       ])
       setRooms(rData)
-      setRoomTypes(tData)
+      // Sort by Name for stability
+      setRoomTypes(tData.sort((a, b) => {
+        const nameCompare = a.name.localeCompare(b.name);
+        if (nameCompare !== 0) return nameCompare;
+        return a.id.localeCompare(b.id);
+      }))
       setHotels(hData)
       if (hData.length > 0) {
         setTypeFormData(prev => ({ ...prev, hotelId: hData[0].id }))
@@ -184,6 +191,7 @@ export default function RoomManagement() {
         sizeSqm: parseInt(typeFormData.sizeSqm) || 0,
         maxAdults: parseInt(typeFormData.maxAdults) || 2,
         maxChildren: parseInt(typeFormData.maxChildren) || 0,
+        isFeatured: typeFormData.isFeatured,
         hotelId: currentHotelId
       }
 
@@ -216,6 +224,7 @@ export default function RoomManagement() {
         sizeSqm: type.sizeSqm || '',
         maxAdults: type.maxAdults || 2,
         maxChildren: type.maxChildren || 0,
+        isFeatured: type.isFeatured || false,
         amenities: type.amenities || []
       })
     } else {
@@ -229,6 +238,7 @@ export default function RoomManagement() {
         sizeSqm: '',
         maxAdults: 2,
         maxChildren: 0,
+        isFeatured: false,
         amenities: []
       })
     }
@@ -262,36 +272,102 @@ export default function RoomManagement() {
       {activeTab === 'inventory' && (
         <>
           <div className="flex justify-end mb-4">
-            <button onClick={() => openRoomModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">
+            <button onClick={() => openRoomModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20">
               <Plus size={18} /> Add Physical Room
             </button>
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-800/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Room Number</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Room ID</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Type</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Occupancy</th>
-                  <th className="px-6 py-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {rooms.map(r => (
-                  <tr key={r.id}>
-                    <td className="px-6 py-4 font-bold dark:text-white">{r.roomNumber || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-slate-500">#{r.id.slice(-4)}</td>
-                    <td className="px-6 py-4 dark:text-slate-300">{r.roomType?.name}</td>
-                    <td className="px-6 py-4"><span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">Available</span></td>
-                    <td className="px-6 py-4 text-right">
-                      <button onClick={() => openRoomModal(r)} className="text-slate-400 hover:text-blue-500 mr-2"><Edit size={18} /></button>
-                      <button onClick={(e) => handleDeleteClick(e, r.id, 'room', r.roomNumber)} className="text-slate-400 hover:text-red-500"><Trash2 size={18} /></button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          <div className="space-y-6">
+            {roomTypes.map(type => {
+              const typeRooms = rooms.filter(r => r.roomTypeId === type.id).sort((a, b) => (a.roomNumber || '').localeCompare(b.roomNumber || ''));
+              return (
+                <div key={type.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                  <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      {type.images?.[0] && <img src={type.images[0]} className="w-10 h-10 rounded-lg object-cover" />}
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white">{type.name} <span className="text-xs text-slate-400 font-normal">#{type.id.slice(-4)}</span></h3>
+                        <p className="text-xs text-slate-500">{typeRooms.length} Rooms &bull; Max {type.maxAdults} Adults</p>
+                      </div>
+                    </div>
+                    <button onClick={() => openRoomModal({ roomTypeId: type.id })} className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
+                      + Add Room
+                    </button>
+                  </div>
+
+                  {typeRooms.length > 0 ? (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                      {typeRooms.map(r => (
+                        <div key={r.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner">
+                              {r.roomNumber}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-900 dark:text-white">Room {r.roomNumber}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${(r.status || 'clean') === 'clean' ? 'bg-emerald-100 text-emerald-700' :
+                                  (r.status || 'clean') === 'occupied' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-amber-100 text-amber-700'
+                                  }`}>
+                                  {r.status || 'Available'}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-400">ID: #{r.id.slice(-4)}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            {/* Status Toggle Mockup - Functional in next step if needed */}
+                            <select
+                              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium"
+                              value={r.status || 'clean'}
+                              onChange={async (e) => {
+                                const newStatus = e.target.value;
+                                // Optimistic Update
+                                const oldRooms = [...rooms];
+                                setRooms(prev => prev.map(room => room.id === r.id ? { ...room, status: newStatus } : room));
+
+                                const tId = toast.loading('Updating status...');
+                                try {
+                                  await apiFetch(`/rooms/${r.id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ ...r, status: newStatus })
+                                  });
+                                  toast.success('Status updated', { id: tId });
+                                } catch (err) {
+                                  console.error(err);
+                                  toast.error('Failed to update', { id: tId });
+                                  setRooms(oldRooms); // Revert
+                                }
+                              }}
+                            >
+                              <option value="clean">Available (Clean)</option>
+                              <option value="occupied">Occupied</option>
+                              <option value="dirty">Dirty / Maintenance</option>
+                            </select>
+
+                            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+
+                            <button onClick={() => openRoomModal(r)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit Room">
+                              <Edit size={16} />
+                            </button>
+                            <button onClick={(e) => handleDeleteClick(e, r.id, 'room', r.roomNumber)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors" title="Delete Room">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-slate-400 italic bg-slate-50/50 dark:bg-slate-900/20">
+                      No physical rooms added for this type yet.
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </>
       )}
@@ -321,7 +397,7 @@ export default function RoomManagement() {
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-bold text-lg dark:text-white line-clamp-1" title={type.name}>{type.name}</h3>
+                    <h3 className="font-bold text-lg dark:text-white line-clamp-1" title={type.name}>{type.name} <span className="text-xs text-slate-400 font-normal">#{type.id.slice(-4)}</span></h3>
                     <span className="text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-lg text-sm">
                       ฿{type.basePrice?.toLocaleString()}
                     </span>
@@ -497,6 +573,18 @@ export default function RoomManagement() {
                       <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                     </label>
                   </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-bold dark:text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={typeFormData.isFeatured}
+                      onChange={(e) => setTypeFormData({ ...typeFormData, isFeatured: e.target.checked })}
+                      className="rounded text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                    />
+                    Display this room on Homepage (Featured)
+                  </label>
                 </div>
 
                 <div>

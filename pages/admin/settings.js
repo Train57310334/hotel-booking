@@ -2,9 +2,12 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Save, Globe, CreditCard, Mail, Shield, Bell, LayoutTemplate } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function SettingsPage() {
+  // const { success, error } = useToast()
   const [settings, setSettings] = useState({})
+  const [hotel, setHotel] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
@@ -15,8 +18,14 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const data = await apiFetch('/settings')
-      setSettings(data || {})
+      const [settingsData, hotelsData] = await Promise.all([
+        apiFetch('/settings'),
+        apiFetch('/hotels')
+      ])
+      setSettings(settingsData || {})
+      if (hotelsData && hotelsData.length > 0) {
+        setHotel(hotelsData[0])
+      }
     } catch (error) {
       console.error(error)
     } finally {
@@ -28,17 +37,41 @@ export default function SettingsPage() {
     setSettings(prev => ({ ...prev, [key]: value }))
   }
 
+  const handleHotelChange = (key, value) => {
+    setHotel(prev => ({ ...prev, [key]: value }))
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
+      // Save System Settings
       await apiFetch('/settings', {
         method: 'PUT',
         body: JSON.stringify(settings)
       })
-      alert('Settings saved successfully!')
-    } catch (error) {
-      console.error(error)
-      alert('Failed to save settings.')
+
+      // Save Hotel Settings
+      if (hotel.id) {
+        await apiFetch(`/hotels/${hotel.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: hotel.name,
+            description: hotel.description,
+            address: hotel.address,
+            city: hotel.city,
+            country: hotel.country,
+            contactEmail: hotel.contactEmail,
+            contactPhone: hotel.contactPhone,
+            latitude: parseFloat(hotel.latitude || 0),
+            longitude: parseFloat(hotel.longitude || 0),
+          })
+        })
+      }
+
+      toast.success('Settings saved successfully!')
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to save settings.')
     } finally {
       setSaving(false)
     }
@@ -46,6 +79,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'general', label: 'General', icon: Globe },
+    { id: 'contact', label: 'Contact Info', icon: Mail },
     { id: 'integrations', label: 'Integrations', icon: LayoutTemplate },
     { id: 'notifications', label: 'Notifications', icon: Bell },
   ]
@@ -75,8 +109,8 @@ export default function SettingsPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === tab.id
-                    ? 'bg-white dark:bg-slate-800 text-emerald-500 shadow-sm'
-                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-white dark:bg-slate-800 text-emerald-500 shadow-sm'
+                  : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
               >
                 <tab.icon size={18} />
@@ -114,15 +148,76 @@ export default function SettingsPage() {
                       <option value="EUR">EUR (€)</option>
                     </select>
                   </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Support Email</label>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'contact' && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 mb-6">Hotel Contact Information</h3>
+                <p className="text-sm text-slate-500 mb-4">This information will be displayed on the Contact Us page.</p>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Hotel Name</label>
                     <input
-                      type="email"
-                      value={settings.supportEmail || ''}
-                      onChange={e => handleChange('supportEmail', e.target.value)}
-                      placeholder="support@example.com"
+                      type="text"
+                      value={hotel.name || ''}
+                      onChange={e => handleHotelChange('name', e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Full Address</label>
+                    <textarea
+                      rows={3}
+                      value={hotel.address || ''}
+                      onChange={e => handleHotelChange('address', e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 resize-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">City</label>
+                      <input
+                        type="text"
+                        value={hotel.city || ''}
+                        onChange={e => handleHotelChange('city', e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Country</label>
+                      <input
+                        type="text"
+                        value={hotel.country || ''}
+                        onChange={e => handleHotelChange('country', e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Contact Email</label>
+                      <input
+                        type="email"
+                        value={hotel.contactEmail || ''}
+                        onChange={e => handleHotelChange('contactEmail', e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Contact Phone</label>
+                      <input
+                        type="text"
+                        value={hotel.contactPhone || ''}
+                        onChange={e => handleHotelChange('contactPhone', e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

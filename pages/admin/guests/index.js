@@ -3,7 +3,10 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, User, Mail, Phone, Calendar, MapPin, ExternalLink, Clock } from 'lucide-react'
 
+import { useRouter } from 'next/router'
+
 export default function GuestManagement() {
+  const router = useRouter()
   const [guests, setGuests] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -109,8 +112,9 @@ export default function GuestManagement() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
+                        onClick={() => router.push(`/admin/guests/${guest.id}`)}
                         className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
-                        title="View History (Coming Soon)"
+                        title="View Guest Profile"
                       >
                         <ExternalLink size={18} />
                       </button>

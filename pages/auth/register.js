@@ -123,9 +123,9 @@ export default function RegisterPage() {
           {/* Decorative Side */}
           <div className="hidden md:flex md:w-1/2 relative bg-slate-900 text-white p-12 flex-col justify-between overflow-hidden order-1 md:order-2">
             <img
-              src="https://images.unsplash.com/photo-1571896349842-6e5a51335022?q=80&w=1200&auto=format&fit=crop"
+              src="/images/register-bg.png"
               alt="Luxury Resort"
-              className="absolute inset-0 w-full h-full object-cover opacity-60"
+              className="absolute inset-0 w-full h-full object-cover opacity-80"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 to-primary-800/40 mix-blend-multiply" />
 
