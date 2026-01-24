@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MapPin, Star } from 'lucide-react'
+import { MapPin, Star, Users } from 'lucide-react'
 
 export default function HotelCard({ hotel, queryParams }) {
   const rating = hotel.avgRating ?? 0
@@ -51,6 +51,13 @@ export default function HotelCard({ hotel, queryParams }) {
             {(hotel.amenities?.length || 0) > 4 && (
               <span className="px-2.5 py-1 rounded-md bg-slate-50 text-xs font-medium text-slate-400 border border-slate-100">
                 +{hotel.amenities.length - 4} more
+              </span>
+            )}
+            {/* Capacity Badge */}
+            {hotel.roomTypes && hotel.roomTypes.length > 0 && (
+              <span className="px-2.5 py-1 rounded-md bg-blue-50 text-xs font-medium text-blue-600 border border-blue-100 flex items-center gap-1">
+                <Users size={12} />
+                Up to {Math.max(...hotel.roomTypes.map(r => r.capacity || 2))} guests
               </span>
             )}
           </div>

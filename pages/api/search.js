@@ -2,7 +2,7 @@
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
 
-  const backend = process.env.BACKEND_API_BASE || 'http://localhost:3000';
+  const backend = process.env.BACKEND_API_BASE || 'http://127.0.0.1:3001/api';
   const query = req.query;
 
   const url = new URL(`${backend}/search/hotels`);

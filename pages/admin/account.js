@@ -2,8 +2,10 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { User, Mail, Phone, Camera, Save, Lock, Shield, CreditCard, Bell } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function AccountSettings() {
+  // const { success, error, info } = useToast()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -48,10 +50,10 @@ export default function AccountSettings() {
         })
       })
       setUser(updated)
-      alert('Profile updated successfully!')
-    } catch (error) {
-      console.error(error)
-      alert('Failed to update profile.')
+      toast.success('Profile updated successfully!')
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to update profile.')
     } finally {
       setSaving(false)
     }
@@ -86,11 +88,11 @@ export default function AccountSettings() {
       // User schema: id, email, passwordHash, name, phone, roles.
       // We'll skip saving to DB for now unless I add the column.
       console.log('Uploaded:', data.url)
-      alert('Avatar uploaded (Note: DB schema update needed to persist this image)')
+      toast('Avatar uploaded (Note: DB schema update needed to persist this image)', { icon: 'ℹ️' })
 
-    } catch (error) {
-      console.error(error)
-      alert('Upload failed')
+    } catch (err) {
+      console.error(err)
+      toast.error('Upload failed')
     }
   }
 

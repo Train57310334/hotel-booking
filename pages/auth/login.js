@@ -37,9 +37,9 @@ export default function LoginPage() {
           {/* Decorative Side */}
           <div className="hidden md:flex md:w-1/2 relative bg-slate-900 text-white p-12 flex-col justify-between overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop"
+              src="/images/login-bg.png"
               alt="Luxury Hotel"
-              className="absolute inset-0 w-full h-full object-cover opacity-60"
+              className="absolute inset-0 w-full h-full object-cover opacity-80"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 to-primary-800/40 mix-blend-multiply" />
 

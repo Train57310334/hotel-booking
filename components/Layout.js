@@ -9,7 +9,7 @@ export default function Layout({ children }) {
                 {children}
             </main>
 
-            <footer className="bg-white border-t border-slate-100 pt-16 pb-8 mt-20">
+            <footer className="bg-white border-t border-slate-100 pt-16 pb-8 mt-20 print:hidden">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                         <div className="col-span-1 md:col-span-1">
