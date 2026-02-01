@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Menu, X, User, LogOut, Home, Search, CalendarDays } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function NavBar() {
+export default function NavBar(props) {
   const router = useRouter()
   const { user, logout } = useAuth()
   const [scrolled, setScrolled] = useState(false)
@@ -21,11 +21,11 @@ export default function NavBar() {
     setMobileMenuOpen(false)
   }, [router.asPath])
 
-  const isTransparentPage = router.pathname === '/' || router.pathname === '/contact' || router.pathname.startsWith('/hotel/');
-  const showSolidNav = scrolled || mobileMenuOpen || !isTransparentPage;
+  const isTransparentPage = router.pathname === '/' || router.pathname === '/contact';
+  const showSolidNav = scrolled || mobileMenuOpen || !isTransparentPage || props.forceSolid;
 
   return (
-    <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 print:hidden ${showSolidNav ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-primary-100' : 'bg-transparent'
+    <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 print:hidden ${showSolidNav ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-transparent'
       }`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">

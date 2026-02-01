@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { XCircle } from 'lucide-react'
+import DatePicker from '@/components/DatePicker'
 import { apiFetch } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 
@@ -122,15 +123,23 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Check In</label>
-                            <input required type="date" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            <DatePicker
                                 value={form.checkIn}
-                                onChange={e => setForm({ ...form, checkIn: e.target.value })} />
+                                onChange={([date]) => setForm({ ...form, checkIn: date ? date.toISOString().split('T')[0] : '' })}
+                                options={{ minDate: "today" }}
+                                className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                wrapperClassName="w-full"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Check Out</label>
-                            <input required type="date" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                            <DatePicker
                                 value={form.checkOut}
-                                onChange={e => setForm({ ...form, checkOut: e.target.value })} />
+                                onChange={([date]) => setForm({ ...form, checkOut: date ? date.toISOString().split('T')[0] : '' })}
+                                options={{ minDate: form.checkIn || "today" }}
+                                className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                wrapperClassName="w-full"
+                            />
                         </div>
                     </div>
 

@@ -79,7 +79,7 @@ export default function HotelCard({ hotel, queryParams }) {
           </div>
 
           <Link
-            href={`/hotel/${hotel.id}?checkIn=${encodeURIComponent(queryParams?.checkIn || '')}&checkOut=${encodeURIComponent(queryParams?.checkOut || '')}&guests=${encodeURIComponent(queryParams?.guests || 1)}`}
+            href={`/search?checkIn=${encodeURIComponent(queryParams?.checkIn || '')}&checkOut=${encodeURIComponent(queryParams?.checkOut || '')}&guests=${encodeURIComponent(queryParams?.guests || 1)}`}
             className="btn-primary"
           >
             View Deal

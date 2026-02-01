@@ -108,6 +108,15 @@ export default function MyBookings() {
                           Cancel
                         </button>
                       )}
+
+                      {booking.status === 'checked_out' && (
+                        <button
+                          onClick={() => router.push(`/review/${booking.id}`)}
+                          className="px-3 py-1 text-xs font-bold text-emerald-600 border border-emerald-200 rounded-full hover:bg-emerald-50 transition-colors"
+                        >
+                          Write Review
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -152,6 +161,6 @@ export default function MyBookings() {
           </div>
         )}
       </div>
-    </Layout>
+    </Layout >
   )
 }

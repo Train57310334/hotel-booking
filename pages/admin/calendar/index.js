@@ -1,6 +1,7 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect, useMemo } from 'react'
 import { apiFetch } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, Layers } from 'lucide-react'
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
@@ -8,6 +9,7 @@ import ConfirmationModal from '@/components/ConfirmationModal'
 import CreateBookingModal from '@/components/CreateBookingModal'
 
 export default function Calendar() {
+    const { user } = useAuth()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [rooms, setRooms] = useState([])
     const [roomTypes, setRoomTypes] = useState([])
@@ -26,10 +28,13 @@ export default function Calendar() {
     })
 
     useEffect(() => {
-        fetchData()
-    }, [currentDate])
+        if (user) fetchData()
+    }, [currentDate, user])
 
     const fetchData = async () => {
+        const hotelId = user?.roleAssignments?.[0]?.hotelId;
+        if (!hotelId) return;
+
         setLoading(true)
         try {
             // 1. Calculate Date Range
@@ -48,7 +53,7 @@ export default function Calendar() {
             ])
 
             // 3. Fetch Events
-            const eventsData = await apiFetch(`/bookings/admin/calendar-events?start=${start.toISOString()}&end=${end.toISOString()}`)
+            const eventsData = await apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`)
 
             setRooms(roomsData)
             setRoomTypes(typesData)
@@ -139,7 +144,10 @@ export default function Calendar() {
             type: newStatus === 'cancelled' ? 'danger' : 'warning',
             onConfirm: async () => {
                 try {
-                    await apiFetch(`/bookings/admin/${id}/status`, {
+                    const hotelId = user?.roleAssignments?.[0]?.hotelId;
+                    const query = hotelId ? `?hotelId=${hotelId}` : '';
+
+                    await apiFetch(`/bookings/admin/${id}/status${query}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ status: newStatus })

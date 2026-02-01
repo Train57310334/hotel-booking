@@ -2,9 +2,12 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon } from 'lucide-react'
+import { InfoTooltip } from '@/components/Tooltip'
+import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
 
 export default function RoomManagement() {
+  const { searchQuery } = useAdmin() || { searchQuery: '' }
   const [activeTab, setActiveTab] = useState('inventory') // 'inventory' | 'types'
   const [rooms, setRooms] = useState([])
   const [roomTypes, setRoomTypes] = useState([])
@@ -22,7 +25,14 @@ export default function RoomManagement() {
   const [editType, setEditType] = useState(null)
 
   // Form States
-  const [roomFormData, setRoomFormData] = useState({ roomTypeId: '' })
+  const [roomFormData, setRoomFormData] = useState({
+    roomTypeId: '',
+    roomNumber: '', // Single
+    prefix: '', // Bulk
+    startNumber: '101', // Bulk
+    count: '10', // Bulk
+    isBulk: false // Toggle
+  })
   const [typeFormData, setTypeFormData] = useState({
     name: '',
     price: '',
@@ -63,6 +73,28 @@ export default function RoomManagement() {
         setTypeFormData(prev => ({ ...prev, hotelId: hData[0].id }))
       }
     } catch (error) { console.error(error) } finally { setLoading(false) }
+  }
+
+  // --- Filtering Logic ---
+  const filteredRoomTypes = roomTypes.filter(type => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+
+    // Match Type Name
+    if (type.name.toLowerCase().includes(q)) return true;
+
+    // Match Room Number in this Type
+    const hasMatchingRoom = rooms.some(r => r.roomTypeId === type.id && r.roomNumber.toLowerCase().includes(q));
+    if (hasMatchingRoom) return true;
+
+    return false;
+  });
+
+  const getFilteredRooms = (typeId) => {
+    return rooms
+      .filter(r => r.roomTypeId === typeId)
+      .filter(r => !searchQuery || r.roomNumber.toLowerCase().includes(searchQuery))
+      .sort((a, b) => (a.roomNumber || '').localeCompare(b.roomNumber || ''));
   }
 
   // --- Image Upload Logic ---
@@ -114,15 +146,31 @@ export default function RoomManagement() {
     }
 
     try {
-      const endpoint = editRoom ? `/rooms/${editRoom.id}` : '/rooms'
-
-      await apiFetch(endpoint, {
-        method: editRoom ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(roomFormData)
-      })
+      if (roomFormData.isBulk) {
+        await apiFetch('/rooms/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomTypeId: roomFormData.roomTypeId,
+            prefix: roomFormData.prefix,
+            startNumber: parseInt(roomFormData.startNumber),
+            count: parseInt(roomFormData.count)
+          })
+        })
+      } else {
+        const endpoint = editRoom ? `/rooms/${editRoom.id}` : '/rooms'
+        await apiFetch(endpoint, {
+          method: editRoom ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomTypeId: roomFormData.roomTypeId,
+            roomNumber: roomFormData.roomNumber
+          })
+        })
+      }
       setIsRoomModalOpen(false)
       fetchData()
+      toast.success(roomFormData.isBulk ? 'Rooms generated successfully' : 'Room saved successfully');
     } catch (e) {
       console.error(e);
       alert('Failed to save room: ' + e.message);
@@ -162,7 +210,11 @@ export default function RoomManagement() {
     } else {
       setRoomFormData({
         roomTypeId: roomTypes[0]?.id || '',
-        roomNumber: ''
+        roomNumber: '',
+        prefix: '',
+        startNumber: '101',
+        count: '10',
+        isBulk: false
       })
     }
     setIsRoomModalOpen(true)
@@ -268,6 +320,14 @@ export default function RoomManagement() {
         </div>
       </div>
 
+      {/* Search Indicator */}
+      {searchQuery && (
+        <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
+          <Search size={18} />
+          <span>Showing results for: <strong>{searchQuery}</strong></span>
+        </div>
+      )}
+
       {/* --- INVENTORY TAB --- */}
       {activeTab === 'inventory' && (
         <>
@@ -278,8 +338,8 @@ export default function RoomManagement() {
           </div>
 
           <div className="space-y-6">
-            {roomTypes.map(type => {
-              const typeRooms = rooms.filter(r => r.roomTypeId === type.id).sort((a, b) => (a.roomNumber || '').localeCompare(b.roomNumber || ''));
+            {filteredRoomTypes.map(type => {
+              const typeRooms = getFilteredRooms(type.id);
               return (
                 <div key={type.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
                   <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 flex justify-between items-center">
@@ -287,7 +347,7 @@ export default function RoomManagement() {
                       {type.images?.[0] && <img src={type.images[0]} className="w-10 h-10 rounded-lg object-cover" />}
                       <div>
                         <h3 className="font-bold text-slate-900 dark:text-white">{type.name} <span className="text-xs text-slate-400 font-normal">#{type.id.slice(-4)}</span></h3>
-                        <p className="text-xs text-slate-500">{typeRooms.length} Rooms &bull; Max {type.maxAdults} Adults</p>
+                        <p className="text-xs text-slate-500">{typeRooms.length} Rooms ({rooms.filter(r => r.roomTypeId === type.id).length} total) &bull; Max {type.maxAdults} Adults</p>
                       </div>
                     </div>
                     <button onClick={() => openRoomModal({ roomTypeId: type.id })} className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
@@ -307,7 +367,7 @@ export default function RoomManagement() {
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-slate-900 dark:text-white">Room {r.roomNumber}</span>
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${(r.status || 'clean') === 'clean' ? 'bg-emerald-100 text-emerald-700' :
-                                  (r.status || 'clean') === 'occupied' ? 'bg-blue-100 text-blue-700' :
+                                  (r.status || 'occupied') === 'occupied' ? 'bg-blue-100 text-blue-700' :
                                     'bg-amber-100 text-amber-700'
                                   }`}>
                                   {r.status || 'Available'}
@@ -362,7 +422,7 @@ export default function RoomManagement() {
                     </div>
                   ) : (
                     <div className="p-8 text-center text-slate-400 italic bg-slate-50/50 dark:bg-slate-900/20">
-                      No physical rooms added for this type yet.
+                      {searchQuery ? 'No rooms match your search.' : 'No physical rooms added for this type yet.'}
                     </div>
                   )}
                 </div>
@@ -381,7 +441,7 @@ export default function RoomManagement() {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {roomTypes.map(type => (
+            {filteredRoomTypes.map(type => (
               <div key={type.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                 <div className="h-48 bg-slate-100 dark:bg-slate-900 relative">
                   {type.images && type.images.length > 0 ? (
@@ -471,7 +531,10 @@ export default function RoomManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold mb-1 dark:text-slate-300">Base Price (THB)</label>
+                    <label className="flex items-center gap-2 text-sm font-bold mb-1 dark:text-slate-300">
+                      Base Price (THB)
+                      <InfoTooltip content="Starting price per night. Seasonal rates can override this." />
+                    </label>
                     <input
                       type="number"
                       value={typeFormData.price}
@@ -512,7 +575,10 @@ export default function RoomManagement() {
                 {/* Row 3: Occupancy */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold mb-1 dark:text-slate-300">Max Adults</label>
+                    <label className="flex items-center gap-2 text-sm font-bold mb-1 dark:text-slate-300">
+                      Max Adults
+                      <InfoTooltip content="Maximum number of adults allowed in this room type." />
+                    </label>
                     <input
                       type="number"
                       min="1"
@@ -610,14 +676,72 @@ export default function RoomManagement() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-full max-w-sm">
               <h3 className="text-xl font-bold mb-4 dark:text-white">{editRoom ? 'Edit Room' : 'Add Physical Room'}</h3>
-              <label className="block text-sm font-bold mb-1 dark:text-slate-300">Room Number</label>
-              <input
-                type="text"
-                className="w-full mb-4 px-4 py-2 border rounded-lg dark:bg-slate-700 dark:text-white dark:border-slate-600"
-                value={roomFormData.roomNumber}
-                onChange={e => setRoomFormData({ ...roomFormData, roomNumber: e.target.value })}
-                placeholder="e.g. 101, 204"
-              />
+              {/* Mode Toggle */}
+              {!editRoom && (
+                <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-lg mb-4">
+                  <button
+                    onClick={() => setRoomFormData({ ...roomFormData, isBulk: false })}
+                    className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${!roomFormData.isBulk ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}
+                  >
+                    Single Room
+                  </button>
+                  <button
+                    onClick={() => setRoomFormData({ ...roomFormData, isBulk: true })}
+                    className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${roomFormData.isBulk ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}
+                  >
+                    Bulk Generate
+                  </button>
+                </div>
+              )}
+
+              {!roomFormData.isBulk ? (
+                <>
+                  <label className="block text-sm font-bold mb-1 dark:text-slate-300">Room Number</label>
+                  <input
+                    type="text"
+                    className="w-full mb-4 px-4 py-2 border rounded-lg dark:bg-slate-700 dark:text-white dark:border-slate-600"
+                    value={roomFormData.roomNumber}
+                    onChange={e => setRoomFormData({ ...roomFormData, roomNumber: e.target.value })}
+                    placeholder="e.g. 101, 204"
+                  />
+                </>
+              ) : (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div>
+                    <label className="block text-xs font-bold mb-1 dark:text-slate-300">Prefix</label>
+                    <input
+                      type="text"
+                      className="w-full px-2 py-2 border rounded-lg dark:bg-slate-700 dark:text-white"
+                      value={roomFormData.prefix}
+                      onChange={e => setRoomFormData({ ...roomFormData, prefix: e.target.value })}
+                      placeholder="Rm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 dark:text-slate-300">Start No.</label>
+                    <input
+                      type="number"
+                      className="w-full px-2 py-2 border rounded-lg dark:bg-slate-700 dark:text-white"
+                      value={roomFormData.startNumber}
+                      onChange={e => setRoomFormData({ ...roomFormData, startNumber: e.target.value })}
+                      placeholder="101"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold mb-1 dark:text-slate-300">Count</label>
+                    <input
+                      type="number"
+                      className="w-full px-2 py-2 border rounded-lg dark:bg-slate-700 dark:text-white"
+                      value={roomFormData.count}
+                      onChange={e => setRoomFormData({ ...roomFormData, count: e.target.value })}
+                      placeholder="10"
+                    />
+                  </div>
+                  <div className="col-span-3 text-xs text-slate-500">
+                    Example: Prefix "A", Start "101", Count "5" → A101, A102, A103, A104, A105
+                  </div>
+                </div>
+              )}
               <label className="block text-sm font-bold mb-1 dark:text-slate-300">Room Type</label>
               <select
                 className="w-full mb-4 px-4 py-2 border rounded-lg dark:bg-slate-700 dark:text-white dark:border-slate-600"

@@ -5,12 +5,16 @@ import { useToast } from '@/contexts/ToastContext'
 import { TicketPercent, Plus, Trash2, Calendar } from 'lucide-react'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import toast from 'react-hot-toast'
+import DatePicker from '@/components/DatePicker'
 
 export default function Promotions() {
     // const { success, error } = useToast()
     const [promotions, setPromotions] = useState([])
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null })
+    const [form, setForm] = useState({
+        code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: ''
+    })
 
     useEffect(() => {
         fetchPromotions()
@@ -29,42 +33,30 @@ export default function Promotions() {
         if (!confirmDelete.id) return
         try {
             await apiFetch(`/promotions/${confirmDelete.id}`, { method: 'DELETE' })
-            await apiFetch(`/promotions/${confirmDelete.id}`, { method: 'DELETE' })
+            // await apiFetch(`/promotions/${confirmDelete.id}`, { method: 'DELETE' }) // Duplicate call in original
             toast.success('Promotion deleted')
             fetchPromotions()
         } catch (e) { toast.error('Failed to delete') }
     }
 
-    const handleSubmit = async (e) => {
+    const handleCreate = async (e) => {
         e.preventDefault()
-        const formData = new FormData(e.target)
-
         try {
             await apiFetch('/promotions', {
                 method: 'POST',
                 body: JSON.stringify({
-                    code: formData.get('code').toUpperCase(),
-                    type: formData.get('type'),
-                    value: Number(formData.get('value')),
-                    startDate: new Date(formData.get('startDate')),
-                    endDate: new Date(formData.get('endDate')),
-                    conditions: formData.get('conditions') || ''
-                })
-            })
-            await apiFetch('/promotions', {
-                method: 'POST',
-                body: JSON.stringify({
-                    code: formData.get('code').toUpperCase(),
-                    type: formData.get('type'),
-                    value: Number(formData.get('value')),
-                    startDate: new Date(formData.get('startDate')),
-                    endDate: new Date(formData.get('endDate')),
-                    conditions: formData.get('conditions') || ''
+                    code: form.code.toUpperCase(),
+                    type: form.type,
+                    value: Number(form.value),
+                    startDate: new Date(form.startDate),
+                    endDate: new Date(form.endDate),
+                    conditions: form.conditions
                 })
             })
             toast.success('Promotion created')
             setIsModalOpen(false)
             fetchPromotions()
+            setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '' })
         } catch (e) {
             toast.error('Failed to create promotion. Code might exist.')
         }
@@ -135,6 +127,8 @@ export default function Promotions() {
                 </div>
             </div>
 
+
+
             {/* Create Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -142,40 +136,72 @@ export default function Promotions() {
                         <h3 className="font-bold text-lg mb-4 dark:text-white flex items-center gap-2">
                             <TicketPercent size={20} className="text-emerald-500" /> New Promotion
                         </h3>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleCreate} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Promo Code</label>
-                                <input name="code" required placeholder="e.g. SUMMER2024" className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white font-mono" />
+                                <input
+                                    value={form.code}
+                                    onChange={e => setForm({ ...form, code: e.target.value })}
+                                    required placeholder="e.g. SUMMER2024"
+                                    className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white font-mono"
+                                />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Type</label>
-                                    <select name="type" className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                                    <select
+                                        value={form.type}
+                                        onChange={e => setForm({ ...form, type: e.target.value })}
+                                        className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    >
                                         <option value="percent">Percent (%)</option>
                                         <option value="fixed">Fixed Amount</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Value</label>
-                                    <input name="value" type="number" required placeholder="e.g. 10" className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                                    <input
+                                        value={form.value}
+                                        onChange={e => setForm({ ...form, value: e.target.value })}
+                                        type="number" required placeholder="e.g. 10"
+                                        className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
-                                    <input name="startDate" type="date" required className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                                    <DatePicker
+                                        value={form.startDate}
+                                        onChange={([date]) => setForm({ ...form, startDate: date ? date.toISOString().split('T')[0] : '' })}
+                                        options={{ minDate: "today" }}
+                                        className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                        wrapperClassName="w-full"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
-                                    <input name="endDate" type="date" required className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                                    <DatePicker
+                                        value={form.endDate}
+                                        onChange={([date]) => setForm({ ...form, endDate: date ? date.toISOString().split('T')[0] : '' })}
+                                        options={{ minDate: form.startDate || "today" }}
+                                        className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                        wrapperClassName="w-full"
+                                    />
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Description (Optional)</label>
-                                <textarea name="conditions" rows="2" className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white text-sm" placeholder="Any special conditions..." />
+                                <textarea
+                                    value={form.conditions}
+                                    onChange={e => setForm({ ...form, conditions: e.target.value })}
+                                    rows="2"
+                                    className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white text-sm"
+                                    placeholder="Any special conditions..."
+                                />
                             </div>
 
                             <div className="flex gap-2 pt-4">

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Save, Globe, CreditCard, Mail, Shield, Bell, LayoutTemplate } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { InfoTooltip } from '@/components/Tooltip'
 
 export default function SettingsPage() {
   // const { success, error } = useToast()
@@ -127,7 +128,10 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Site Name</label>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                      Site Name
+                      <InfoTooltip content="The name of your website as it appears in the browser tab and search engines." />
+                    </label>
                     <input
                       type="text"
                       value={settings.siteName || ''}
@@ -137,7 +141,10 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Currency</label>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                      Currency
+                      <InfoTooltip content="The currency used across the platform (e.g. THB, USD)." />
+                    </label>
                     <select
                       value={settings.currency || 'THB'}
                       onChange={e => handleChange('currency', e.target.value)}
@@ -169,7 +176,10 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Full Address</label>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                      Full Address
+                      <InfoTooltip content="Address used for Google Maps and contact page info." />
+                    </label>
                     <textarea
                       rows={3}
                       value={hotel.address || ''}
@@ -231,7 +241,10 @@ export default function SettingsPage() {
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Stripe Logic Key (Public)</label>
+                      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                        Stripe Logic Key (Public)
+                        <InfoTooltip content="Your Stripe publishable key (pk_...)." />
+                      </label>
                       <input
                         type="text"
                         value={settings.stripeKey || ''}
@@ -241,7 +254,10 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Stripe Secret Key</label>
+                      <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                        Stripe Secret Key
+                        <InfoTooltip content="Your Stripe secret key (sk_...), typically kept secure on the backend." />
+                      </label>
                       <input
                         type="password"
                         value={settings.stripeSecret || ''}
@@ -292,7 +308,10 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Password</label>
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                      SMTP Password
+                      <InfoTooltip content="App Password for Gmail or your SMTP server password." />
+                    </label>
                     <input
                       type="password"
                       value={settings.smtpPass || ''}

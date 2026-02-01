@@ -1,6 +1,6 @@
 import { AlertTriangle } from 'lucide-react'
 
-export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, type = 'warning' }) {
+export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, type = 'warning', singleButton = false, confirmText = 'Confirm' }) {
     if (!isOpen) return null;
 
     return (
@@ -15,23 +15,25 @@ export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, m
                     <p className="text-slate-500 text-sm mb-6">{message}</p>
 
                     <div className="flex gap-3 justify-center">
-                        <button
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
-                        >
-                            Cancel
-                        </button>
+                        {!singleButton && (
+                            <button
+                                onClick={onClose}
+                                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 onConfirm()
                                 onClose()
                             }}
                             className={`flex-1 px-4 py-2.5 text-white rounded-xl font-bold shadow-lg transition-colors ${type === 'danger'
-                                    ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
-                                    : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
+                                ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
+                                : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
                                 }`}
                         >
-                            Confirm
+                            {confirmText}
                         </button>
                     </div>
                 </div>

@@ -133,6 +133,8 @@ export default function GuestInfoPage() {
               title="Missing Information"
               message="Please fill in all required fields (Name, Email, and Phone) to proceed."
               type="warning"
+              singleButton={true}
+              confirmText="OK"
             />
 
             {/* Summary Sidebar */}

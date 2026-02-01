@@ -4,24 +4,76 @@ import StatsCard from '@/components/dashboard/StatsCard'
 import { DollarSign, Home, BedDouble, CalendarCheck } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-export default function Dashboard() {
-    // Mock Data
-    const stats = [
-        { title: 'Total Revenue', value: '฿818,003,345', icon: DollarSign, subtext: 'Update November 1, 2024', color: 'green' },
-        { title: 'Total Room', value: '3,345', icon: Home, subtext: 'Update November 1, 2024', color: 'green' },
-        { title: 'Available Room', value: '3,345', icon: BedDouble, subtext: 'Update November 1, 2024', color: 'green' },
-        { title: 'New Booking', value: '3,345', icon: CalendarCheck, subtext: 'Update November 1, 2024', color: 'green' },
-    ]
+import { apiFetch } from '@/lib/api'
+import { useEffect, useState } from 'react'
 
-    const revenueData = [
-        { name: 'Jan', income: 4000, expense: 2400 },
-        { name: 'Feb', income: 3000, expense: 1398 },
-        { name: 'Mar', income: 2000, expense: 9800 },
-        { name: 'Apr', income: 2780, expense: 3908 },
-        { name: 'May', income: 1890, expense: 4800 },
-        { name: 'Jun', income: 2390, expense: 3800 },
-        { name: 'Jul', income: 3490, expense: 4300 },
-    ]
+export default function Dashboard() {
+    const [stats, setStats] = useState([
+        { title: 'Total Revenue', value: '฿0', icon: DollarSign, subtext: 'Updated just now', color: 'green' },
+        { title: 'Total Expenses', value: '฿0', icon: DollarSign, subtext: 'Updated just now', color: 'red' },
+        { title: 'Net Profit', value: '฿0', icon: DollarSign, subtext: 'Updated just now', color: 'emerald' },
+        { title: 'Total Bookings', value: '0', icon: CalendarCheck, subtext: 'Updated just now', color: 'blue' },
+    ])
+    const [revenueData, setRevenueData] = useState([])
+
+    useEffect(() => {
+        fetchDashboardData()
+    }, [])
+
+    const fetchDashboardData = async () => {
+        try {
+            // Default to this year
+            const now = new Date()
+            const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString()
+            const endOfYear = new Date(now.getFullYear(), 11, 31).toISOString()
+
+            const [summary, revenue, expenses] = await Promise.all([
+                apiFetch(`/reports/summary?from=${startOfYear}&to=${endOfYear}`),
+                apiFetch(`/reports/revenue?from=${startOfYear}&to=${endOfYear}`),
+                apiFetch(`/expenses?hotelId=1&from=${startOfYear}&to=${endOfYear}`)
+                // Note: hotelId=1 is temporary hack, should get from User Context or API defaults
+            ])
+
+            // Format Stats
+            setStats([
+                { title: 'Total Revenue', value: `฿${summary.totalRevenue.toLocaleString()}`, icon: DollarSign, subtext: 'This Year', color: 'green' },
+                { title: 'Total Expenses', value: `฿${summary.totalExpenses.toLocaleString()}`, icon: DollarSign, subtext: 'This Year', color: 'red' },
+                { title: 'Net Profit', value: `฿${summary.totalProfit.toLocaleString()}`, icon: DollarSign, subtext: 'This Year', color: summary.totalProfit >= 0 ? 'emerald' : 'rose' },
+                { title: 'Total Bookings', value: summary.totalBookings.toLocaleString(), icon: CalendarCheck, subtext: 'This Year', color: 'blue' },
+            ])
+
+            // Merge Revenue & Expense for Chart
+            // We need to align by date/month. For simplicity, let's assume monthly aggregation on client or server.
+            // Since API returns daily data currently, let's aggregate to Months here for the Chart.
+            const monthlyData = {}
+
+            revenue.forEach(r => {
+                const month = new Date(r.date).toLocaleString('default', { month: 'short' })
+                if (!monthlyData[month]) monthlyData[month] = { name: month, income: 0, expense: 0 }
+                monthlyData[month].income += r.value
+            })
+
+            // Fetch generic expenses endpoint returns raw list, we need aggregation or use reports/expenses if available
+            // Actually report/summary logic used aggregate inside service, but here valid fetch for chart needs data.
+            // Let's assume we use the endpoint we just made: /expenses which returns list.
+            if (Array.isArray(expenses)) {
+                expenses.forEach(e => {
+                    const month = new Date(e.date).toLocaleString('default', { month: 'short' })
+                    if (!monthlyData[month]) monthlyData[month] = { name: month, income: 0, expense: 0 }
+                    monthlyData[month].expense += e.amount
+                })
+            }
+
+            // Sort by month order
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            const chartData = months.map(m => monthlyData[m] || { name: m, income: 0, expense: 0 })
+
+            setRevenueData(chartData)
+
+        } catch (e) {
+            console.error('Failed to load dashboard', e)
+        }
+    }
 
     return (
         <DashboardLayout>

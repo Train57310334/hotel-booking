@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
 import { useRouter } from 'next/router'
+import { InfoTooltip } from '@/components/Tooltip'
 import {
   BarChart as BarChartIcon,
   Users,
@@ -37,6 +38,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts'
+
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth()
@@ -76,7 +78,7 @@ export default function AdminDashboard() {
         router.push('/auth/login')
       } else {
         fetchData() // Initial
-        const interval = setInterval(() => fetchData(searchQuery, true), 5000) // Background Silent Refresh (5s)
+        const interval = setInterval(() => fetchData(searchQuery, true), 30000) // Background Silent Refresh (30s)
         return () => clearInterval(interval)
       }
     }
@@ -92,8 +94,14 @@ export default function AdminDashboard() {
       // Only show spinner on initial load (not background refresh or search typing)
       if (!isBackground && !bookings.length && !search) setLoading(true)
 
-      const statsData = await apiFetch(`/bookings/admin/dashboard?period=${timeRange}`)
-      const query = search ? `?search=${search}` : ''
+      const hotelId = user?.roleAssignments?.[0]?.hotelId;
+      if (!hotelId) {
+        console.warn("No Hotel ID found for user");
+        return;
+      }
+
+      const statsData = await apiFetch(`/bookings/admin/dashboard?period=${timeRange}&hotelId=${hotelId}`)
+      const query = search ? `?search=${search}&hotelId=${hotelId}` : `?hotelId=${hotelId}`
       const bookingsData = await apiFetch(`/bookings/admin/all${query}`)
 
       // preventing re-renders if data is same (Deep Compare simple approach)
@@ -115,7 +123,8 @@ export default function AdminDashboard() {
       icon: DollarSign,
       color: 'bg-emerald-500',
       trend: '+12%',
-      sub: 'Gross Income'
+      sub: 'Gross Income',
+      tooltip: 'Total income from confirmed bookings (excluding cancellations).'
     },
     {
       label: 'New Bookings',
@@ -123,7 +132,8 @@ export default function AdminDashboard() {
       icon: CalendarIcon,
       color: 'bg-blue-500',
       trend: '+5',
-      sub: 'Pending Confirmation'
+      sub: 'Pending Confirmation',
+      tooltip: 'Number of new bookings received in this period.'
     },
     {
       label: 'Today\'s Activity',
@@ -131,7 +141,8 @@ export default function AdminDashboard() {
       icon: LogIn,
       color: 'bg-amber-500',
       trend: null,
-      sub: 'In / Out'
+      sub: 'In / Out',
+      tooltip: 'Guests checking in vs checking out today.'
     },
     {
       label: 'Occupancy Rate',
@@ -139,9 +150,13 @@ export default function AdminDashboard() {
       icon: TrendingUp,
       color: 'bg-rose-500',
       trend: stats.occupancyRate > 80 ? 'High' : 'Normal',
-      sub: `${stats.availableRooms} Rooms Available`
+      sub: `${stats.availableRooms} Rooms Available`,
+      tooltip: 'Percentage of occupied rooms vs total inventory today.'
     },
   ]
+
+  // Quick Onboarding Check
+  const showOnboarding = stats.totalRooms === 0;
 
   if (authLoading || loading) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-400">
@@ -185,6 +200,31 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Onboarding Widget */}
+      {showOnboarding && (
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 mb-8 text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Welcome to your Dashboard! 🚀</h2>
+              <p className="text-emerald-100 mb-6 max-w-xl">
+                Your hotel system is almost ready. Complete these 3 steps to start accepting bookings.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button onClick={() => router.push('/admin/settings')} className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-colors shadow-lg">
+                  1. Upload Logo & Images
+                </button>
+                <button onClick={() => router.push('/admin/rooms')} className="bg-emerald-700/50 text-white border border-emerald-400/30 px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors">
+                  2. Create Room Types
+                </button>
+              </div>
+            </div>
+            <div className="hidden md:block opacity-20 transform scale-150 rotate-12 bg-white/30 rounded-full p-12">
+              <Home size={120} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {cards.map((item, i) => (
@@ -200,7 +240,10 @@ export default function AdminDashboard() {
               )}
             </div>
             <div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{item.label}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">{item.label}</p>
+                {item.tooltip && <InfoTooltip content={item.tooltip} />}
+              </div>
               <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{item.value}</h3>
               <p className="text-xs text-slate-400 mt-1">{item.sub}</p>
             </div>

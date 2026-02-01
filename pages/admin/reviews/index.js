@@ -1,7 +1,7 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
-import { Star, CheckCircle, XCircle, MessageSquare, AlertCircle } from 'lucide-react'
+import { Star, CheckCircle, XCircle, MessageSquare, AlertCircle, Trash2 } from 'lucide-react'
 
 export default function ReviewManagement() {
     const [reviews, setReviews] = useState([])
@@ -44,6 +44,17 @@ export default function ReviewManagement() {
             fetchStats()
         } catch (error) {
             alert('Action failed')
+        }
+    }
+
+    const handleDelete = async (id) => {
+        if (!confirm('Are you sure you want to delete this review?')) return;
+        try {
+            await apiFetch(`/reviews/admin/${id}`, { method: 'DELETE' })
+            fetchReviews()
+            fetchStats()
+        } catch (error) {
+            alert('Delete failed')
         }
     }
 
@@ -155,23 +166,29 @@ export default function ReviewManagement() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {review.status === 'pending' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(review.id, 'approved')}
-                                                            className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title="Approve">
-                                                            <CheckCircle size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(review.id, 'rejected')}
-                                                            className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors" title="Reject">
-                                                            <XCircle size={18} />
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {review.status !== 'pending' && (
-                                                    <span className="text-xs text-slate-400">Moderated</span>
-                                                )}
+                                                <button
+                                                    onClick={() => handleStatusUpdate(review.id, 'approved')}
+                                                    className={`p-2 rounded-lg transition-colors ${review.status === 'approved' ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
+                                                    title="Approve"
+                                                    disabled={review.status === 'approved'}
+                                                >
+                                                    <CheckCircle size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleStatusUpdate(review.id, 'rejected')}
+                                                    className={`p-2 rounded-lg transition-colors ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600 cursor-default' : 'text-rose-600 bg-rose-50 hover:bg-rose-100'}`}
+                                                    title="Reject"
+                                                    disabled={review.status === 'rejected'}
+                                                >
+                                                    <XCircle size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(review.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 rounded-lg transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>

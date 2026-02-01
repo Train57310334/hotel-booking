@@ -71,7 +71,7 @@ export default function AccountSettings() {
       // Adjust API URL if it differs, usually /upload
       // We need to use native fetch for FormData or adjust apiFetch to not set Content-Type
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:3001/api/upload', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api'}/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }, // manual header
         body: formData

@@ -2,26 +2,27 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, User, Mail, Phone, Calendar, MapPin, ExternalLink, Clock } from 'lucide-react'
-
+import { useAdmin } from '@/contexts/AdminContext'
 import { useRouter } from 'next/router'
 
 export default function GuestManagement() {
   const router = useRouter()
+  const { searchQuery } = useAdmin() || { searchQuery: '' }
   const [guests, setGuests] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  // const [searchTerm, setSearchTerm] = useState('') // Global Search Used
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchGuests()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
-  }, [searchTerm])
+  }, [searchQuery])
 
   const fetchGuests = async () => {
     setLoading(true)
     try {
-      const query = searchTerm ? `?search=${searchTerm}` : ''
+      const query = searchQuery ? `?search=${searchQuery}` : ''
       const data = await apiFetch(`/users${query}`)
       setGuests(data)
     } catch (error) {
@@ -42,19 +43,13 @@ export default function GuestManagement() {
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search by name, email, or phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-colors"
-          />
+      {/* Search is now global in AdminLayout */}
+      {searchQuery && (
+        <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
+          <Search size={18} />
+          <span>Showing results for: <strong>{searchQuery}</strong></span>
         </div>
-      </div>
+      )}
 
       {/* Table */}
       <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
