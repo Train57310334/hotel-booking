@@ -1,18 +1,24 @@
 import { motion } from 'framer-motion'
 import { MapPin, Calendar, Users } from 'lucide-react'
 
-export default function Hero({ children }) {
+export default function Hero({ children, title, description, backgroundImage }) {
+  const bgImage = backgroundImage || "/images/hero-bg.png";
+  const heroTitle = title || (
+    <>
+      Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-300">BookingKub</span>
+      <br /> Luxury Resort
+    </>
+  );
+  const heroDescription = description || "Experience the ultimate relaxation with our exclusive rooms and premium amenities.";
+
   return (
     <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden mb-12">
-      {/* Background with overlay */}
-      {/* Background with overlay */}
-      {/* Background with overlay */}
       {/* Background with overlay */}
       <div className="absolute inset-x-0 top-0 h-[85vh] rounded-b-[3rem] overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
         <img
-          src="/images/hero-bg.png"
-          alt="Luxury Hotel"
+          src={bgImage}
+          alt="Hero Background"
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-transparent" />
@@ -27,8 +33,7 @@ export default function Hero({ children }) {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-4xl md:text-7xl font-bold font-display text-white mb-6 leading-tight tracking-tight"
           >
-            Find your <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-300">perfect stay</span>
-            <br /> around the world
+            {heroTitle}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -36,7 +41,7 @@ export default function Hero({ children }) {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-lg md:text-xl text-slate-200 font-light max-w-2xl mx-auto"
           >
-            Discover handpicked hotels, resorts, and vacation rentals with the best rates guaranteed.
+            {heroDescription}
           </motion.p>
         </div>
 

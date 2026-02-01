@@ -1,16 +1,73 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
+import Hero from '@/components/Hero';
+import SearchBar from '@/components/SearchBar';
+import ComingSoon from '@/components/ComingSoon';
+import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, Star, MapPin, Coffee, Wifi, Tv } from 'lucide-react';
 
 export default function Home({ hotel, error }) {
   if (error) {
+    const { user } = useAuth();
     return (
-      <Layout>
-        <div className="container mx-auto p-20 text-center">
-          <div className="bg-red-50 p-8 rounded-3xl border border-red-100 max-w-2xl mx-auto">
-            <h3 className="text-xl font-bold text-red-600 mb-2">System Not Ready</h3>
-            <p className="text-slate-600">{error}</p>
+      <Layout navbarProps={{ forceSolid: true }}>
+        <div className="min-h-screen pt-28 flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
+          {/* Background Decorative Elements */}
+          <div className="absolute top-0 left-0 w-full h-full -z-10 bg-slate-50">
+            <div className="absolute top-10 left-10 w-72 h-72 bg-primary-200 rounded-full blur-[100px] opacity-30 animate-pulse" />
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-200 rounded-full blur-[100px] opacity-30 animate-pulse delay-700" />
+          </div>
+
+          <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white shadow-xl mb-4 text-primary-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-slate-900 tracking-tight leading-tight">
+              Welcome to <br className="hidden md:block" />
+              <span className="bg-gradient-to-r from-primary-600 to-teal-400 bg-clip-text text-transparent">BookingKub</span>
+            </h1>
+
+            <p className="text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              {user ? "Your account is ready. Let's set up your first property to get started." : "Your comprehensive Hotel Management System is ready to be configured. Register as an administrator to onboard your first hotel."}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+              {user ? (
+                <Link href="/admin/setup" className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                  Setup My Hotel <ArrowRight size={20} />
+                </Link>
+              ) : (
+                <Link href="/auth/register" className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-primary-500/30 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                  Get Started <ArrowRight size={20} />
+                </Link>
+              )}
+
+              {!user && (
+                <Link href="/auth/login" className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                  I already have an account
+                </Link>
+              )}
+            </div>
+
+            <div className="pt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+              <div className="group p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300">
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Star size={24} /></div>
+                <h3 className="text-lg font-bold text-slate-900">Multi-Tenant Platform</h3>
+                <p className="text-slate-500 mt-3 leading-relaxed">Manage multiple properties securely from a single, unified dashboard.</p>
+              </div>
+              <div className="group p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-green-500/5 hover:-translate-y-1 transition-all duration-300">
+                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><MapPin size={24} /></div>
+                <h3 className="text-lg font-bold text-slate-900">Real-time Booking</h3>
+                <p className="text-slate-500 mt-3 leading-relaxed">Instant inventory updates, automated confirmations, and seamless guest experience.</p>
+              </div>
+              <div className="group p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-purple-500/5 hover:-translate-y-1 transition-all duration-300">
+                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Wifi size={24} /></div>
+                <h3 className="text-lg font-bold text-slate-900">Smart Financial Reports</h3>
+                <p className="text-slate-500 mt-3 leading-relaxed">Track revenue, expenses, and profit margins with detailed visual analytics.</p>
+              </div>
+            </div>
           </div>
         </div>
       </Layout>
@@ -22,54 +79,29 @@ export default function Home({ hotel, error }) {
   const heroDescription = hotel.heroDescription || hotel.description || "Experience luxury and comfort in the heart of the city.";
   const heroImage = hotel.imageUrl || "/images/hero-bg.png"; // Fallback image
 
+  // Default parameters for links
+  const now = new Date();
+  const tmr = new Date(now);
+  tmr.setDate(now.getDate() + 1);
+  const formatDate = (d) => d.toISOString().split('T')[0];
+
+  const defaultParams = `checkIn=${formatDate(now)}&checkOut=${formatDate(tmr)}&guests=1`;
+
+  // 🔌 SAAS MODE: If hotel has no room types, show Coming Soon
+  if (!hotel.roomTypes || hotel.roomTypes.length === 0) {
+    return <ComingSoon hotelName={hotel.name} />;
+  }
+
   return (
     <Layout>
       {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={heroImage}
-            alt="Hero Background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/50 to-transparent" />
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10 pt-20">
-          <div className="max-w-2xl text-white animate-in slide-in-from-bottom-10 fade-in duration-700">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-primary-500/20 border border-primary-500/30 text-primary-300 font-bold text-sm mb-6 backdrop-blur-sm">
-              Premium Hospitality
-            </span>
-            <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6">
-              {heroTitle}
-            </h1>
-            <p className="text-lg md:text-xl text-slate-300 mb-10 leading-relaxed max-w-lg">
-              {heroDescription}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href={`/hotel/${hotel.id}`}
-                className="btn-primary px-8 py-4 text-lg shadow-xl shadow-primary-600/30 flex items-center justify-center gap-2 group"
-              >
-                Book Your Stay
-                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/contact"
-                className="px-8 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold hover:bg-white/20 transition-all text-center"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/50 animate-bounce">
-          <span className="text-xs font-bold tracking-widest uppercase">Scroll to Discover</span>
-        </div>
-      </div>
+      <Hero
+        title={heroTitle}
+        description={heroDescription}
+        backgroundImage={heroImage}
+      >
+        <SearchBar />
+      </Hero>
 
       {/* Featured Rooms Section */}
       <section className="py-24 bg-slate-50">
@@ -111,7 +143,7 @@ export default function Home({ hotel, error }) {
                           ฿{(rt.basePrice || 2000).toLocaleString()} <span className="text-sm text-slate-400 font-sans font-normal">/ night</span>
                         </p>
                       </div>
-                      <Link href={`/hotel/${hotel.id}#room-${rt.id}`} className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-primary-600 transition-colors">
+                      <Link href={`/search?${defaultParams}#room-${rt.id}`} className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-primary-600 transition-colors">
                         <ArrowRight size={18} />
                       </Link>
                     </div>
@@ -122,7 +154,7 @@ export default function Home({ hotel, error }) {
           </div>
 
           <div className="text-center mt-12">
-            <Link href={`/hotel/${hotel.id}`} className="inline-flex items-center gap-2 font-bold text-slate-900 hover:text-primary-600 transition-colors">
+            <Link href={`/search?${defaultParams}`} className="inline-flex items-center gap-2 font-bold text-slate-900 hover:text-primary-600 transition-colors">
               View All Rooms <ArrowRight size={18} />
             </Link>
           </div>

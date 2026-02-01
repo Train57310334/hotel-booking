@@ -1,10 +1,10 @@
 import NavBar from '@/components/NavBar'
 import { Github, Twitter, Instagram } from 'lucide-react'
 
-export default function Layout({ children }) {
+export default function Layout({ children, navbarProps }) {
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-900">
-            <NavBar />
+            <NavBar {...navbarProps} />
             <main className="flex-1 w-full">
                 {children}
             </main>

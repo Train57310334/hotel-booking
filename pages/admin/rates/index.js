@@ -260,6 +260,19 @@ function RatePlansView({ plans, roomTypes, refresh }) {
 function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefresh, roomTypes, selectedType, setSelectedType }) {
     // const { success, error } = useToast()
     const [editModal, setEditModal] = useState({ isOpen: false, data: null })
+    const [bulkModal, setBulkModal] = useState({ isOpen: false })
+
+    // Bulk Form State
+    const [bulkData, setBulkData] = useState({
+        startDate: '',
+        endDate: '',
+        updatePrice: false,
+        price: '',
+        updateAllotment: false,
+        allotment: '',
+        updateStopSale: false,
+        stopSale: false
+    })
 
     // Generate Days
     const days = []
@@ -298,7 +311,6 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
             })
 
             // Update Price (Override)
-            // Use the first rate plan as default if not specified (simplification for MVP)
             const defaultPlanId = ratePlans.length > 0 ? ratePlans[0].id : null
             if (!defaultPlanId) {
                 toast.error('No Rate Plan found. Please create a Rate Plan first.')
@@ -321,6 +333,53 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
         }
     }
 
+    const handleBulkSubmit = async (e) => {
+        e.preventDefault()
+        if (!bulkData.startDate || !bulkData.endDate) return toast.error('Please select date range')
+
+        const loadingId = toast.loading('Updating settings...')
+
+        try {
+            // 1. Update Inventory / StopSale if selected
+            if (bulkData.updateAllotment || bulkData.updateStopSale) {
+                await apiFetch('/inventory/bulk', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        roomTypeId: selectedType,
+                        startDate: bulkData.startDate,
+                        endDate: bulkData.endDate,
+                        ...(bulkData.updateAllotment && { allotment: Number(bulkData.allotment) }),
+                        ...(bulkData.updateStopSale && { stopSale: bulkData.stopSale })
+                    })
+                })
+            }
+
+            // 2. Update Price if selected
+            if (bulkData.updatePrice) {
+                const defaultPlanId = ratePlans.length > 0 ? ratePlans[0].id : null
+                if (defaultPlanId) {
+                    await apiFetch('/rates/overrides/bulk', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            roomTypeId: selectedType,
+                            ratePlanId: defaultPlanId,
+                            startDate: bulkData.startDate,
+                            endDate: bulkData.endDate,
+                            baseRate: Number(bulkData.price)
+                        })
+                    })
+                }
+            }
+
+            toast.success('Bulk update completed!', { id: loadingId })
+            onRefresh()
+            setBulkModal({ isOpen: false })
+        } catch (error) {
+            console.error(error)
+            toast.error('Failed to update bulk settings', { id: loadingId })
+        }
+    }
+
     return (
         <div className="h-full flex flex-col">
             {/* Header Controls */}
@@ -339,6 +398,12 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                     <span className="px-4 py-1 text-sm font-bold dark:text-white min-w-[140px] text-center">{month.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</span>
                     <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="px-3 py-1 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white">Next</button>
                 </div>
+                <button
+                    onClick={() => setBulkModal({ isOpen: true })}
+                    className="ml-4 px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                >
+                    <Edit size={16} /> Bulk Update
+                </button>
             </div>
 
             {/* Grid Container */}
@@ -456,6 +521,120 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                             <div className="flex gap-2 pt-4">
                                 <button type="button" onClick={() => setEditModal({ isOpen: false, data: null })} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
                                 <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Update Modal */}
+            {bulkModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[500px] shadow-2xl border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+                        <h3 className="font-bold text-xl mb-6 dark:text-white flex items-center gap-2">
+                            <Edit size={20} className="text-emerald-500" /> Bulk Update Rates
+                        </h3>
+
+                        <form onSubmit={handleBulkSubmit} className="space-y-6">
+                            {/* Date Range */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">From Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                        value={bulkData.startDate}
+                                        onChange={e => setBulkData({ ...bulkData, startDate: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">To Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                        value={bulkData.endDate}
+                                        onChange={e => setBulkData({ ...bulkData, endDate: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <hr className="dark:border-slate-700" />
+
+                            {/* Options */}
+                            <div className="space-y-4">
+                                {/* Price Option */}
+                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updatePrice ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={bulkData.updatePrice}
+                                            onChange={e => setBulkData({ ...bulkData, updatePrice: e.target.checked })}
+                                            className="w-5 h-5 rounded text-emerald-500"
+                                        />
+                                        <label className="font-bold text-slate-900 dark:text-white">Set Daily Price</label>
+                                    </div>
+                                    {bulkData.updatePrice && (
+                                        <input
+                                            type="number"
+                                            placeholder="Enter price (THB)"
+                                            className="w-full p-2 bg-white dark:bg-slate-800 border dark:border-slate-600 rounded-lg"
+                                            value={bulkData.price}
+                                            onChange={e => setBulkData({ ...bulkData, price: e.target.value })}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Inventory Option */}
+                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updateAllotment ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={bulkData.updateAllotment}
+                                            onChange={e => setBulkData({ ...bulkData, updateAllotment: e.target.checked })}
+                                            className="w-5 h-5 rounded text-emerald-500"
+                                        />
+                                        <label className="font-bold text-slate-900 dark:text-white">Set Allotment (Rooms)</label>
+                                    </div>
+                                    {bulkData.updateAllotment && (
+                                        <input
+                                            type="number"
+                                            placeholder="Enter quantity"
+                                            className="w-full p-2 bg-white dark:bg-slate-800 border dark:border-slate-600 rounded-lg"
+                                            value={bulkData.allotment}
+                                            onChange={e => setBulkData({ ...bulkData, allotment: e.target.value })}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Stop Sale Option */}
+                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updateStopSale ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={bulkData.updateStopSale}
+                                            onChange={e => setBulkData({ ...bulkData, updateStopSale: e.target.checked })}
+                                            className="w-5 h-5 rounded text-emerald-500"
+                                        />
+                                        <label className="font-bold text-slate-900 dark:text-white">Status (Open/Close)</label>
+                                    </div>
+                                    {bulkData.updateStopSale && (
+                                        <select
+                                            className="w-full p-2 bg-white dark:bg-slate-800 border dark:border-slate-600 rounded-lg"
+                                            value={bulkData.stopSale ? 'closed' : 'open'}
+                                            onChange={e => setBulkData({ ...bulkData, stopSale: e.target.value === 'closed' })}
+                                        >
+                                            <option value="open">Open for Sale</option>
+                                            <option value="closed">Stop Sale (Closed)</option>
+                                        </select>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button type="button" onClick={() => setBulkModal({ isOpen: false })} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Cancel</button>
+                                <button type="submit" className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-colors">Apply Changes</button>
                             </div>
                         </form>
                     </div>

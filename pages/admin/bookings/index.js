@@ -1,6 +1,8 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { useAdmin } from '@/contexts/AdminContext'
 import { Search, Plus, CreditCard, Eye } from 'lucide-react'
 
 import BookingDetailModal from '@/components/BookingDetailModal'
@@ -8,9 +10,11 @@ import ConfirmationModal from '@/components/ConfirmationModal'
 import CreateBookingModal from '@/components/CreateBookingModal'
 
 export default function BookingManagement() {
+  const { user } = useAuth()
+  const { searchQuery } = useAdmin() || { searchQuery: '' }
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  // const [searchTerm, setSearchTerm] = useState('') // Replaced by global searchQuery
   const [statusFilter, setStatusFilter] = useState('All')
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' })
   const [selectedBooking, setSelectedBooking] = useState(null)
@@ -21,11 +25,13 @@ export default function BookingManagement() {
   // Live Polling
   useEffect(() => {
     let interval
-    if (isLiveMode) {
+    if (isLiveMode && user?.roleAssignments?.[0]?.hotelId) {
       interval = setInterval(() => {
         const fetchSilent = async () => {
+          const hotelId = user.roleAssignments[0].hotelId;
           const query = new URLSearchParams()
-          if (searchTerm) query.append('search', searchTerm)
+          query.append('hotelId', hotelId)
+          if (searchQuery) query.append('search', searchQuery)
           if (statusFilter !== 'All') query.append('status', statusFilter)
           if (sortConfig.key) {
             query.append('sortBy', sortConfig.key)
@@ -38,20 +44,24 @@ export default function BookingManagement() {
       }, 5000)
     }
     return () => clearInterval(interval)
-  }, [isLiveMode, searchTerm, statusFilter, sortConfig])
+  }, [isLiveMode, searchQuery, statusFilter, sortConfig, user])
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchBookings()
+      if (user) fetchBookings()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
-  }, [searchTerm, statusFilter, sortConfig])
+  }, [searchQuery, statusFilter, sortConfig, user])
 
   const fetchBookings = async () => {
     if (!isLiveMode) setLoading(true)
     try {
+      const hotelId = user?.roleAssignments?.[0]?.hotelId;
+      if (!hotelId) return;
+
       const query = new URLSearchParams()
-      if (searchTerm) query.append('search', searchTerm)
+      query.append('hotelId', hotelId)
+      if (searchQuery) query.append('search', searchQuery)
       if (statusFilter !== 'All') query.append('status', statusFilter)
       if (sortConfig.key) {
         query.append('sortBy', sortConfig.key)
@@ -75,6 +85,7 @@ export default function BookingManagement() {
     onConfirm: () => { }
   })
 
+  // ... (updateStatus function remains unchanged) ...
   const updateStatus = (id, newStatus) => {
     setConfirmModal({
       isOpen: true,
@@ -83,7 +94,10 @@ export default function BookingManagement() {
       type: newStatus === 'cancelled' ? 'danger' : 'warning',
       onConfirm: async () => {
         try {
-          await apiFetch(`/bookings/admin/${id}/status`, {
+          const hotelId = user?.roleAssignments?.[0]?.hotelId;
+          const query = hotelId ? `?hotelId=${hotelId}` : '';
+
+          await apiFetch(`/bookings/admin/${id}/status${query}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })
@@ -146,8 +160,8 @@ export default function BookingManagement() {
         </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 font-sans">
           {['All', 'Pending', 'Confirmed', 'Cancelled', 'Checked_in'].map(status => (
             <button
               key={status}
@@ -160,16 +174,6 @@ export default function BookingManagement() {
               {status.replace('_', ' ')}
             </button>
           ))}
-        </div>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search guest or ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-colors"
-          />
         </div>
       </div>
 

@@ -18,11 +18,16 @@ import {
     LogOut,
     Filter,
     TicketPercent,
-    TrendingUp
+    TrendingUp,
+    HelpCircle,
+    Globe
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
 import { useState, useEffect } from 'react'
+import GuideModal from './GuideModal'
+import { guideData, defaultGuide } from '@/data/guides'
+import GlobalSearch from './GlobalSearch'
 
 export default function AdminLayout({ children }) {
     const router = useRouter()
@@ -33,6 +38,15 @@ export default function AdminLayout({ children }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const [notifications, setNotifications] = useState([])
+    const [guideOpen, setGuideOpen] = useState(false)
+
+    // Determine current guide content
+    const currentGuide = guideData[router.pathname] || defaultGuide
+
+    // Clear search on route change
+    useEffect(() => {
+        if (setSearchQuery) setSearchQuery('')
+    }, [router.pathname, setSearchQuery])
 
 
     // Fetch Notifications (Poll every 30s)
@@ -44,8 +58,25 @@ export default function AdminLayout({ children }) {
 
         // 🔒 RBAC Guard: Only Admins allowed
         const isAdmin = user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin');
-        if (!isAdmin) {
-            router.push('/'); // Redirect guests to home
+
+        // 🏨 Onboarding Check: If Admin has no Hotel, redirect to Setup
+        const hasHotel = user.roleAssignments?.length > 0;
+        const isPlatformAdmin = user.roles?.includes('platform_admin');
+        const isSetupPage = router.pathname === '/admin/setup';
+
+        if (!isAdmin && !hasHotel) {
+            router.push('/'); // Guests go home
+            return;
+        }
+
+        if (isAdmin && !isPlatformAdmin && !hasHotel && !isSetupPage) {
+            router.push('/admin/setup');
+            return;
+        }
+
+        if (isAdmin && !isPlatformAdmin && hasHotel && isSetupPage) {
+            // If try to access setup but already have hotel, go dashboard
+            router.push('/admin/dashboard');
             return;
         }
 
@@ -58,7 +89,7 @@ export default function AdminLayout({ children }) {
         }
 
         fetchNotes() // Initial load
-        const interval = setInterval(fetchNotes, 30000)
+        const interval = setInterval(fetchNotes, 60000)
 
         return () => clearInterval(interval)
     }, [user])
@@ -192,16 +223,22 @@ export default function AdminLayout({ children }) {
                         <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-slate-500">
                             <Menu size={20} />
                         </button>
-                        <div className="w-full max-w-md md:w-80 relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search here..."
-                                value={searchQuery || ''}
-                                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-                                className={`w-full pl-9 pr-4 py-2 rounded-full border-none outline-none focus:ring-2 focus:ring-emerald-500/20 transition-colors text-sm ${darkMode ? 'bg-slate-800 text-white placeholder:text-slate-500' : 'bg-slate-50 text-slate-600 placeholder:text-slate-400'
-                                    }`}
-                            />
+                        <a href="/" target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
+                            <Globe size={16} />
+                            View Website
+                        </a>
+
+                        {/* Help / Guide Button */}
+                        <button
+                            onClick={() => setGuideOpen(true)}
+                            className="hidden lg:flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
+                        >
+                            <HelpCircle size={18} />
+                            Guide
+                        </button>
+
+                        <div className="w-full max-w-sm relative hidden lg:block">
+                            <GlobalSearch />
                         </div>
                     </div>
 
@@ -311,6 +348,13 @@ export default function AdminLayout({ children }) {
                     {children}
                 </main>
             </div>
+
+            {/* Guide Modal */}
+            <GuideModal
+                isOpen={guideOpen}
+                onClose={() => setGuideOpen(false)}
+                data={currentGuide}
+            />
         </div>
     )
 }
