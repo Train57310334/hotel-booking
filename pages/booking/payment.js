@@ -3,35 +3,184 @@ import { useRouter } from 'next/router';
 import { apiFetch } from '@/lib/api';
 import Layout from '@/components/Layout';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { CreditCard, QrCode, Building, Lock, CheckCircle, Smartphone, Copy, Tag, Check, X } from 'lucide-react';
+import { CreditCard, QrCode, Building, Lock, CheckCircle, Tag, X, Copy, Globe } from 'lucide-react';
+import Script from 'next/script';
+
+// Stripe Imports
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+// Init Stripe (Move key to env in production)
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51P');
+
+const OmisePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) => {
+  const [card, setCard] = useState({ name: '', number: '', expiration_month: '', expiration_year: '', security_code: '' });
+
+  const handleChange = (e) => setCard({ ...card, [e.target.name]: e.target.value });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+
+    const { Omise } = window;
+    if (!Omise) {
+      alert('Omise not loaded');
+      setIsProcessing(false);
+      return;
+    }
+
+    Omise.createToken('card', card, (statusCode, response) => {
+      if (statusCode === 200) {
+        onSuccess(response.id);
+      } else {
+        setIsProcessing(false);
+        alert(`Omise Token Failed: ${response.message}`);
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">Cardholder Name</label>
+        <input name="name" onChange={handleChange} placeholder="John Doe" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100" required />
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-slate-700">Card Number</label>
+        <input name="number" onChange={handleChange} maxLength={16} placeholder="4242424242424242" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 font-mono" required />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">Exp Month</label>
+          <input name="expiration_month" onChange={handleChange} maxLength={2} placeholder="MM" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">Exp Year</label>
+          <input name="expiration_year" onChange={handleChange} maxLength={4} placeholder="YYYY" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">CVC</label>
+          <input name="security_code" onChange={handleChange} maxLength={4} placeholder="123" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
+        </div>
+      </div>
+
+      <button type="submit" disabled={isProcessing} className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl mt-4 hover:bg-blue-700 transition-colors">
+        {isProcessing ? 'Processing Omise...' : `Pay ฿${total?.toLocaleString()}`}
+      </button>
+    </form>
+  );
+};
+
+// Internal Stripe Form Component
+const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) return; // Not ready
+
+    setIsProcessing(true);
+    setErrorMessage('');
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        // We handle redirection manually or backend confirms updates
+        // If return_url is needed by payment method (e.g. 3DS), Stripe will redirect.
+        return_url: window.location.origin + '/booking/confirmation',
+      },
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+      setIsProcessing(false);
+    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+      // Payment Successful
+      onSuccess(paymentIntent.id);
+    } else {
+      setErrorMessage('Payment failed. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="space-y-4">
+        <PaymentElement />
+      </div>
+
+      {errorMessage && (
+        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+          {errorMessage}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-4 mt-6 p-6 bg-slate-50 border-t border-slate-200 rounded-b-2xl -mx-8 -mb-8">
+        <div className="text-sm text-slate-500">
+          Total to pay: <span className="font-bold text-slate-900 text-lg ml-1">฿{total?.toLocaleString()}</span>
+        </div>
+        <button
+          type="submit"
+          disabled={!stripe || isProcessing}
+          className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+        >
+          {isProcessing ? 'Processing...' : <>Pay Now <CheckCircle size={18} /></>}
+        </button>
+      </div>
+    </form>
+  );
+};
 
 export default function PaymentPage() {
   const router = useRouter();
   const [bookingData, setBookingData] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState('credit_card'); // credit_card | omise | promptpay | bank_transfer
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Validation State
-  const [cardDetails, setCardDetails] = useState({ number: '', expiry: '', cvc: '', name: '' });
-  const [errors, setErrors] = useState({ number: '', expiry: '', cvc: '', name: '' });
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  // Config State
+  const [msg, setMsg] = useState('Loading Secure Gateway...');
+  const [stripePromiseState, setStripePromiseState] = useState(null);
+  const [omiseKey, setOmiseKey] = useState(null);
+
+  // Stripe State
+  const [clientSecret, setClientSecret] = useState('');
+  const [stripeError, setStripeError] = useState('');
 
   // Promotion State
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState('');
-
   const [hotelDetails, setHotelDetails] = useState(null);
 
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   useEffect(() => {
+    // 1. Fetch Config
+    apiFetch('/public-settings').then(config => {
+      if (config.stripePublicKey) {
+        setStripePromiseState(loadStripe(config.stripePublicKey));
+      }
+      if (config.omisePublicKey) {
+        setOmiseKey(config.omisePublicKey);
+      }
+      setMsg(''); // Clear loading message once config is fetched
+    }).catch(err => {
+      console.error("Failed to load payment config", err);
+      setMsg('Failed to load payment configuration.');
+    });
+
+    // 2. Load Booking Data
     const data = localStorage.getItem('bookingPayload');
     if (data) {
       const parsed = JSON.parse(data);
       setBookingData(parsed);
 
-      // Fetch Hotel Details for Payment Config
       if (parsed.hotelId) {
         apiFetch(`/hotels/${parsed.hotelId}`)
           .then(data => setHotelDetails(data))
@@ -42,82 +191,44 @@ export default function PaymentPage() {
     }
   }, [router]);
 
-  // Luhn Algorithm for Credit Card Validation
-  const luhnCheck = (val) => {
-    let checksum = 0;
-    let j = 1;
-    for (let i = val.length - 1; i >= 0; i--) {
-      let calc = 0;
-      calc = Number(val.charAt(i)) * j;
-      if (calc > 9) {
-        checksum = checksum + 1;
-        calc = calc - 10;
+  const calculateFinalPrice = () => {
+    if (!bookingData) return 0;
+    let total = bookingData.totalPrice;
+    if (appliedPromo) {
+      total = total - appliedPromo.discountAmount;
+    }
+    return Math.max(0, total);
+  };
+
+  const finalPrice = calculateFinalPrice();
+
+  // Fetch Payment Intent when Price or Method changes
+  useEffect(() => {
+    if (paymentMethod === 'credit_card' && finalPrice > 0) {
+      setStripeError('');
+      // In dev, if key is missing, show error
+      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        // Optionally warn: console.warn("No Stripe Key");
       }
-      checksum = checksum + calc;
-      if (j == 1) { j = 2 } else { j = 1 };
+
+      apiFetch('/payments/intent', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: finalPrice,
+          currency: 'thb', // Backend will lowercase
+          description: `Booking for ${bookingData?.guest?.name}`
+        })
+      })
+        .then(res => {
+          setClientSecret(res.clientSecret);
+        })
+        .catch(err => {
+          console.error("Stripe Intent Error:", err);
+          setStripeError('Could not initialize payment gateway.');
+        });
     }
-    return (checksum % 10) == 0;
-  };
+  }, [paymentMethod, finalPrice, bookingData]);
 
-  const validateField = (name, value) => {
-    let error = '';
-
-    switch (name) {
-      case 'number':
-        const cleanNumber = value.replace(/\s+/g, '');
-        if (!value) error = 'Card number is required';
-        else if (!/^\d+$/.test(cleanNumber)) error = 'Card number must contain only digits';
-        else if (!luhnCheck(cleanNumber)) error = 'Invalid card number';
-        break;
-      case 'expiry':
-        if (!value) error = 'Expiry date is required';
-        else if (!/^\d{2}\/\d{2}$/.test(value)) error = 'Format must be MM/YY';
-        else {
-          const [expMonth, expYear] = value.split('/');
-          const now = new Date();
-          const currentYear = now.getFullYear() % 100;
-          const currentMonth = now.getMonth() + 1;
-
-          if (Number(expMonth) < 1 || Number(expMonth) > 12) error = 'Invalid month';
-          else if (Number(expYear) < currentYear || (Number(expYear) === currentYear && Number(expMonth) < currentMonth)) {
-            error = 'Card has expired';
-          }
-        }
-        break;
-      case 'cvc':
-        if (!value) error = 'CVC is required';
-        else if (!/^\d{3,4}$/.test(value)) error = 'Invalid CVC (3-4 digits)';
-        break;
-      case 'name':
-        if (!value.trim()) error = 'Cardholder name is required';
-        break;
-    }
-    return error;
-  };
-
-  const handleInputChange = (field, value) => {
-    setCardDetails(prev => ({ ...prev, [field]: value }));
-    const error = validateField(field, value);
-    setErrors(prev => ({ ...prev, [field]: error }));
-  };
-
-  const validatePayment = () => {
-    if (paymentMethod === 'credit_card') {
-      const newErrors = {
-        number: validateField('number', cardDetails.number),
-        expiry: validateField('expiry', cardDetails.expiry),
-        cvc: validateField('cvc', cardDetails.cvc),
-        name: validateField('name', cardDetails.name)
-      };
-
-      setErrors(newErrors);
-
-      if (Object.values(newErrors).some(err => err)) {
-        return false;
-      }
-    }
-    return true;
-  };
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -126,7 +237,6 @@ export default function PaymentPage() {
     setAppliedPromo(null);
 
     try {
-      // Use apiFetch to call backend directly
       const result = await apiFetch('/promotions/validate', {
         method: 'POST',
         body: JSON.stringify({ code: promoCode, amount: bookingData.totalPrice })
@@ -150,47 +260,56 @@ export default function PaymentPage() {
     setPromoError('');
   };
 
-  const calculateFinalPrice = () => {
-    if (!bookingData) return 0;
-    let total = bookingData.totalPrice;
-    if (appliedPromo) {
-      total = total - appliedPromo.discountAmount;
-    }
-    return Math.max(0, total);
+  // Called when Stripe confirms OK
+  const handleStripeSuccess = async (paymentIntentId) => {
+    // Optionally save paymentIntentId to DB
+    await completeBooking('Stripe Credit Card', 'confirmed');
   };
 
-  const handlePayment = async () => {
-    if (!validatePayment()) return;
+  // Called when Omise confirms OK
+  const handleOmiseSuccess = async (tokenId) => {
+    // Need to charge backend
+    try {
+      // Charge on backend
+      await apiFetch('/payments/omise/charge', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: finalPrice,
+          token: tokenId,
+          description: `Booking ${bookingData?.guest?.name}` // TODO add ID
+        })
+      });
 
+      await completeBooking('Omise Credit Card', 'confirmed');
+    } catch (e) {
+      alert('Omise Charge Failed Backend: ' + e.message);
+      setIsProcessing(false);
+    }
+  }
+
+  // Standard Booking Submission
+  const completeBooking = async (method, status) => {
     setIsProcessing(true);
-
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Calculate final price again to be safe
-    const finalTotal = calculateFinalPrice();
-
     const payload = {
       hotelId: bookingData.hotelId,
       roomTypeId: bookingData.roomTypeId,
       ratePlanId: bookingData.ratePlanId,
-      roomId: bookingData.roomId, // Ensure roomId is passed if selected
+      roomId: bookingData.roomId,
       checkIn: new Date(bookingData.checkIn).toISOString(),
       checkOut: new Date(bookingData.checkOut).toISOString(),
-      guests: { adult: 2, child: 0 }, // Should ideally come from bookingData
+      guests: { adult: 2, child: 0 },
       leadGuest: {
         name: bookingData.guest.name,
         email: bookingData.guest.email,
         phone: bookingData.guest.phone || ''
       },
-      paymentMethod,
-      paymentStatus: 'confirmed',
-      totalAmount: finalTotal,
+      paymentMethod: method,
+      paymentStatus: status,
+      totalAmount: finalPrice,
       promotionCode: appliedPromo ? appliedPromo.code : undefined
     };
 
     try {
-      // Use apiFetch for bookings as well
       const result = await apiFetch('/bookings', {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -201,27 +320,38 @@ export default function PaymentPage() {
         localStorage.removeItem('bookingPayload');
         router.push(`/booking/confirmation?id=${result.id}`);
       } else {
-        console.error('Payment Failed:', result);
-        setErrorMessage('Payment failed. Please try again.');
-        setShowError(true);
-        setIsProcessing(false);
+        throw new Error('Booking could not be created');
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage(err.message || 'Network error. Please try again.');
+      setErrorMessage(err.message || 'Booking Creation Failed');
       setShowError(true);
       setIsProcessing(false);
     }
   };
 
+  const handleManualPayment = () => {
+    completeBooking(paymentMethod === 'promptpay' ? 'PromptPay' : 'Bank Transfer', 'pending');
+  };
+
   if (!bookingData) return null;
 
-  const { hotelName, hotelImage, hotelCity, roomTypeName, ratePlanName, totalPrice, checkIn, checkOut, guest } = bookingData;
+  const { hotelName, hotelImage, hotelCity, roomTypeName, ratePlanName, checkIn, checkOut, guest } = bookingData;
   const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
-  const finalPrice = calculateFinalPrice();
 
   return (
     <Layout>
+      {omiseKey && (
+        <Script
+          id="omise-js"
+          src="https://cdn.omise.co/omise.js"
+          onLoad={() => {
+            if (window.Omise) {
+              window.Omise.setPublicKey(omiseKey);
+            }
+          }}
+        />
+      )}
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-5xl mx-auto">
           {/* Progress Steps */}
@@ -246,90 +376,71 @@ export default function PaymentPage() {
                     onClick={() => setPaymentMethod('credit_card')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'credit_card' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <CreditCard size={18} /> Credit/Debit Card
+                    <CreditCard size={18} /> Stripe
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod('omise')}
+                    className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'omise' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
+                  >
+                    <Globe size={18} /> Omise
                   </button>
                   <button
                     onClick={() => setPaymentMethod('promptpay')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'promptpay' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <QrCode size={18} /> PromptPay QR
+                    <QrCode size={18} /> PromptPay
                   </button>
                   <button
                     onClick={() => setPaymentMethod('bank_transfer')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'bank_transfer' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <Building size={18} /> Bank Transfer
+                    <Building size={18} /> Transfer
                   </button>
                 </div>
 
                 <div className="p-8">
                   {paymentMethod === 'credit_card' && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-bold text-slate-700">Card Number</label>
-                          <div className="relative">
-                            <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                            <input
-                              type="text"
-                              placeholder="0000 0000 0000 0000"
-                              className={`w-full pl-12 pr-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-primary-100 outline-none font-mono ${errors.number ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-primary-400'}`}
-                              value={cardDetails.number}
-                              onChange={e => handleInputChange('number', e.target.value)}
-                            />
-                          </div>
-                          {errors.number && <p className="text-xs text-red-500 mt-1">{errors.number}</p>}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-bold text-slate-700">Expiry Date</label>
-                            <input
-                              type="text"
-                              placeholder="MM/YY"
-                              className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-primary-100 outline-none text-center font-mono ${errors.expiry ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-primary-400'}`}
-                              value={cardDetails.expiry}
-                              onChange={e => handleInputChange('expiry', e.target.value)}
-                            />
-                            {errors.expiry && <p className="text-xs text-red-500 mt-1">{errors.expiry}</p>}
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-bold text-slate-700">CVC</label>
-                            <div className="relative">
-                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                              <input
-                                type="text"
-                                placeholder="123"
-                                className={`w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-primary-100 outline-none text-center font-mono ${errors.cvc ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-primary-400'}`}
-                                value={cardDetails.cvc}
-                                onChange={e => handleInputChange('cvc', e.target.value)}
-                              />
-                            </div>
-                            {errors.cvc && <p className="text-xs text-red-500 mt-1">{errors.cvc}</p>}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-bold text-slate-700">Cardholder Name</label>
-                          <input
-                            type="text"
-                            placeholder="JOHN DOE"
-                            className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-primary-100 outline-none ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-primary-400'}`}
-                            value={cardDetails.name}
-                            onChange={e => handleInputChange('name', e.target.value)}
+                    <div className="min-h-[300px]">
+                      {stripeError ? (
+                        <div className="p-4 bg-red-50 text-red-600 rounded-lg">{stripeError}</div>
+                      ) : (clientSecret && stripePromiseState) ? (
+                        <Elements stripe={stripePromiseState} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                          <StripePaymentForm
+                            total={finalPrice}
+                            onSuccess={handleStripeSuccess}
+                            isProcessing={isProcessing}
+                            setIsProcessing={setIsProcessing}
                           />
-                          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                        </Elements>
+                      ) : (
+                        <div className="flex items-center justify-center h-48 text-slate-400">
+                          <div className="animate-spin mr-2">⏳</div> {msg || 'Loading Secure Gateway...'}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
-                        <Lock size={14} className="text-green-600" />
-                        Your payment information is encrypted and secure.
-                      </div>
+                      )}
+                    </div>
+                  )}
+
+                  {paymentMethod === 'omise' && (
+                    <div className="min-h-[300px]">
+                      <h3 className="text-lg font-bold text-slate-900 mb-4">Pay via Omise</h3>
+                      {omiseKey ? (
+                        <OmisePaymentForm
+                          total={finalPrice}
+                          onSuccess={handleOmiseSuccess}
+                          isProcessing={isProcessing}
+                          setIsProcessing={setIsProcessing}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-48 text-slate-400">
+                          <div className="animate-spin mr-2">⏳</div> Loading Omise...
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {paymentMethod === 'promptpay' && (
                     <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className="bg-white p-4 inline-block rounded-2xl shadow-sm border border-slate-200">
-                        {/* Mock QR */}
                         <div className="w-48 h-48 bg-slate-900 mx-auto rounded-lg flex items-center justify-center text-white/20">
                           <QrCode size={64} />
                         </div>
@@ -337,18 +448,23 @@ export default function PaymentPage() {
                         <p className="text-sm text-slate-500">PromptPay ID: {hotelDetails?.promptPayId || 'Not Configured'}</p>
                       </div>
                       <p className="text-sm text-slate-600 max-w-sm mx-auto">
-                        Scan this QR code with your banking app to pay. The system will automatically detect your payment.
+                        Scan with your banking app.
                       </p>
+                      <button
+                        onClick={handleManualPayment}
+                        disabled={isProcessing}
+                        className="w-full px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition"
+                      >
+                        {isProcessing ? 'Processing' : 'I have paid'}
+                      </button>
                     </div>
                   )}
 
                   {paymentMethod === 'bank_transfer' && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="space-y-6">
                       <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            B.
-                          </div>
+                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">B</div>
                           <div>
                             <p className="font-bold text-slate-900">{hotelDetails?.bankName || 'Bank Name'}</p>
                             <p className="text-sm text-slate-500">Savings Account</p>
@@ -360,28 +476,15 @@ export default function PaymentPage() {
                         </div>
                         <p className="mt-4 text-sm font-bold text-slate-900">{hotelDetails?.bankAccountName || hotelDetails?.name || 'Account Name'}</p>
                       </div>
-                      <div className="text-sm text-slate-600">
-                        <p>Please transfer the exact amount and keep your slip for verification.</p>
-                      </div>
+                      <button
+                        onClick={handleManualPayment}
+                        disabled={isProcessing}
+                        className="w-full px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition"
+                      >
+                        {isProcessing ? 'Processing' : 'I have transferred'}
+                      </button>
                     </div>
                   )}
-                </div>
-
-                <div className="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-slate-500">
-                    Total to pay: <span className="font-bold text-slate-900 text-lg ml-1">฿{finalPrice?.toLocaleString()}</span>
-                  </div>
-                  <button
-                    onClick={handlePayment}
-                    disabled={isProcessing}
-                    className="w-full md:w-auto px-8 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                  >
-                    {isProcessing ? (
-                      <>Processing...</>
-                    ) : (
-                      <>Pay Now <CheckCircle size={18} /></>
-                    )}
-                  </button>
                 </div>
               </div>
             </div>
@@ -490,12 +593,12 @@ export default function PaymentPage() {
         isOpen={showError}
         onClose={() => setShowError(false)}
         onConfirm={() => setShowError(false)}
-        title="Payment Information Required"
+        title="Error"
         message={errorMessage}
         type="warning"
         singleButton={true}
         confirmText="OK"
       />
-    </Layout >
+    </Layout>
   );
 }

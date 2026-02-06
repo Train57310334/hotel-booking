@@ -2,36 +2,48 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy } from 'lucide-react';
+import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy, Lock, CreditCard } from 'lucide-react';
+import PaymentModal from '@/components/PaymentModal';
+import toast from 'react-hot-toast';
 
 export default function ConfirmationPage() {
   const router = useRouter();
   const { id } = router.query;
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
     if (id) {
-      const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
-      const token = localStorage.getItem('token');
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      fetch(`${backend}/bookings/${id}`, { headers })
-        .then(res => {
-          if (!res.ok) throw new Error('Booking not found');
-          return res.json();
-        })
-        .then(data => {
-          setBooking(data);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setLoading(false);
-        });
+      fetchBooking();
     }
   }, [id]);
+
+  const fetchBooking = () => {
+    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    fetch(`${backend}/bookings/${id}`, { headers })
+      .then(res => {
+        if (!res.ok) throw new Error('Booking not found');
+        return res.json();
+      })
+      .then(data => {
+        setBooking(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }
+
+  const handlePaymentSuccess = () => {
+    setShowPayment(false);
+    fetchBooking(); // Refresh status
+  }
 
   if (loading) {
     return (
@@ -60,18 +72,23 @@ export default function ConfirmationPage() {
   }
 
   const nights = Math.ceil((new Date(booking.checkOut) - new Date(booking.checkIn)) / (1000 * 60 * 60 * 24));
+  const isPaid = booking.status === 'confirmed' || booking.status === 'checked_in' || booking.status === 'checked_out';
 
   return (
     <Layout>
       <div className="bg-slate-900 pb-32 pt-12 print:hidden">
         <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center justify-center p-4 bg-green-500/20 backdrop-blur-sm rounded-full mb-6">
-            <CheckCircle size={48} className="text-green-400" />
+          <div className={`inline-flex items-center justify-center p-4 ${isPaid ? 'bg-green-500/20' : 'bg-yellow-500/20'} backdrop-blur-sm rounded-full mb-6`}>
+            {isPaid ? <CheckCircle size={48} className="text-green-400" /> : <Lock size={48} className="text-yellow-400" />}
           </div>
-          <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">Check-in Confirmed!</h1>
+          <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
+            {isPaid ? 'Booking Confirmed!' : 'Booking Pending Payment'}
+          </h1>
           <p className="text-slate-300 text-lg max-w-xl mx-auto">
-            Thank you, <span className="text-white font-bold">{booking.leadName}</span>. Your reservation has been successfully confirmed.
-            We've sent a confirmation email to <span className="text-white font-bold">{booking.leadEmail}</span>.
+            {isPaid
+              ? <span>Thank you, <span className="text-white font-bold">{booking.leadName}</span>. Your reservation is fully paid and confirmed.</span>
+              : <span>Hello, <span className="text-white font-bold">{booking.leadName}</span>. Please complete your payment to secure this room.</span>
+            }
           </p>
         </div>
       </div>
@@ -101,13 +118,13 @@ export default function ConfirmationPage() {
                   <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">Booking Reference</p>
                   <div className="flex items-center gap-2">
                     <h2 className="text-2xl font-mono font-bold text-slate-900 text-wrap break-all">{booking.id}</h2>
-                    <button className="text-slate-400 hover:text-primary-600 transition-colors print:hidden" title="Copy ID">
+                    <button onClick={() => { navigator.clipboard.writeText(booking.id); toast.success('Copied') }} className="text-slate-400 hover:text-primary-600 transition-colors print:hidden" title="Copy ID">
                       <Copy size={18} />
                     </button>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-lg border border-green-200">
-                  Confirmed
+                <span className={`px-3 py-1 text-sm font-bold rounded-lg border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
+                  {isPaid ? 'Confirmed' : 'Pending Payment'}
                 </span>
               </div>
 
@@ -174,9 +191,21 @@ export default function ConfirmationPage() {
                   <span className="font-bold text-slate-900">Total Paid</span>
                   <span className="text-2xl font-display font-bold text-primary-600">฿{(booking.totalAmount || 0).toLocaleString()}</span>
                 </div>
-                <p className="text-xs text-slate-400 mt-2 text-right">Paid via {booking.payment?.provider === 'credit_card' ? 'Credit Card' : 'Bank Transfer'}</p>
+                <p className="text-xs text-slate-400 mt-2 text-right">
+                  {isPaid ? 'Payment Confirmed' : 'Payment Required'}
+                </p>
               </div>
+
               <div className="space-y-3 print:hidden">
+                {!isPaid && (
+                  <button
+                    onClick={() => setShowPayment(true)}
+                    className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 animate-pulse"
+                  >
+                    <CreditCard size={18} /> Pay Now
+                  </button>
+                )}
+
                 <button
                   onClick={() => window.print()}
                   className="w-full py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2"
@@ -197,6 +226,15 @@ export default function ConfirmationPage() {
           </div>
         </div>
       </div>
+
+      {showPayment && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={() => setShowPayment(false)}
+          booking={booking}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </Layout>
   );
 }

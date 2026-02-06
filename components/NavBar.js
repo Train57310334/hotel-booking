@@ -30,11 +30,17 @@ export default function NavBar(props) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center gap-2 group relative z-50">
-            <div className="bg-primary-600 text-white p-2 rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/20">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            </div>
+            {props.logo ? (
+              <div className="h-10 w-10 relative rounded-xl overflow-hidden shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
+                <img src={props.logo} alt="Logo" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="bg-primary-600 text-white p-2 rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </div>
+            )}
             <span className={`text-xl font-display font-bold tracking-tight transition-colors ${showSolidNav ? 'text-slate-900' : 'text-white'}`}>
-              BookingKub
+              {props.brandName || 'BookingKub'}
             </span>
           </Link>
 

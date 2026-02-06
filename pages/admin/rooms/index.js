@@ -1,7 +1,7 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
-import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon } from 'lucide-react'
+import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon, ChevronDown, ChevronRight } from 'lucide-react'
 import { InfoTooltip } from '@/components/Tooltip'
 import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
@@ -22,7 +22,8 @@ export default function RoomManagement() {
   const [itemToDelete, setItemToDelete] = useState(null) // { id, type: 'room' | 'type', name }
 
   const [editRoom, setEditRoom] = useState(null)
-  const [editType, setEditType] = useState(null)
+
+  const [expandedTypes, setExpandedTypes] = useState({}); // { [typeId]: boolean }
 
   // Form States
   const [roomFormData, setRoomFormData] = useState({
@@ -72,7 +73,27 @@ export default function RoomManagement() {
       if (hData.length > 0) {
         setTypeFormData(prev => ({ ...prev, hotelId: hData[0].id }))
       }
+
+      // Auto-expand all types initially if total rooms < 50, otherwise collapse
+      const initialExpanded = {};
+      tData.forEach(t => initialExpanded[t.id] = rData.length < 50);
+      setExpandedTypes(initialExpanded);
+
     } catch (error) { console.error(error) } finally { setLoading(false) }
+  }
+
+  const timeAgo = (date) => {
+    if (!date) return '';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + "h ago";
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + "m ago";
+    return "Just now";
+  };
+
+  const toggleAccordion = (typeId) => {
+    setExpandedTypes(prev => ({ ...prev, [typeId]: !prev[typeId] }));
   }
 
   // --- Filtering Logic ---
@@ -340,89 +361,120 @@ export default function RoomManagement() {
           <div className="space-y-6">
             {filteredRoomTypes.map(type => {
               const typeRooms = getFilteredRooms(type.id);
+              const isExpanded = expandedTypes[type.id];
               return (
-                <div key={type.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-                  <div className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
+                <div key={type.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all duration-300">
+                  <div
+                    className="bg-slate-50 dark:bg-slate-900/50 px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    onClick={() => toggleAccordion(type.id)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                        {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                      </button>
+
                       {type.images?.[0] && <img src={type.images[0]} className="w-10 h-10 rounded-lg object-cover" />}
                       <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white">{type.name} <span className="text-xs text-slate-400 font-normal">#{type.id.slice(-4)}</span></h3>
-                        <p className="text-xs text-slate-500">{typeRooms.length} Rooms ({rooms.filter(r => r.roomTypeId === type.id).length} total) &bull; Max {type.maxAdults} Adults</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          {type.name}
+                          <span className="text-xs text-slate-400 font-normal">#{type.id.slice(-4)}</span>
+                        </h3>
+                        <p className="text-xs text-slate-500">{typeRooms.length} Rooms &bull; Max {type.maxAdults} Adults</p>
                       </div>
                     </div>
-                    <button onClick={() => openRoomModal({ roomTypeId: type.id })} className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
-                      + Add Room
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full">
+                        {typeRooms.length} Rooms
+                      </span>
+                      <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openRoomModal({ roomTypeId: type.id }); }}
+                        className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20"
+                      >
+                        + Add Room
+                      </button>
+                    </div>
                   </div>
 
-                  {typeRooms.length > 0 ? (
-                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                      {typeRooms.map(r => (
-                        <div key={r.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner">
-                              {r.roomNumber}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-900 dark:text-white">Room {r.roomNumber}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${(r.status || 'clean') === 'clean' ? 'bg-emerald-100 text-emerald-700' :
-                                  (r.status || 'occupied') === 'occupied' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-amber-100 text-amber-700'
-                                  }`}>
-                                  {r.status || 'Available'}
+                  {isExpanded && (
+                    <div className="border-t border-slate-100 dark:border-slate-700 animate-in fade-in slide-in-from-top-1 duration-200">
+                      {typeRooms.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                          {typeRooms.map(r => (
+                            <div key={r.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl flex items-center justify-between hover:shadow-md transition-shadow group">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner text-sm">
+                                  {r.roomNumber}
+                                </div>
+                                <div onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="cursor-pointer">
+                                  <div className="font-bold text-sm text-slate-900 dark:text-white hover:text-emerald-500 transition-colors">Room {r.roomNumber}</div>
+                                  <div className="flex gap-1">
+                                    <button onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="p-1 text-slate-300 hover:text-blue-500"><Edit size={12} /></button>
+                                    <button onClick={(e) => handleDeleteClick(e, r.id, 'room', r.roomNumber)} className="p-1 text-slate-300 hover:text-red-500"><Trash2 size={12} /></button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col items-end gap-1">
+                                <select
+                                  className={`px-2 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider cursor-pointer outline-none focus:ring-2 focus:ring-offset-1 transition-all
+                                    ${(r.status === 'CLEAN' || r.status === 'INSPECTED') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' :
+                                      r.status === 'DIRTY' ? 'bg-red-50 text-red-700 border-red-200 focus:ring-red-500 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' :
+                                        r.status === 'CLEANING' ? 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
+                                          r.status === 'OOO' ? 'bg-slate-100 text-slate-500 border-slate-200 focus:ring-slate-500 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600' :
+                                            'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+                                    }`}
+                                  value={r.status || 'CLEAN'}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={async (e) => {
+                                    e.stopPropagation();
+                                    const newStatus = e.target.value;
+                                    const oldStatus = r.status;
+
+                                    // Optimistic
+                                    const now = new Date().toISOString();
+                                    setRooms(prev => prev.map(room =>
+                                      room.id === r.id ? {
+                                        ...room,
+                                        status: newStatus,
+                                        statusLogs: [{ createdAt: now }]
+                                      } : room
+                                    ));
+
+                                    const tId = toast.loading('Updating...');
+                                    try {
+                                      await apiFetch(`/rooms/${r.id}/status`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ status: newStatus })
+                                      });
+                                      toast.dismiss(tId);
+                                      fetchData();
+                                    } catch (err) {
+                                      console.error(err);
+                                      toast.error('Failed', { id: tId });
+                                      setRooms(prev => prev.map(room => room.id === r.id ? { ...room, status: oldStatus } : room));
+                                    }
+                                  }}
+                                >
+                                  <option value="DIRTY" className="bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200">Dirty</option>
+                                  <option value="CLEANING" className="bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200">Cleaning</option>
+                                  <option value="CLEAN" className="bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200">Clean (Done)</option>
+                                  <option value="INSPECTED" className="bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200">Inspected (Ready)</option>
+                                  <option value="OOO" className="bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-200">Out of Order</option>
+                                </select>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  {r.statusLogs?.[0] ? timeAgo(r.statusLogs[0].createdAt) : ''}
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-400">ID: #{r.id.slice(-4)}</p>
                             </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            {/* Status Toggle Mockup - Functional in next step if needed */}
-                            <select
-                              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium"
-                              value={r.status || 'clean'}
-                              onChange={async (e) => {
-                                const newStatus = e.target.value;
-                                // Optimistic Update
-                                const oldRooms = [...rooms];
-                                setRooms(prev => prev.map(room => room.id === r.id ? { ...room, status: newStatus } : room));
-
-                                const tId = toast.loading('Updating status...');
-                                try {
-                                  await apiFetch(`/rooms/${r.id}`, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ ...r, status: newStatus })
-                                  });
-                                  toast.success('Status updated', { id: tId });
-                                } catch (err) {
-                                  console.error(err);
-                                  toast.error('Failed to update', { id: tId });
-                                  setRooms(oldRooms); // Revert
-                                }
-                              }}
-                            >
-                              <option value="clean">Available (Clean)</option>
-                              <option value="occupied">Occupied</option>
-                              <option value="dirty">Dirty / Maintenance</option>
-                            </select>
-
-                            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
-
-                            <button onClick={() => openRoomModal(r)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit Room">
-                              <Edit size={16} />
-                            </button>
-                            <button onClick={(e) => handleDeleteClick(e, r.id, 'room', r.roomNumber)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors" title="Delete Room">
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center text-slate-400 italic bg-slate-50/50 dark:bg-slate-900/20">
-                      {searchQuery ? 'No rooms match your search.' : 'No physical rooms added for this type yet.'}
+                      ) : (
+                        <div className="p-8 text-center text-slate-400 italic bg-slate-50/50 dark:bg-slate-900/20">
+                          {searchQuery ? 'No rooms match your search.' : 'No physical rooms added for this type yet.'}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

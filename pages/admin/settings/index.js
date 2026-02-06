@@ -3,7 +3,9 @@ import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiFetch } from '@/lib/api';
-import { Building2, Image as ImageIcon, Globe, Save, Upload, X, CreditCard } from 'lucide-react';
+import { Building2, Image as ImageIcon, Globe, Save, Upload, X, CreditCard, Mail, Bell, LayoutTemplate } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { InfoTooltip } from '@/components/Tooltip';
 
 export default function HotelSettings() {
     const { user, checkUser } = useAuth();
@@ -12,6 +14,8 @@ export default function HotelSettings() {
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
     const [hotel, setHotel] = useState(null);
+    const [systemSettings, setSystemSettings] = useState({});
+    const [errors, setErrors] = useState({});
 
     // Form States
     const [formData, setFormData] = useState({
@@ -26,7 +30,12 @@ export default function HotelSettings() {
         heroDescription: '',
         logoUrl: '',
         imageUrl: '',
-        images: []
+        images: [],
+        // Payment Config
+        promptPayId: '',
+        bankName: '',
+        bankAccountName: '',
+        bankAccountNumber: ''
     });
 
     useEffect(() => {
@@ -40,29 +49,36 @@ export default function HotelSettings() {
 
     const fetchHotel = async (id) => {
         try {
-            const data = await apiFetch(`/hotels/${id}`);
-            setHotel(data);
+            const [hotelData, settingsData] = await Promise.all([
+                apiFetch(`/hotels/${id}`),
+                apiFetch('/settings')
+            ]);
+
+            setHotel(hotelData);
+            setSystemSettings(settingsData || {});
+
             setFormData({
-                name: data.name || '',
-                description: data.description || '',
-                address: data.address || '',
-                city: data.city || '',
-                country: data.country || '',
-                contactEmail: data.contactEmail || '',
-                contactPhone: data.contactPhone || '',
-                heroTitle: data.heroTitle || '',
-                heroDescription: data.heroDescription || '',
-                logoUrl: data.logoUrl || '',
-                imageUrl: data.imageUrl || '',
-                images: data.images || [],
+                name: hotelData.name || '',
+                description: hotelData.description || '',
+                address: hotelData.address || '',
+                city: hotelData.city || '',
+                country: hotelData.country || '',
+                contactEmail: hotelData.contactEmail || '',
+                contactPhone: hotelData.contactPhone || '',
+                heroTitle: hotelData.heroTitle || '',
+                heroDescription: hotelData.heroDescription || '',
+                logoUrl: hotelData.logoUrl || '',
+                imageUrl: hotelData.imageUrl || '',
+                images: hotelData.images || [],
                 // Payment Config
-                promptPayId: data.promptPayId || '',
-                bankName: data.bankName || '',
-                bankAccountName: data.bankAccountName || '',
-                bankAccountNumber: data.bankAccountNumber || ''
+                promptPayId: hotelData.promptPayId || '',
+                bankName: hotelData.bankName || '',
+                bankAccountName: hotelData.bankAccountName || '',
+                bankAccountNumber: hotelData.bankAccountNumber || ''
             });
         } catch (error) {
             console.error(error);
+            toast.error('Failed to load settings');
         } finally {
             setLoading(false);
         }
@@ -73,6 +89,10 @@ export default function HotelSettings() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleSystemChange = (key, value) => {
+        setSystemSettings(prev => ({ ...prev, [key]: value }));
+    };
+
     const handleUpload = async (e, field) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -81,11 +101,9 @@ export default function HotelSettings() {
         uploadData.append('file', file);
 
         try {
-            // Upload to Backend
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api'}/upload`, {
                 method: 'POST',
                 body: uploadData,
-                // Do NOT set Content-Type header, let browser set boundary
             });
 
             if (!res.ok) throw new Error('Upload failed');
@@ -99,7 +117,7 @@ export default function HotelSettings() {
             }
         } catch (error) {
             console.error('Upload Error:', error);
-            alert('Upload failed');
+            toast.error('Upload failed');
         }
     };
 
@@ -110,21 +128,52 @@ export default function HotelSettings() {
         }));
     };
 
+    const validate = () => {
+        const newErrors = {};
+
+        // Email Validation
+        if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
+            newErrors.contactEmail = 'Invalid email address';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!validate()) {
+            // Re-run validate to get immediate errors
+            const newErrors = {};
+            if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) newErrors.contactEmail = 'Invalid email';
+
+            if (newErrors.contactEmail) setActiveTab('general');
+
+            toast.error('Please fix validation errors');
+            return;
+        }
+
         setSaving(true);
         if (!hotel) return;
 
         try {
-            await apiFetch(`/hotels/${hotel.id}`, {
-                method: 'PUT',
-                body: JSON.stringify(formData)
-            });
-            alert('Settings saved successfully!');
-            checkUser(); // Refresh context if needed
+            await Promise.all([
+                apiFetch(`/hotels/${hotel.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(formData)
+                }),
+                apiFetch('/settings', {
+                    method: 'PUT',
+                    body: JSON.stringify(systemSettings)
+                })
+            ]);
+
+            toast.success('All settings saved successfully!');
+            checkUser();
         } catch (error) {
             console.error(error);
-            alert('Failed to save settings');
+            toast.error('Failed to save settings');
         } finally {
             setSaving(false);
         }
@@ -133,104 +182,112 @@ export default function HotelSettings() {
     if (loading) return <AdminLayout>Loading...</AdminLayout>;
     if (!hotel) return <AdminLayout><div className="p-8 text-center text-slate-500">No Hotel Assigned</div></AdminLayout>;
 
-    const TabButton = ({ id, icon: Icon, label }) => (
-        <button
-            type="button"
-            onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors font-medium ${activeTab === id
-                ? 'border-emerald-500 text-emerald-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-        >
-            <Icon size={18} />
-            {label}
-        </button>
-    );
+    const tabs = [
+        { id: 'general', label: 'General Info', icon: Building2 },
+        { id: 'branding', label: 'Branding', icon: ImageIcon },
+        { id: 'web', label: 'Website Content', icon: Globe },
+        { id: 'payment', label: 'Bank Accounts', icon: CreditCard },
+        { id: 'platform', label: 'Platform & Gateways', icon: LayoutTemplate },
+        { id: 'notifications', label: 'Notifications', icon: Bell },
+    ];
 
     return (
         <AdminLayout>
-            <div className="max-w-5xl mx-auto">
-                <div className="flex items-center justify-between mb-8">
+            <div className="max-w-5xl mx-auto pb-20">
+                <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Hotel Settings</h1>
-                        <p className="text-slate-500">Manage your property details and branding</p>
+                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Hotel Settings</h1>
+                        <p className="text-slate-500 dark:text-slate-400">Manage your property details and branding</p>
                     </div>
                     <button
                         onClick={handleSubmit}
                         disabled={saving}
-                        className="btn-primary flex items-center gap-2 px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20"
+                        className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50"
                     >
                         {saving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                     </button>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    {/* Tabs */}
-                    <div className="flex border-b border-slate-100 px-4">
-                        <TabButton id="general" icon={Building2} label="General Info" />
-                        <TabButton id="branding" icon={ImageIcon} label="Branding & Images" />
-                        <TabButton id="web" icon={Globe} label="Website Content" />
-                        <TabButton id="payment" icon={CreditCard} label="Payment Settings" />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    {/* Sidebar Tabs */}
+                    <div className="md:col-span-1 space-y-2">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === tab.id
+                                    ? 'bg-white dark:bg-slate-800 text-emerald-500 shadow-sm'
+                                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    }`}
+                            >
+                                <tab.icon size={18} />
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
 
-                    <div className="p-8">
+                    {/* Content Area */}
+                    <div className="md:col-span-3 space-y-6">
                         {/* GENERAL TAB */}
                         {activeTab === 'general' && (
-                            <div className="space-y-6 max-w-2xl">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 mb-6">General Information</h3>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="col-span-2">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Hotel Name</label>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Hotel Name</label>
                                         <input
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Contact Email</label>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Contact Email</label>
                                         <input
                                             name="contactEmail"
                                             value={formData.contactEmail}
                                             onChange={handleChange}
-                                            className="input-field w-full"
+                                            className={`w-full px-4 py-2.5 rounded-xl border ${errors.contactEmail ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50`}
                                         />
+                                        {errors.contactEmail && <p className="text-red-500 text-xs mt-1">{errors.contactEmail}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Contact Phone</label>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Contact Phone</label>
                                         <input
                                             name="contactPhone"
                                             value={formData.contactPhone}
                                             onChange={handleChange}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                         />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Address</label>
                                         <textarea
                                             name="address"
                                             value={formData.address}
                                             onChange={handleChange}
                                             rows={3}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">City</label>
                                         <input
                                             name="city"
                                             value={formData.city}
                                             onChange={handleChange}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Country</label>
                                         <input
                                             name="country"
                                             value={formData.country}
                                             onChange={handleChange}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                         />
                                     </div>
                                 </div>
@@ -239,10 +296,10 @@ export default function HotelSettings() {
 
                         {/* BRANDING TAB */}
                         {activeTab === 'branding' && (
-                            <div className="space-y-8">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-8">
                                 {/* Logo Upload */}
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-4">Hotel Logo</h3>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Hotel Logo</h3>
                                     <div className="flex items-center gap-6">
                                         <div className="w-32 h-32 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative group">
                                             {formData.logoUrl ? (
@@ -256,16 +313,16 @@ export default function HotelSettings() {
                                             </label>
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-sm text-slate-600 mb-2">Upload your hotel logo. Recommended size: 512x512px. Transparent PNG preferred.</p>
+                                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Upload your hotel logo. Recommended size: 512x512px. Transparent PNG preferred.</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="border-t border-slate-100 my-6" />
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
 
                                 {/* Main Hero Image */}
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-4">Main Cover Image</h3>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Main Cover Image</h3>
                                     <div className="w-full max-w-2xl h-64 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative group">
                                         {formData.imageUrl ? (
                                             <img src={formData.imageUrl} className="w-full h-full object-cover" />
@@ -282,13 +339,13 @@ export default function HotelSettings() {
                                     </div>
                                 </div>
 
-                                <div className="border-t border-slate-100 my-6" />
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
 
                                 {/* Gallery Slider */}
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-bold text-slate-900">Gallery / Slider Images</h3>
-                                        <label className="btn-secondary text-sm px-4 py-2 cursor-pointer flex items-center gap-2">
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Gallery / Slider Images</h3>
+                                        <label className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-bold cursor-pointer flex items-center gap-2 transition-colors">
                                             <Upload size={16} /> Add Image
                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'images')} />
                                         </label>
@@ -307,7 +364,7 @@ export default function HotelSettings() {
                                             </div>
                                         ))}
                                         {formData.images.length === 0 && (
-                                            <div className="col-span-full py-12 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                            <div className="col-span-full py-12 text-center text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-600">
                                                 No images uploaded yet.
                                             </div>
                                         )}
@@ -318,37 +375,37 @@ export default function HotelSettings() {
 
                         {/* WEB CONTENT TAB */}
                         {activeTab === 'web' && (
-                            <div className="space-y-6 max-w-2xl">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Headline (Hero Title)</label>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Headline (Hero Title)</label>
                                     <input
                                         name="heroTitle"
                                         value={formData.heroTitle}
                                         onChange={handleChange}
                                         placeholder="Welcome to Paradise"
-                                        className="input-field w-full"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Sub-headline / Hero Description</label>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Sub-headline / Hero Description</label>
                                     <textarea
                                         name="heroDescription"
                                         value={formData.heroDescription}
                                         onChange={handleChange}
                                         rows={3}
-                                        className="input-field w-full"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                     />
                                     <p className="text-xs text-slate-400 mt-1">Accepts Markdown or Plain text.</p>
                                 </div>
-                                <div className="border-t border-slate-100 my-6" />
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">About Hotel (Full Description)</label>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">About Hotel (Full Description)</label>
                                     <textarea
                                         name="description"
                                         value={formData.description}
                                         onChange={handleChange}
                                         rows={6}
-                                        className="input-field w-full"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                     />
                                 </div>
                             </div>
@@ -356,59 +413,228 @@ export default function HotelSettings() {
 
                         {/* PAYMENT SETTINGS TAB */}
                         {activeTab === 'payment' && (
-                            <div className="space-y-8 max-w-2xl">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-8">
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-4">PromptPay Configuration</h3>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">PromptPay Configuration</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="col-span-2">
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">PromptPay ID (Phone/TaxID)</label>
+                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                                PromptPay ID (Phone/TaxID)
+                                                <InfoTooltip content="Enter your 10-digit mobile number or 13-digit Tax ID for PromptPay QR generation." />
+                                            </label>
                                             <input
                                                 name="promptPayId"
                                                 value={formData.promptPayId}
                                                 onChange={handleChange}
                                                 placeholder="012-345-6789"
-                                                className="input-field w-full"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                             />
                                             <p className="text-xs text-slate-500 mt-1">This will be displayed on the QR Code payment page.</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="border-t border-slate-100 my-6" />
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
 
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-4">Bank Transfer Configuration</h3>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Bank Transfer Configuration</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Bank Name</label>
+                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Bank Name</label>
                                             <input
                                                 name="bankName"
                                                 value={formData.bankName}
                                                 onChange={handleChange}
                                                 placeholder="e.g. Bangkok Bank"
-                                                className="input-field w-full"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Account Number</label>
+                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Account Number</label>
                                             <input
                                                 name="bankAccountNumber"
                                                 value={formData.bankAccountNumber}
                                                 onChange={handleChange}
                                                 placeholder="e.g. 123-4-56789-0"
-                                                className="input-field w-full"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                             />
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Account Name</label>
+                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                                Account Name
+                                                <InfoTooltip content="The name of the bank account holder (e.g. Your Company Name)." />
+                                            </label>
                                             <input
                                                 name="bankAccountName"
                                                 value={formData.bankAccountName}
                                                 onChange={handleChange}
                                                 placeholder="e.g. BookingKub Co., Ltd."
-                                                className="input-field w-full"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        )}
+
+                        {/* PLATFORM CONFIG TAB */}
+                        {activeTab === 'platform' && (
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-8">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 mb-6">Platform Settings</h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                            Site Name
+                                            <InfoTooltip content="The name of your website as it appears in the browser tab and search engines." />
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={systemSettings.siteName || ''}
+                                            onChange={e => handleSystemChange('siteName', e.target.value)}
+                                            placeholder="BookingKub"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                            Currency
+                                            <InfoTooltip content="The currency used across the platform (e.g. THB, USD)." />
+                                        </label>
+                                        <select
+                                            value={systemSettings.currency || 'THB'}
+                                            onChange={e => handleSystemChange('currency', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        >
+                                            <option value="THB">THB (฿)</option>
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
+
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <CreditCard size={20} className="text-emerald-500" /> Payment Gateways
+                                </h3>
+                                <div className="space-y-4">
+                                    <h4 className="font-bold text-slate-700 dark:text-slate-300">Stripe</h4>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                            Stripe Public Key
+                                            <InfoTooltip content="pk_..." />
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={systemSettings.stripeKey || ''}
+                                            onChange={e => handleSystemChange('stripeKey', e.target.value)}
+                                            placeholder="pk_test_..."
+                                            className={`w-full px-4 py-2.5 rounded-xl border ${errors.stripeKey ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
+                                        />
+                                        {errors.stripeKey && <p className="text-red-500 text-xs mt-1">{errors.stripeKey}</p>}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                            Stripe Secret Key
+                                            <InfoTooltip content="sk_..." />
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={systemSettings.stripeSecret || ''}
+                                            onChange={e => handleSystemChange('stripeSecret', e.target.value)}
+                                            placeholder="sk_test_..."
+                                            className={`w-full px-4 py-2.5 rounded-xl border ${errors.stripeSecret ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
+                                        />
+                                        {errors.stripeSecret && <p className="text-red-500 text-xs mt-1">{errors.stripeSecret}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-100 dark:border-slate-700 pt-6">
+                                    <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-4">Omise</h4>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                                Omise Public Key
+                                                <InfoTooltip content="pkey_..." />
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={systemSettings.omisePublicKey || ''}
+                                                onChange={e => handleSystemChange('omisePublicKey', e.target.value)}
+                                                placeholder="pkey_test_..."
+                                                className={`w-full px-4 py-2.5 rounded-xl border ${errors.omisePublicKey ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
+                                            />
+                                            {errors.omisePublicKey && <p className="text-red-500 text-xs mt-1">{errors.omisePublicKey}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                                Omise Secret Key
+                                                <InfoTooltip content="skey_..." />
+                                            </label>
+                                            <input
+                                                type="password"
+                                                value={systemSettings.omiseSecretKey || ''}
+                                                onChange={e => handleSystemChange('omiseSecretKey', e.target.value)}
+                                                placeholder="skey_test_..."
+                                                className={`w-full px-4 py-2.5 rounded-xl border ${errors.omiseSecretKey ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
+                                            />
+                                            {errors.omiseSecretKey && <p className="text-red-500 text-xs mt-1">{errors.omiseSecretKey}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* NOTIFICATIONS TAB */}
+                        {activeTab === 'notifications' && (
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 mb-6 flex items-center gap-2">
+                                    <Mail size={20} className="text-emerald-500" /> SMTP Configuration
+                                </h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Host</label>
+                                        <input
+                                            type="text"
+                                            value={systemSettings.smtpHost || ''}
+                                            onChange={e => handleSystemChange('smtpHost', e.target.value)}
+                                            placeholder="smtp.gmail.com"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Port</label>
+                                        <input
+                                            type="number"
+                                            value={systemSettings.smtpPort || ''}
+                                            onChange={e => handleSystemChange('smtpPort', e.target.value)}
+                                            placeholder="587"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Username</label>
+                                        <input
+                                            type="text"
+                                            value={systemSettings.smtpUser || ''}
+                                            onChange={e => handleSystemChange('smtpUser', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+                                            SMTP Password
+                                            <InfoTooltip content="App Password for Gmail or your SMTP server password." />
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={systemSettings.smtpPass || ''}
+                                            onChange={e => handleSystemChange('smtpPass', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -416,6 +642,6 @@ export default function HotelSettings() {
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+        </AdminLayout >
     );
 }

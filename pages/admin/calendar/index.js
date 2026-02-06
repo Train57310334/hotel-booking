@@ -2,7 +2,7 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect, useMemo } from 'react'
 import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, Layers } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, Layers, User, CreditCard, CheckCircle, Clock } from 'lucide-react'
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
 
@@ -20,6 +20,10 @@ export default function Calendar() {
     const [selectedBooking, setSelectedBooking] = useState(null)
     const [isDetailOpen, setIsDetailOpen] = useState(false)
 
+    // Tooltip State
+    const [hoveredBooking, setHoveredBooking] = useState(null);
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
     // Filter State
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [filterConfig, setFilterConfig] = useState({
@@ -27,9 +31,30 @@ export default function Calendar() {
         roomTypeId: 'All'
     })
 
+    // Real-time Polling
     useEffect(() => {
-        if (user) fetchData()
-    }, [currentDate, user])
+        if (!user) return;
+
+        fetchData(); // Initial Fetch
+
+        const interval = setInterval(() => {
+            // Silent fetch (no loading spinner) to avoid UI flicker
+            const hotelId = user?.roleAssignments?.[0]?.hotelId;
+            if (!hotelId) return;
+
+            const start = new Date(currentDate)
+            start.setDate(1)
+            const end = new Date(start)
+            end.setMonth(end.getMonth() + 1)
+
+            apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`)
+                .then(eventsData => setEvents(eventsData))
+                .catch(err => console.error("Polling error", err));
+
+        }, 15000); // Poll every 15 seconds
+
+        return () => clearInterval(interval);
+    }, [currentDate, user]);
 
     const fetchData = async () => {
         const hotelId = user?.roleAssignments?.[0]?.hotelId;
@@ -37,23 +62,16 @@ export default function Calendar() {
 
         setLoading(true)
         try {
-            // 1. Calculate Date Range
             const start = new Date(currentDate)
-            start.setDate(1) // Start of month
+            start.setDate(1)
             const end = new Date(start)
-            end.setMonth(end.getMonth() + 1) // End of month
+            end.setMonth(end.getMonth() + 1)
 
-            // Adjust if we want a sliding window instead?
-            // Let's stick to Month View for now.
-
-            // 2. Fetch Rooms & Types
-            const [roomsData, typesData] = await Promise.all([
+            const [roomsData, typesData, eventsData] = await Promise.all([
                 apiFetch('/rooms'),
-                apiFetch('/room-types')
+                apiFetch('/room-types'),
+                apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`)
             ])
-
-            // 3. Fetch Events
-            const eventsData = await apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`)
 
             setRooms(roomsData)
             setRoomTypes(typesData)
@@ -93,21 +111,19 @@ export default function Calendar() {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'confirmed': return 'bg-emerald-500 text-white';
-            case 'pending': return 'bg-amber-500 text-white';
-            case 'checked_in': return 'bg-blue-600 text-white';
-            case 'checked_out': return 'bg-slate-500 text-white';
-            default: return 'bg-slate-400 text-white';
+            case 'confirmed': return 'bg-emerald-500 border-emerald-600 text-white';
+            case 'pending': return 'bg-amber-500 border-amber-600 text-white';
+            case 'checked_in': return 'bg-blue-600 border-blue-700 text-white';
+            case 'checked_out': return 'bg-slate-500 border-slate-600 text-white';
+            case 'cancelled': return 'bg-red-500 border-red-600 text-white opacity-60';
+            default: return 'bg-slate-400 border-slate-500 text-white';
         }
     }
 
     const openDetails = (booking) => {
-        // Need to attach full room/roomType objects if missing from event data
-        // The event data from getCalendarEvents might be minimal. 
-        // Let's verify what we get. The Service returns: id, checkIn, checkOut, status, leadName, roomId, roomTypeId, totalAmount, room {roomNumber}, roomType {name}.
-        // The Modal expects room.roomNumber, roomType.name etc. It should work mostly.
         setSelectedBooking(booking)
         setIsDetailOpen(true)
+        setHoveredBooking(null)
     }
 
     const [confirmModal, setConfirmModal] = useState({
@@ -124,7 +140,6 @@ export default function Calendar() {
     })
 
     const handleCellClick = (room, date) => {
-        // Format date as YYYY-MM-DD for input[type="date"]
         const dateStr = date.toISOString().split('T')[0]
         setCreateModal({
             isOpen: true,
@@ -164,7 +179,7 @@ export default function Calendar() {
     // Main Render
     return (
         <AdminLayout>
-            <div className="flex flex-col h-[calc(100vh-80px)]">
+            <div className="flex flex-col h-[calc(100vh-80px)] relative">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold dark:text-white flex items-center gap-3">
@@ -266,67 +281,67 @@ export default function Calendar() {
                                     {typeRooms.map(room => (
                                         <div key={room.id} className="flex border-b border-slate-100 dark:border-slate-700 h-16 relative hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             {/* Room Label (Sticky Left) */}
-                                            <div className="w-32 flex-shrink-0 p-2 font-medium text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky left-0 z-10 shadow-sm flex items-center text-xs">
-                                                {room.roomNumber || room.id.slice(-4)}
+                                            <div className="w-32 flex-shrink-0 p-2 font-medium text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky left-0 z-10 shadow-sm flex items-center justify-between text-xs group">
+                                                <span>{room.roomNumber || room.id.slice(-4)}</span>
+                                                <span className={`w-2 h-2 rounded-full ${room.status === 'CLEAN' ? 'bg-emerald-500' : room.status === 'DIRTY' ? 'bg-red-500' : 'bg-slate-300'}`} title={room.status}></span>
                                             </div>
 
-                                            {/* Days Grid Cells - purely visual background (now interactive) */}
+                                            {/* Days Grid Cells */}
                                             {days.map(day => (
                                                 <div
                                                     key={day.toISOString()}
                                                     onClick={() => handleCellClick(room, day)}
                                                     className="flex-1 border-r border-slate-50 dark:border-slate-700/50 h-full relative cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
-                                                    title={`Create booking for Room ${room.roomNumber} on ${day.toLocaleDateString()}`}
                                                 >
                                                 </div>
                                             ))}
 
                                             {/* Events Overlay */}
-                                            {/* Filter events for this room AND filterConfig */}
                                             {events.filter(e => e.roomId === room.id && filterConfig.status.includes(e.status)).map(booking => {
-                                                /* Calculate Position */
                                                 const checkIn = new Date(booking.checkIn);
                                                 const checkOut = new Date(booking.checkOut);
 
-                                                // Simple clipping to current month view
                                                 const viewStart = days[0];
                                                 const viewEnd = days[days.length - 1];
                                                 viewEnd.setHours(23, 59, 59);
 
-                                                // If booking is outside view, skip (should be filtered by API but just in case)
                                                 if (checkOut <= viewStart || checkIn > viewEnd) return null;
 
-                                                // Calculate Start Offset
-                                                // If checkIn < viewStart, start at 0.
                                                 let startDate = checkIn < viewStart ? viewStart : checkIn;
                                                 let diffTime = Math.abs(startDate - viewStart);
                                                 let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                                // Correction: diffDays from start of month. 1st is 0 offset.
-                                                // Date.getDate() - 1 works if we assume 1st.
-                                                let startOffset = startDate.getDate() - 1; // 0-indexed column
+                                                let startOffset = startDate.getDate() - 1;
 
-                                                // Calculate Duration
-                                                // Clip end
                                                 let endDate = checkOut > viewEnd ? viewEnd : checkOut;
                                                 let durTime = Math.abs(endDate - startDate);
                                                 let durationDays = Math.ceil(durTime / (1000 * 60 * 60 * 24));
-
-                                                // Visual tweak: if checkout is same day as checkin? (Not possible usually).
-                                                // Real hotel logic: checkin 2PM, checkout 12PM. Occupies the night.
-                                                // Visual: Width = Nights * CellWidth.
 
                                                 return (
                                                     <div
                                                         key={booking.id}
                                                         onClick={() => openDetails(booking)}
-                                                        className={`absolute top-2 bottom-2 rounded-sm shadow-sm border border-white/20 px-1 flex items-center text-[9px] font-bold overflow-hidden cursor-pointer hover:brightness-110 transition-all z-0 ${getStatusColor(booking.status)}`}
+                                                        onMouseEnter={(e) => {
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            setTooltipPos({ x: rect.left, y: rect.bottom + 5 });
+                                                            setHoveredBooking(booking);
+                                                        }}
+                                                        onMouseLeave={() => setHoveredBooking(null)}
+                                                        className={`absolute top-1 bottom-1 rounded shadow-sm border px-2 flex flex-col justify-center text-[10px] font-bold overflow-hidden cursor-pointer hover:brightness-110 hover:shadow-md transition-all z-10 ${getStatusColor(booking.status)}`}
                                                         style={{
                                                             left: `${(startOffset / days.length) * 100}%`,
                                                             width: `${(durationDays / days.length) * 100}%`
                                                         }}
-                                                        title={`${booking.leadName} (${new Date(booking.checkIn).toLocaleDateString()} - ${new Date(booking.checkOut).toLocaleDateString()})`}
                                                     >
-                                                        <span className="truncate">{booking.leadName}</span>
+                                                        <div className="flex items-center gap-1 truncate">
+                                                            <span>{booking.leadName}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 opacity-80 scale-90 origin-left">
+                                                            <div className="flex items-center gap-0.5"><User size={8} /> {booking.guestsAdult + booking.guestsChild}</div>
+                                                            {booking.payment?.status === 'authorized' || booking.payment?.status === 'captured' ?
+                                                                <CreditCard size={8} className="text-white" /> :
+                                                                <span className="text-[8px] px-1 bg-white/20 rounded">UNPAID</span>
+                                                            }
+                                                        </div>
                                                     </div>
                                                 )
                                             })}
@@ -346,6 +361,45 @@ export default function Calendar() {
                     <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-600"></div> Checked In</div>
                     <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-500"></div> Checked Out</div>
                 </div>
+
+                {/* Hover Tooltip */}
+                {hoveredBooking && (
+                    <div
+                        className="fixed z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700 w-64 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+                        style={{ left: Math.min(window.innerWidth - 270, tooltipPos.x), top: tooltipPos.y }}
+                    >
+                        <div className="flex justify-between items-start mb-2 border-b border-slate-700 pb-2">
+                            <div>
+                                <div className="font-bold text-base">{hoveredBooking.leadName}</div>
+                                <div className="text-slate-400 text-[10px]">{hoveredBooking.id}</div>
+                            </div>
+                            <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getStatusColor(hoveredBooking.status).replace('border-l-4', '')}`}>
+                                {hoveredBooking.status.replace('_', ' ')}
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <Clock size={12} className="text-slate-400" />
+                                <span>{new Date(hoveredBooking.checkIn).toLocaleDateString()} - {new Date(hoveredBooking.checkOut).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <User size={12} className="text-slate-400" />
+                                <span>{hoveredBooking.guestsAdult} Adults, {hoveredBooking.guestsChild} Children</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-emerald-400">฿{hoveredBooking.totalAmount?.toLocaleString()}</span>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded ${bookingPaymentStatus(hoveredBooking) === 'PAID' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                    {bookingPaymentStatus(hoveredBooking)}
+                                </span>
+                            </div>
+                            {hoveredBooking.specialRequests && (
+                                <div className="mt-2 p-2 bg-slate-800 rounded border border-slate-700 text-slate-300 italic">
+                                    "{hoveredBooking.specialRequests}"
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
             {isDetailOpen && selectedBooking && (
                 <BookingDetailModal
@@ -371,4 +425,9 @@ export default function Calendar() {
             )}
         </AdminLayout>
     )
+}
+
+function bookingPaymentStatus(booking) {
+    if (booking.payment?.status === 'authorized' || booking.payment?.status === 'captured') return 'PAID';
+    return 'UNPAID';
 }

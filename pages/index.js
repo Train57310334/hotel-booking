@@ -25,12 +25,18 @@ export default function Home({ hotel, error }) {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-display font-bold text-slate-900 tracking-tight leading-tight">
-              Welcome to <br className="hidden md:block" />
-              <span className="bg-gradient-to-r from-primary-600 to-teal-400 bg-clip-text text-transparent">BookingKub</span>
+              {hotel.heroTitle ? (
+                <span dangerouslySetInnerHTML={{ __html: hotel.heroTitle.replace(/\n/g, '<br/>') }} />
+              ) : (
+                <>
+                  Welcome to <br className="hidden md:block" />
+                  <span className="bg-gradient-to-r from-primary-600 to-teal-400 bg-clip-text text-transparent">{hotel.name}</span>
+                </>
+              )}
             </h1>
 
             <p className="text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              {user ? "Your account is ready. Let's set up your first property to get started." : "Your comprehensive Hotel Management System is ready to be configured. Register as an administrator to onboard your first hotel."}
+              {hotel.heroDescription || (user ? "Your account is ready. Let's set up your first property." : "Experience luxury and comfort in the heart of the city.")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
@@ -50,24 +56,6 @@ export default function Home({ hotel, error }) {
                 </Link>
               )}
             </div>
-
-            <div className="pt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-              <div className="group p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Star size={24} /></div>
-                <h3 className="text-lg font-bold text-slate-900">Multi-Tenant Platform</h3>
-                <p className="text-slate-500 mt-3 leading-relaxed">Manage multiple properties securely from a single, unified dashboard.</p>
-              </div>
-              <div className="group p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-green-500/5 hover:-translate-y-1 transition-all duration-300">
-                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><MapPin size={24} /></div>
-                <h3 className="text-lg font-bold text-slate-900">Real-time Booking</h3>
-                <p className="text-slate-500 mt-3 leading-relaxed">Instant inventory updates, automated confirmations, and seamless guest experience.</p>
-              </div>
-              <div className="group p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-purple-500/5 hover:-translate-y-1 transition-all duration-300">
-                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Wifi size={24} /></div>
-                <h3 className="text-lg font-bold text-slate-900">Smart Financial Reports</h3>
-                <p className="text-slate-500 mt-3 leading-relaxed">Track revenue, expenses, and profit margins with detailed visual analytics.</p>
-              </div>
-            </div>
           </div>
         </div>
       </Layout>
@@ -75,6 +63,7 @@ export default function Home({ hotel, error }) {
   }
 
   // Use dynamic content or fallbacks
+  // Note: If heroTitle is present, use it. Otherwise use generic Greeting + Name
   const heroTitle = hotel.heroTitle || `Welcome to ${hotel.name}`;
   const heroDescription = hotel.heroDescription || hotel.description || "Experience luxury and comfort in the heart of the city.";
   const heroImage = hotel.imageUrl || "/images/hero-bg.png"; // Fallback image
@@ -93,7 +82,7 @@ export default function Home({ hotel, error }) {
   }
 
   return (
-    <Layout>
+    <Layout navbarProps={{ logo: hotel.logoUrl, brandName: hotel.heroTitle ? hotel.name : 'BookingKub' }}>
       {/* Hero Section */}
       <Hero
         title={heroTitle}
@@ -111,12 +100,12 @@ export default function Home({ hotel, error }) {
             <p className="text-slate-600">Choose from our wide range of premium rooms and suites, designed for your ultimate comfort.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${hotel.roomTypes?.length < 3 ? 'justify-center md:flex md:flex-wrap' : ''}`}>
             {(() => {
               const featured = hotel.roomTypes?.filter(rt => rt.isFeatured);
               const display = (featured && featured.length > 0) ? featured : hotel.roomTypes?.slice(0, 3);
               return display.map((rt, idx) => (
-                <div key={rt.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100">
+                <div key={rt.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 w-full md:max-w-md">
                   <div className="h-64 overflow-hidden relative">
                     <img
                       src={rt.images?.[0] || hotel.imageUrl}
