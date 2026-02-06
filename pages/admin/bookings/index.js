@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
-import { Search, Plus, CreditCard, Eye } from 'lucide-react'
+import { Search, Plus, CreditCard, Eye, User } from 'lucide-react'
 
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
@@ -13,6 +13,8 @@ export default function BookingManagement() {
   const { user } = useAuth()
   const { searchQuery } = useAdmin() || { searchQuery: '' }
   const [bookings, setBookings] = useState([])
+  const [meta, setMeta] = useState(null)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   // const [searchTerm, setSearchTerm] = useState('') // Replaced by global searchQuery
   const [statusFilter, setStatusFilter] = useState('All')
@@ -21,6 +23,11 @@ export default function BookingManagement() {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isLiveMode, setIsLiveMode] = useState(false)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, statusFilter, sortConfig])
 
   // Live Polling
   useEffect(() => {
@@ -31,27 +38,37 @@ export default function BookingManagement() {
           const hotelId = user.roleAssignments[0].hotelId;
           const query = new URLSearchParams()
           query.append('hotelId', hotelId)
+          query.append('page', page.toString())
+          query.append('limit', '20')
           if (searchQuery) query.append('search', searchQuery)
           if (statusFilter !== 'All') query.append('status', statusFilter)
           if (sortConfig.key) {
             query.append('sortBy', sortConfig.key)
             query.append('order', sortConfig.direction)
           }
-          const data = await apiFetch(`/bookings/admin/all?${query.toString()}`)
-          setBookings(data)
+          try {
+            const res = await apiFetch(`/bookings/admin/all?${query.toString()}`)
+            if (res.data) {
+              setBookings(res.data)
+              setMeta(res.meta)
+            } else {
+              // Fallback for old API response if not cached/deployed
+              setBookings(Array.isArray(res) ? res : [])
+            }
+          } catch (e) { console.error(e) }
         }
         fetchSilent()
       }, 5000)
     }
     return () => clearInterval(interval)
-  }, [isLiveMode, searchQuery, statusFilter, sortConfig, user])
+  }, [isLiveMode, searchQuery, statusFilter, sortConfig, user, page])
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (user) fetchBookings()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery, statusFilter, sortConfig, user])
+  }, [searchQuery, statusFilter, sortConfig, user, page])
 
   const fetchBookings = async () => {
     if (!isLiveMode) setLoading(true)
@@ -61,6 +78,8 @@ export default function BookingManagement() {
 
       const query = new URLSearchParams()
       query.append('hotelId', hotelId)
+      query.append('page', page.toString())
+      query.append('limit', '20')
       if (searchQuery) query.append('search', searchQuery)
       if (statusFilter !== 'All') query.append('status', statusFilter)
       if (sortConfig.key) {
@@ -68,10 +87,16 @@ export default function BookingManagement() {
         query.append('order', sortConfig.direction)
       }
 
-      const data = await apiFetch(`/bookings/admin/all?${query.toString()}`)
-      setBookings(data)
+      const res = await apiFetch(`/bookings/admin/all?${query.toString()}`)
+      if (res.data) {
+        setBookings(res.data)
+        setMeta(res.meta)
+      } else {
+        setBookings(Array.isArray(res) ? res : [])
+      }
     } catch (error) {
       console.error(error)
+      setBookings([])
     } finally {
       if (!isLiveMode) setLoading(false)
     }
@@ -195,7 +220,7 @@ export default function BookingManagement() {
         </select>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-full">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
@@ -234,11 +259,16 @@ export default function BookingManagement() {
                         <div className="flex flex-col">
                           <span className="font-bold text-slate-900 dark:text-white">{booking.leadName}</span>
                           <span className="text-xs text-slate-500">{booking.leadEmail}</span>
-                          {booking.payment?.provider === 'credit_card' && (
-                            <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1">
-                              <CreditCard size={10} /> Paid via Card
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <div className="flex items-center gap-1 text-slate-500 text-xs" title="Adults">
+                              <User size={12} /> {booking.guestsAdult}
                             </div>
-                          )}
+                            {booking.guestsChild > 0 && (
+                              <div className="flex items-center gap-1 text-slate-500 text-xs" title="Children">
+                                <span className="text-[10px] font-bold">C</span> {booking.guestsChild}
+                              </div>
+                            )}
+                          </div>
                           {booking.specialRequests && <span className="text-[10px] text-amber-600 mt-1 truncate max-w-[150px]">★ {booking.specialRequests}</span>}
                         </div>
                       </td>
@@ -253,19 +283,47 @@ export default function BookingManagement() {
                           <span className="text-slate-400 mt-0.5">{Math.ceil((new Date(booking.checkOut) - new Date(booking.checkIn)) / (1000 * 60 * 60 * 24))} nights</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">฿{booking.totalAmount.toLocaleString()}</td>
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-900 dark:text-white">฿{booking.totalAmount?.toLocaleString()}</div>
+                        <div className={`text-[10px] font-bold px-1.5 py-0.5 inline-flex rounded mt-1 border ${booking.payment?.status === 'authorized' || booking.payment?.status === 'captured'
+                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                          : 'bg-slate-50 text-slate-500 border-slate-100 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                          }`}>
+                          {booking.payment?.status === 'authorized' || booking.payment?.status === 'captured' ? 'PAID' : 'UNPAID'}
+                        </div>
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${getStatusColor(booking.status)}`}>
                           {booking.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => openDetails(booking)}
-                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
-                        >
-                          <Eye size={18} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {booking.status === 'confirmed' && new Date() >= new Date(booking.checkIn) && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); updateStatus(booking.id, 'checked_in'); }}
+                              className="px-2 py-1 bg-blue-600 text-white text-xs rounded shadow hover:bg-blue-700 transition-colors"
+                              title="Quick Check In"
+                            >
+                              Check In
+                            </button>
+                          )}
+                          {booking.status === 'checked_in' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); updateStatus(booking.id, 'checked_out'); }}
+                              className="px-2 py-1 bg-slate-600 text-white text-xs rounded shadow hover:bg-slate-700 transition-colors"
+                              title="Quick Check Out"
+                            >
+                              Check Out
+                            </button>
+                          )}
+                          <button
+                            onClick={() => openDetails(booking)}
+                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -274,6 +332,32 @@ export default function BookingManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        {meta && meta.last_page > 1 && (
+          <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800">
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              Showing {((meta.page - 1) * meta.limit) + 1} to {Math.min(meta.page * meta.limit, meta.total)} of {meta.total} results
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 text-xs font-bold disabled:opacity-50 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-bold px-2 text-slate-700 dark:text-slate-300">Page {meta.page}</span>
+              <button
+                onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
+                disabled={meta.page === meta.last_page}
+                className="px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 text-xs font-bold disabled:opacity-50 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isDetailOpen && selectedBooking && (

@@ -134,7 +134,6 @@ export default function ContactPage({ hotel, error }) {
 
                 {/* Map Section */}
                 <div className="mt-12 bg-white p-4 rounded-3xl shadow-sm border border-slate-100 h-96 overflow-hidden relative">
-                    {/* Mock Map */}
                     <iframe
                         width="100%"
                         height="100%"
@@ -142,7 +141,7 @@ export default function ContactPage({ hotel, error }) {
                         scrolling="no"
                         marginHeight="0"
                         marginWidth="0"
-                        src="https://maps.google.com/maps?q=Bangkok&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent((hotel.address || '') + ' ' + (hotel.city || '') + ' ' + (hotel.country || ''))}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                         className="rounded-2xl w-full h-full grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
                     ></iframe>
                 </div>
@@ -157,7 +156,9 @@ export async function getServerSideProps() {
         const res = await fetch(`${backend}/hotels`);
         if (!res.ok) throw new Error('Failed to fetch hotel');
         const hotels = await res.json();
-        return { props: { hotel: hotels[0] || {} } };
+        // Pick the most recently updated hotel (the one user is likely editing)
+        const activeHotel = hotels.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+        return { props: { hotel: activeHotel || {} } };
     } catch (err) {
         return { props: { error: err.message } };
     }

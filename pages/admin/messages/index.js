@@ -40,9 +40,41 @@ export default function MessageCenter() {
 
   const sendReply = async () => {
     if (!replyText.trim()) return
-    alert(`Reply sent to ${selectedMsg.email}:\n${replyText}`)
-    // In real app: call API to send email
-    setReplyText('')
+    try {
+      await apiFetch(`/messages/${selectedMsg.id}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ content: replyText })
+      })
+      alert(`Reply sent to ${selectedMsg.email} successfully`)
+      setReplyText('')
+      setMessages(prev => prev.map(m => m.id === selectedMsg.id ? { ...m, status: 'replied' } : m))
+    } catch (err) {
+      console.error(err)
+      alert('Failed to send reply')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this message?')) return
+    try {
+      await apiFetch(`/messages/${selectedMsg.id}`, { method: 'DELETE' })
+      setMessages(prev => prev.filter(m => m.id !== selectedMsg.id))
+      setSelectedMsg(null)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to delete message')
+    }
+  }
+
+  const handleArchive = async () => {
+    try {
+      await apiFetch(`/messages/${selectedMsg.id}/archive`, { method: 'PUT' })
+      setMessages(prev => prev.filter(m => m.id !== selectedMsg.id)) // Remove from main inbox
+      setSelectedMsg(null)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to archive message')
+    }
   }
 
   return (
@@ -122,8 +154,8 @@ export default function MessageCenter() {
                     </div>
                   </div>
                   <div className="flex gap-2 text-slate-400">
-                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Archive size={18} /></button>
-                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Trash2 size={18} /></button>
+                    <button onClick={handleArchive} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-amber-500" title="Archive"><Archive size={18} /></button>
+                    <button onClick={handleDelete} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-rose-500" title="Delete"><Trash2 size={18} /></button>
                   </div>
                 </div>
 

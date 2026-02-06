@@ -102,6 +102,10 @@ export const guideData = {
             {
                 title: 'Notifications',
                 content: 'Configure SMTP for sending email confirmations to guests.'
+            },
+            {
+                title: 'Payment Settings',
+                content: 'Set up PromptPay ID and Bank Transfer details for the booking payment page.'
             }
         ]
     },

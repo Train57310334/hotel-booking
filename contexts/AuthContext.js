@@ -57,6 +57,20 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const registerPartner = async (data) => {
+        try {
+            const res = await apiFetch('/auth/register-partner', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
+            localStorage.setItem('token', res.token);
+            await checkUser();
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
@@ -64,7 +78,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading, checkUser }}>
+        <AuthContext.Provider value={{ user, login, register, registerPartner, logout, loading, checkUser }}>
             {children}
         </AuthContext.Provider>
     );

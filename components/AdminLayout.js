@@ -20,7 +20,8 @@ import {
     TicketPercent,
     TrendingUp,
     HelpCircle,
-    Globe
+    Globe,
+    SprayCan
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -31,8 +32,8 @@ import GlobalSearch from './GlobalSearch'
 
 export default function AdminLayout({ children }) {
     const router = useRouter()
-    const { user, logout } = useAuth()
-    const { searchQuery, setSearchQuery } = useAdmin() || {}
+    const { user, logout, loading } = useAuth()
+    const { searchQuery, setSearchQuery, currentHotel } = useAdmin() || {}
     const [darkMode, setDarkMode] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -51,6 +52,8 @@ export default function AdminLayout({ children }) {
 
     // Fetch Notifications (Poll every 30s)
     useEffect(() => {
+        if (loading) return
+
         if (!user) {
             router.push('/auth/login');
             return;
@@ -71,6 +74,13 @@ export default function AdminLayout({ children }) {
 
         if (isAdmin && !isPlatformAdmin && !hasHotel && !isSetupPage) {
             router.push('/admin/setup');
+            return;
+        }
+
+        // 🧹 Housekeeper Redirect
+        const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role;
+        if (role === 'housekeeper' && router.pathname === '/admin') {
+            router.push('/admin/housekeeping');
             return;
         }
 
@@ -125,11 +135,20 @@ export default function AdminLayout({ children }) {
         { name: 'Reports', icon: TrendingUp, href: '/admin/reports' },
         { name: 'Payments', icon: CreditCard, href: '/admin/payments' },
         { name: 'Reviews', icon: Star, href: '/admin/reviews' },
-        { name: 'Owner Management', icon: Users, href: '/admin/owners' },
+        { name: 'Housekeeping', icon: SprayCan, href: '/admin/housekeeping' },
+        { name: 'Staff Management', icon: Users, href: '/admin/staff' },
         { name: 'Message', icon: MessageSquare, href: '/admin/messages' },
         { name: 'My Account', icon: UserCircle, href: '/admin/account', section: 'bottom' },
         { name: 'Settings', icon: Settings, href: '/admin/settings', section: 'bottom' },
     ]
+
+    if (loading) {
+        return (
+            <div className={`flex min-h-screen items-center justify-center font-sans ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            </div>
+        )
+    }
 
     return (
         <div className={`flex min-h-screen font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
@@ -143,10 +162,14 @@ export default function AdminLayout({ children }) {
                 } bg-slate-900 text-white flex flex-col`}>
                 <div className="h-16 flex items-center justify-between px-6">
                     <Link href="/" className="flex items-center gap-3">
-                        <div className="bg-emerald-500 rounded-lg p-1.5">
-                            <BedDouble className="text-white" size={20} />
-                        </div>
-                        <span className="text-lg font-bold text-white">BookingKub</span>
+                        {currentHotel?.logoUrl ? (
+                            <img src={currentHotel.logoUrl} alt={currentHotel.name} className="h-8 w-8 rounded object-contain bg-white" />
+                        ) : (
+                            <div className="bg-emerald-500 rounded-lg p-1.5">
+                                <BedDouble className="text-white" size={20} />
+                            </div>
+                        )}
+                        <span className="text-lg font-bold text-white truncate max-w-[140px]">{currentHotel?.name || 'BookingKub'}</span>
                     </Link>
                     <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400">
                         <X size={20} />
@@ -155,7 +178,23 @@ export default function AdminLayout({ children }) {
 
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-2">
                     {/* Primary Navigation */}
-                    {menuItems.filter(i => !i.section).map((item) => {
+                    {menuItems.filter(i => !i.section).filter(item => {
+                        // 🔒 RBAC Logic
+                        const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role || '';
+
+                        // 🧹 Housekeeper Mode: Only see Housekeeping
+                        if (role === 'housekeeper') {
+                            return item.name === 'Housekeeping';
+                        }
+
+                        const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
+
+                        // Restricted items for non-admins (Reception/Manager)
+                        const restricted = ['Reports', 'Payments', 'Staff Management', 'Settings'];
+                        if (!isOwnerOrAdmin && restricted.includes(item.name)) return false;
+
+                        return true;
+                    }).map((item) => {
                         const isActive = router.pathname === item.href
                         return (
                             <Link
@@ -177,7 +216,17 @@ export default function AdminLayout({ children }) {
                     {/* Settings Section */}
                     <div>
                         <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">Settings</div>
-                        {menuItems.filter(i => i.section === 'bottom').map((item) => {
+                        {menuItems.filter(i => i.section === 'bottom').filter(item => {
+                            // 🔒 RBAC Logic for Bottom Section
+                            const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role || '';
+
+                            if (role === 'housekeeper' && item.name !== 'My Account') return false;
+
+                            const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
+
+                            if (!isOwnerOrAdmin && item.name === 'Settings') return false;
+                            return true;
+                        }).map((item) => {
                             const isActive = router.pathname === item.href
                             return (
                                 <Link
@@ -312,8 +361,12 @@ export default function AdminLayout({ children }) {
                                     <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{user?.name || 'Admin'}</div>
                                     <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Admin</div>
                                 </div>
-                                <div className="w-8 h-8 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-emerald-500/20">
-                                    {user?.name?.[0] || 'A'}
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shadow-lg shadow-emerald-500/20 ${user?.avatarUrl ? 'bg-white' : 'bg-gradient-to-tr from-emerald-500 to-teal-500 text-white text-sm font-bold'}`}>
+                                    {user?.avatarUrl ? (
+                                        <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
+                                    ) : (
+                                        user?.name?.[0] || 'A'
+                                    )}
                                 </div>
                             </button>
 

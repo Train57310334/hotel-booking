@@ -2,15 +2,15 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
-import { TicketPercent, Plus, Trash2, Calendar } from 'lucide-react'
+import { TicketPercent, Plus, Trash2, Calendar, Pencil } from 'lucide-react'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import toast from 'react-hot-toast'
 import DatePicker from '@/components/DatePicker'
 
 export default function Promotions() {
-    // const { success, error } = useToast()
     const [promotions, setPromotions] = useState([])
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [editingId, setEditingId] = useState(null)
     const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null })
     const [form, setForm] = useState({
         code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: ''
@@ -33,32 +33,62 @@ export default function Promotions() {
         if (!confirmDelete.id) return
         try {
             await apiFetch(`/promotions/${confirmDelete.id}`, { method: 'DELETE' })
-            // await apiFetch(`/promotions/${confirmDelete.id}`, { method: 'DELETE' }) // Duplicate call in original
             toast.success('Promotion deleted')
             fetchPromotions()
         } catch (e) { toast.error('Failed to delete') }
     }
 
-    const handleCreate = async (e) => {
+    const handleEdit = (promo) => {
+        setEditingId(promo.id)
+        setForm({
+            code: promo.code,
+            type: promo.type,
+            value: promo.value,
+            startDate: new Date(promo.startDate).toISOString().split('T')[0],
+            endDate: new Date(promo.endDate).toISOString().split('T')[0],
+            conditions: promo.conditions || ''
+        })
+        setIsModalOpen(true)
+    }
+
+    const openCreateModal = () => {
+        setEditingId(null)
+        setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '' })
+        setIsModalOpen(true)
+    }
+
+    const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            await apiFetch('/promotions', {
-                method: 'POST',
-                body: JSON.stringify({
-                    code: form.code.toUpperCase(),
-                    type: form.type,
-                    value: Number(form.value),
-                    startDate: new Date(form.startDate),
-                    endDate: new Date(form.endDate),
-                    conditions: form.conditions
+            const payload = {
+                code: form.code.toUpperCase(),
+                type: form.type,
+                value: Number(form.value),
+                startDate: new Date(form.startDate),
+                endDate: new Date(form.endDate),
+                conditions: form.conditions
+            }
+
+            if (editingId) {
+                await apiFetch(`/promotions/${editingId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify(payload)
                 })
-            })
-            toast.success('Promotion created')
+                toast.success('Promotion updated')
+            } else {
+                await apiFetch('/promotions', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                })
+                toast.success('Promotion created')
+            }
+
             setIsModalOpen(false)
             fetchPromotions()
             setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '' })
+            setEditingId(null)
         } catch (e) {
-            toast.error('Failed to create promotion. Code might exist.')
+            toast.error(editingId ? 'Failed to update' : 'Failed to create. Code might exist.')
         }
     }
 
@@ -66,6 +96,7 @@ export default function Promotions() {
         <AdminLayout>
             <div className="flex justify-between items-center mb-6">
                 <div>
+                    {/* ... title ... */}
                     <h1 className="text-2xl font-bold dark:text-white flex items-center gap-3">
                         <TicketPercent size={24} className="text-emerald-500" />
                         Promotions
@@ -73,7 +104,7 @@ export default function Promotions() {
                     <p className="text-slate-500 text-sm">Manage discount codes and campaigns</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={openCreateModal}
                     className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
                 >
                     <Plus size={16} /> New Code
@@ -82,6 +113,7 @@ export default function Promotions() {
 
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-200 dark:border-slate-700 p-6">
                 <div className="grid gap-4">
+                    {/* ... empty state ... */}
                     {promotions.length === 0 && (
                         <div className="text-center py-10 text-slate-500">
                             <TicketPercent size={48} className="mx-auto mb-4 opacity-20" />
@@ -89,8 +121,10 @@ export default function Promotions() {
                             <p className="text-xs mt-1">Create a code like 'WELCOME10' to get started.</p>
                         </div>
                     )}
+
                     {promotions.map(promo => (
                         <div key={promo.id} className="flex flex-col md:flex-row justify-between items-center p-4 border border-slate-100 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                            {/* ... promo details ... */}
                             <div className="flex items-center gap-4 mb-2 md:mb-0">
                                 <div className="bg-emerald-100 dark:bg-emerald-900/30 w-12 h-12 rounded-full flex items-center justify-center text-emerald-600 font-bold text-lg">
                                     %
@@ -115,28 +149,35 @@ export default function Promotions() {
                                         {new Date(promo.endDate).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => setConfirmDelete({ isOpen: true, id: promo.id })}
-                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleEdit(promo)}
+                                        className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Pencil size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirmDelete({ isOpen: true, id: promo.id })}
+                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-
-
-            {/* Create Modal */}
+            {/* Create/Edit Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[450px] shadow-2xl border border-slate-100 dark:border-slate-700">
                         <h3 className="font-bold text-lg mb-4 dark:text-white flex items-center gap-2">
-                            <TicketPercent size={20} className="text-emerald-500" /> New Promotion
+                            <TicketPercent size={20} className="text-emerald-500" /> {editingId ? 'Edit Promotion' : 'New Promotion'}
                         </h3>
-                        <form onSubmit={handleCreate} className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* ... form fields ... */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Promo Code</label>
                                 <input
@@ -206,7 +247,7 @@ export default function Promotions() {
 
                             <div className="flex gap-2 pt-4">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2.5 text-slate-500 font-bold hover:bg-slate-50 rounded-xl">Cancel</button>
-                                <button type="submit" className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">Create Code</button>
+                                <button type="submit" className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">{editingId ? 'Save Changes' : 'Create Code'}</button>
                             </div>
                         </form>
                     </div>

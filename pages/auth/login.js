@@ -2,17 +2,17 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import Layout from '@/components/Layout'
-import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
-
+import { Mail, Lock, ArrowRight, Loader2, ArrowLeft, Check } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function LoginPage() {
+export default function LoginPage({ branding }) {
   const router = useRouter()
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -29,114 +29,178 @@ export default function LoginPage() {
     }
   }
 
+  const siteName = branding?.siteName || 'BookingKub';
+  const logoUrl = branding?.logoUrl;
+
   return (
-    <Layout>
-      <div className="min-h-[80vh] flex items-center justify-center p-4 md:p-8">
-        <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row min-h-[600px]">
+    <Layout hideNavbar hideFooter>
+      <div className="min-h-screen flex text-slate-900 bg-white selection:bg-primary-100 selection:text-primary-900">
 
-          {/* Decorative Side */}
-          <div className="hidden md:flex md:w-1/2 relative bg-slate-900 text-white p-12 flex-col justify-between overflow-hidden">
-            <img
-              src="/images/login-bg.png"
-              alt="Luxury Hotel"
-              className="absolute inset-0 w-full h-full object-cover opacity-80"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 to-primary-800/40 mix-blend-multiply" />
+        {/* Left Side - Image & Branding */}
+        <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2500"
+            alt="Luxury Hotel"
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
 
-            <div className="relative z-10">
-              <h2 className="text-4xl font-display font-bold mb-6">Welcome Back</h2>
-              <p className="text-lg text-primary-100 font-light">
-                Sign in to manage your bookings, check rewards, and plan your next luxury getaway.
-              </p>
+          <div className="absolute inset-0 flex flex-col justify-between p-16 z-10">
+            <div>
+              <Link href="/" className="inline-flex items-center gap-3 group">
+                {logoUrl ? (
+                  <div className="h-12 w-12 relative rounded-xl overflow-hidden shadow-lg border border-white/20 group-hover:scale-105 transition-transform duration-300">
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/20 group-hover:bg-white/20 transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                  </div>
+                )}
+                <span className="text-2xl font-display font-bold text-white tracking-tight">{siteName}</span>
+              </Link>
             </div>
 
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 text-sm text-primary-200">
-                <span className="w-8 h-[1px] bg-primary-200" />
-                Trusted by 50,000+ travelers
+            <div className="space-y-6">
+              <h2 className="text-4xl font-display font-bold text-white leading-tight">
+                Experience the art of <br />
+                luxury hospitality.
+              </h2>
+              <div className="flex items-center gap-4 text-slate-300">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className={`w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-200 lg:bg-cover`} style={{ backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 10})` }} />
+                  ))}
+                </div>
+                <p className="font-medium">Trusted by 50,000+ guests</p>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Form Side */}
-          <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-            <div className="max-w-md mx-auto w-full">
-              <div className="text-center md:text-left mb-10">
-                <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Sign In</h1>
-                <p className="text-slate-500">Please enter your details to continue</p>
+        {/* Right Side - Form */}
+        <div className="w-full lg:w-1/2 flex flex-col relative">
+          {/* Mobile Header / Back Button */}
+          <div className="absolute top-0 right-0 p-8 z-20">
+            <Link href="/" className="inline-flex items-center gap-2 text-slate-500 font-bold hover:text-primary-600 transition-colors">
+              Back to Home <ArrowLeft size={16} className="rotate-180" />
+            </Link>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center px-8 md:px-24 xl:px-32">
+            <div className="max-w-md w-full mx-auto space-y-8">
+              <div className="space-y-2">
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900">Welcome Back</h1>
+                <p className="text-slate-500 text-lg">Enter your details to access your account.</p>
               </div>
 
               {error && (
-                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
+                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2 border border-red-100">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-600" />
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 ml-1">Email Address</label>
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
                   <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={20} />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                     <input
                       type="email"
                       required
-                      placeholder="john@example.com"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                      placeholder="name@example.com"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all outline-none font-medium placeholder:text-slate-400"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 ml-1">Password</label>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center ml-1">
+                    <label className="text-sm font-bold text-slate-700">Password</label>
+                    <a href="#" className="text-sm font-bold text-primary-600 hover:text-primary-700 hover:underline">Forgot password?</a>
+                  </div>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={20} />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                     <input
                       type="password"
                       required
                       placeholder="••••••••"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all outline-none font-medium placeholder:text-slate-400"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-600">
-                    <input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" />
-                    Remember me
-                  </label>
-                  <a href="#" className="font-medium text-primary-600 hover:text-primary-700">Forgot password?</a>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRememberMe(!rememberMe)}
+                    className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${rememberMe ? 'bg-primary-600 border-primary-600' : 'bg-white border-slate-300'}`}
+                  >
+                    {rememberMe && <Check size={14} className="text-white" />}
+                  </button>
+                  <label onClick={() => setRememberMe(!rememberMe)} className="text-sm font-medium text-slate-600 cursor-pointer select-none">Remember for 30 days</label>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-primary py-4 text-base flex items-center justify-center gap-2 group mt-4 relative overflow-hidden"
+                  className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     <>
-                      Sign In <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                      Sign In <ArrowRight size={20} />
                     </>
                   )}
                 </button>
               </form>
 
-              <div className="mt-8 text-center text-sm text-slate-500">
-                Don't have an account?{' '}
-                <Link href="/auth/register" className="font-bold text-primary-600 hover:text-primary-700 hover:underline">
-                  Create Account
-                </Link>
+              <div className="pt-4 text-center">
+                <p className="text-slate-500 font-medium">
+                  Don't have an account?{' '}
+                  <Link href="/auth/register" className="text-primary-600 font-bold hover:underline">
+                    Create Account
+                  </Link>
+                </p>
               </div>
             </div>
+          </div>
+
+          {/* Mobile branding fallback */}
+          <div className="lg:hidden p-8 text-center bg-slate-50">
+            <p className="text-xs text-slate-400">© 2024 {siteName}. All rights reserved.</p>
           </div>
         </div>
       </div>
     </Layout>
   )
+}
+
+export async function getServerSideProps() {
+  try {
+    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
+    const res = await fetch(`${backend}/public-settings`);
+    const settings = await res.json();
+
+    return {
+      props: {
+        branding: {
+          siteName: settings.siteName || 'BookingKub',
+          logoUrl: settings.logoUrl || null
+        }
+      }
+    };
+  } catch (e) {
+    return {
+      props: {
+        branding: { siteName: 'BookingKub', logoUrl: null }
+      }
+    }
+  }
 }

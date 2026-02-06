@@ -2,7 +2,7 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { apiFetch } from '@/lib/api'
-import { User, Mail, Phone, Calendar, Star, Tag, StickyNote, Save, Clock, ArrowLeft } from 'lucide-react'
+import { User, Mail, Phone, Calendar, Star, Tag, StickyNote, Save, Clock, ArrowLeft, Edit } from 'lucide-react'
 
 export default function GuestProfile() {
     const router = useRouter()
@@ -10,6 +10,7 @@ export default function GuestProfile() {
     const [guest, setGuest] = useState(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
     // CRM State
     const [tags, setTags] = useState([])
@@ -52,6 +53,21 @@ export default function GuestProfile() {
         }
     }
 
+    const handleSaveBasicInfo = async (data) => {
+        try {
+            await apiFetch(`/users/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            setGuest(prev => ({ ...prev, ...data }))
+            setIsEditModalOpen(false)
+            alert('Profile updated')
+        } catch (error) {
+            alert('Failed to update profile')
+        }
+    }
+
     const toggleTag = (tag) => {
         if (tags.includes(tag)) {
             setTags(tags.filter(t => t !== tag))
@@ -77,11 +93,16 @@ export default function GuestProfile() {
                     </div>
                     <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">{guest.name || 'Unknown Guest'}</h1>
+                            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                                {guest.name || 'Unknown Guest'}
+                                <button onClick={() => setIsEditModalOpen(true)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 rounded-full transition-colors">
+                                    <Edit size={18} />
+                                </button>
+                            </h1>
                             {tags.map(tag => (
                                 <span key={tag} className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${tag === 'VIP' ? 'bg-amber-100 text-amber-700' :
-                                        tag === 'Blacklist' ? 'bg-slate-900 text-white' :
-                                            'bg-slate-100 text-slate-600'
+                                    tag === 'Blacklist' ? 'bg-slate-900 text-white' :
+                                        'bg-slate-100 text-slate-600'
                                     }`}>
                                     {tag}
                                 </span>
@@ -131,7 +152,7 @@ export default function GuestProfile() {
                                             <td className="p-3 font-bold">฿{b.totalAmount.toLocaleString()}</td>
                                             <td className="p-3">
                                                 <span className={`px-2 py-1 rounded text-xs font-bold ${b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                        b.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                                                    b.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
                                                     }`}>
                                                     {b.status}
                                                 </span>
@@ -159,8 +180,8 @@ export default function GuestProfile() {
                                     key={tag}
                                     onClick={() => toggleTag(tag)}
                                     className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${tags.includes(tag)
-                                            ? 'bg-slate-900 text-white border-slate-900'
-                                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                                        ? 'bg-slate-900 text-white border-slate-900'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
                                         }`}
                                 >
                                     {tag}
@@ -202,6 +223,42 @@ export default function GuestProfile() {
                     </button>
                 </div>
             </div>
+            {/* Edit Profile Modal */}
+            {isEditModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[400px] shadow-2xl border border-slate-100 dark:border-slate-700">
+                        <h3 className="font-bold text-lg mb-4 dark:text-white flex items-center gap-2">
+                            <User size={20} className="text-emerald-500" /> Edit Guest Profile
+                        </h3>
+                        <form onSubmit={(e) => {
+                            e.preventDefault()
+                            const formData = new FormData(e.target)
+                            handleSaveBasicInfo({
+                                name: formData.get('name'),
+                                email: formData.get('email'),
+                                phone: formData.get('phone')
+                            })
+                        }} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                                <input name="name" required defaultValue={guest.name} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                                <input name="email" type="email" required defaultValue={guest.email} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                                <input name="phone" defaultValue={guest.phone} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            </div>
+                            <div className="flex gap-2 pt-4">
+                                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
+                                <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     )
 }

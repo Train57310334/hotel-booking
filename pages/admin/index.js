@@ -5,6 +5,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
 import { useRouter } from 'next/router'
 import { InfoTooltip } from '@/components/Tooltip'
+import BookingDetailModal from '@/components/BookingDetailModal'
+import ConfirmationModal from '@/components/ConfirmationModal'
+
 import {
   BarChart as BarChartIcon,
   Users,
@@ -62,7 +65,17 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [viewBooking, setViewBooking] = useState(null)
+
+  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'warning',
+    onConfirm: () => { }
+  })
+
 
   const periods = [
     { label: 'Today', value: 'today' },
@@ -113,6 +126,55 @@ export default function AdminDashboard() {
     } finally {
       if (!isBackground) setLoading(false)
     }
+  }
+
+  // Helpers
+  const timeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    let interval = Math.floor(seconds / 31536000);
+    if (interval > 1) return interval + "y ago";
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) return interval + "mo ago";
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval + "d ago";
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + "h ago";
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + "m ago";
+    return "Just now";
+  }
+
+  const openDetails = (booking) => {
+    setSelectedBooking(booking)
+    setIsDetailOpen(true)
+  }
+
+  const updateStatus = (id, newStatus) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Update Booking Status',
+      message: `Are you sure you want to change status to "${newStatus}"?`,
+      type: newStatus === 'cancelled' ? 'danger' : 'warning',
+      onConfirm: async () => {
+        try {
+          const hotelId = user?.roleAssignments?.[0]?.hotelId;
+          const query = hotelId ? `?hotelId=${hotelId}` : '';
+
+          await apiFetch(`/bookings/admin/${id}/status${query}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          })
+          fetchData(searchQuery) // Refresh dashboard
+          setIsDetailOpen(false)
+        } catch (error) {
+          alert('Update failed')
+        }
+      }
+    })
   }
 
   // Cards Configuration
@@ -304,17 +366,26 @@ export default function AdminDashboard() {
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Ref</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Guest</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Time</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Amount</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
               {bookings.slice(0, 5).map(booking => (
-                <tr key={booking.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                <tr
+                  key={booking.id}
+                  onClick={() => openDetails(booking)}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+                >
                   <td className="px-6 py-4 text-sm font-mono text-slate-500">#{booking.id.slice(-6).toUpperCase()}</td>
                   <td className="px-6 py-4">
                     <p className="text-sm font-bold dark:text-white">{booking.leadName}</p>
                     <p className="text-xs text-slate-400">{booking.roomType?.name}</p>
+                  </td>
+                  <td className="px-6 py-4 text-xs text-slate-500 whitespace-nowrap">
+                    {timeAgo(booking.createdAt)}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
@@ -326,12 +397,34 @@ export default function AdminDashboard() {
                   <td className="px-6 py-4 text-sm font-bold dark:text-white">
                     ฿{booking.totalAmount.toLocaleString()}
                   </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="p-2 text-slate-400 hover:text-emerald-500 transition-colors">
+                      <Eye size={18} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {isDetailOpen && selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          onClose={() => setIsDetailOpen(false)}
+          onUpdateStatus={updateStatus}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        onConfirm={confirmModal.onConfirm}
+      />
     </AdminLayout>
   )
 }

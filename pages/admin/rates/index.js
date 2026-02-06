@@ -134,7 +134,6 @@ function RatePlansView({ plans, roomTypes, refresh }) {
         if (!confirmDelete.id) return
         try {
             await apiFetch(`/rates/plans/${confirmDelete.id}`, { method: 'DELETE' })
-            await apiFetch(`/rates/plans/${confirmDelete.id}`, { method: 'DELETE' })
             toast.success('Plan deleted')
             refresh()
         } catch (e) { toast.error('Failed to delete plan') }
@@ -194,10 +193,21 @@ function RatePlansView({ plans, roomTypes, refresh }) {
                 {plans.map(plan => (
                     <div key={plan.id} className="border border-slate-100 dark:border-slate-700 p-4 rounded-xl flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-700/50">
                         <div>
-                            <p className="font-bold text-slate-800 dark:text-white">{plan.name}</p>
+                            <p className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                {plan.name}
+                                {plan.roomType ? (
+                                    <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-100 uppercase tracking-wide">
+                                        {plan.roomType.name}
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded border border-slate-200 uppercase tracking-wide">
+                                        All Rooms
+                                    </span>
+                                )}
+                            </p>
                             <div className="flex gap-2 text-xs text-slate-500 mt-1">
                                 <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">{plan.cancellationRule || 'No Policy'}</span>
-                                {plan.includesBreakfast && <span className="text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded">Breakfast Included</span>}
+                                {plan.includesBreakfast && <span className="text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded border border-amber-100 dark:border-amber-900/30">Breakfast Included</span>}
                             </div>
                         </div>
                         <div className="flex gap-2">
@@ -218,42 +228,44 @@ function RatePlansView({ plans, roomTypes, refresh }) {
             />
 
             {/* Create/Edit Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[500px] shadow-2xl border border-slate-100 dark:border-slate-700">
-                        <h3 className="font-bold text-lg mb-4 dark:text-white">
-                            {editingPlan ? 'Edit Rate Plan' : 'New Rate Plan'}
-                        </h3>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Plan Name</label>
-                                <input name="name" required defaultValue={editingPlan?.name} placeholder="e.g. Early Bird" className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Cancellation Policy</label>
-                                <input name="cancellationRule" defaultValue={editingPlan?.cancellationRule} placeholder="e.g. Non-refundable" className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Linked Room Type (Optional)</label>
-                                <select name="roomTypeId" defaultValue={editingPlan?.roomTypeId || ''} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                                    <option value="">Apply to All Rooms</option>
-                                    {roomTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                                </select>
-                            </div>
-                            <div className="flex items-center gap-2 pt-2">
-                                <input name="includesBreakfast" type="checkbox" defaultChecked={editingPlan?.includesBreakfast} className="w-5 h-5 rounded text-emerald-500" />
-                                <label className="font-bold text-slate-700 dark:text-slate-300">Includes Breakfast</label>
-                            </div>
+            {
+                isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[500px] shadow-2xl border border-slate-100 dark:border-slate-700">
+                            <h3 className="font-bold text-lg mb-4 dark:text-white">
+                                {editingPlan ? 'Edit Rate Plan' : 'New Rate Plan'}
+                            </h3>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Plan Name</label>
+                                    <input name="name" required defaultValue={editingPlan?.name} placeholder="e.g. Early Bird" className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Cancellation Policy</label>
+                                    <input name="cancellationRule" defaultValue={editingPlan?.cancellationRule} placeholder="e.g. Non-refundable" className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Linked Room Type (Optional)</label>
+                                    <select name="roomTypeId" defaultValue={editingPlan?.roomTypeId || ''} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                                        <option value="">Apply to All Rooms</option>
+                                        {roomTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2 pt-2">
+                                    <input name="includesBreakfast" type="checkbox" defaultChecked={editingPlan?.includesBreakfast} className="w-5 h-5 rounded text-emerald-500" />
+                                    <label className="font-bold text-slate-700 dark:text-slate-300">Includes Breakfast</label>
+                                </div>
 
-                            <div className="flex gap-2 pt-4">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
-                                <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save Plan</button>
-                            </div>
-                        </form>
+                                <div className="flex gap-2 pt-4">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
+                                    <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save Plan</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }
 
