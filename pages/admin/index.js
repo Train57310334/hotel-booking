@@ -100,16 +100,19 @@ export default function AdminDashboard() {
   useEffect(() => {
     const timer = setTimeout(() => fetchData(searchQuery), 500)
     return () => clearTimeout(timer)
-  }, [searchQuery])
+  }, [searchQuery, useAdmin()?.currentHotel?.id])
 
   const fetchData = async (search = '', isBackground = false) => {
     try {
       // Only show spinner on initial load (not background refresh or search typing)
       if (!isBackground && !bookings.length && !search) setLoading(true)
 
-      const hotelId = user?.roleAssignments?.[0]?.hotelId;
+      const { currentHotel } = useAdmin() || {};
+      const hotelId = currentHotel?.id;
+
       if (!hotelId) {
-        console.warn("No Hotel ID found for user");
+        console.warn("No Hotel ID found in context");
+        setLoading(false);
         return;
       }
 

@@ -1,0 +1,150 @@
+import { Mail, MapPin, Send, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+
+export default function ContactSection() {
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // In a real app, send to API. For now, just show success.
+        setTimeout(() => setSubmitted(true), 1000);
+    };
+
+    return (
+        <section id="contact" className="relative bg-slate-900 overflow-hidden py-24">
+            {/* Background Gradients */}
+            <div className="absolute top-0 left-0 -translate-x-[10%] -translate-y-[10%] w-[500px] h-[500px] rounded-full bg-primary-500/10 blur-[100px]" />
+            <div className="absolute bottom-0 right-0 translate-x-[10%] translate-y-[10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[100px]" />
+
+            <div className="container mx-auto px-4 relative z-10">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-6 animate-fade-in-up">
+                        Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Support</span>
+                    </h2>
+                    <p className="text-lg text-slate-400 max-w-2xl mx-auto animate-fade-in-up delay-100">
+                        Have questions about BookingKub? We're here to help you scale your hotel business.
+                    </p>
+                </div>
+
+                <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Info Card */}
+                    <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 p-8 rounded-3xl lg:col-span-1 h-fit">
+                        <h3 className="text-2xl font-bold font-display text-white mb-8">Get in Touch</h3>
+
+                        <div className="space-y-8">
+                            <div className="flex items-start gap-4 group">
+                                <div className="w-12 h-12 rounded-2xl bg-primary-500/10 text-primary-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                    <MapPin size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-lg mb-1">Office</h4>
+                                    <p className="text-slate-400 leading-relaxed">
+                                        123 Tech Park, Sukhumvit Road<br />
+                                        Bangkok, Thailand 10110
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-4 group">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                    <Mail size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-lg mb-1">Email</h4>
+                                    <a href="mailto:support@bookingkub.com" className="text-slate-400 hover:text-emerald-400 transition-colors">support@bookingkub.com</a>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-4 group">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                    <MessageSquare size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-lg mb-1">Live Chat</h4>
+                                    <p className="text-slate-400">Available Mon-Fri, 9am - 6pm</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 pt-8 border-t border-slate-700">
+                            <p className="text-slate-500 text-sm">Need urgent help? Check our <a href="#" className="text-primary-400 hover:underline">Knowledge Base</a>.</p>
+                        </div>
+                    </div>
+
+                    {/* Contact Form */}
+                    <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 p-8 md:p-10 rounded-3xl lg:col-span-2">
+                        {submitted ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center p-10 py-20 animate-in fade-in zoom-in">
+                                <div className="w-24 h-24 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-6">
+                                    <Send size={40} />
+                                </div>
+                                <h3 className="text-3xl font-bold text-white mb-4">Message Sent!</h3>
+                                <p className="text-slate-400 max-w-md mx-auto">Thank you for reaching out. Our support team will review your message and get back to you within 24 hours.</p>
+                                <button
+                                    onClick={() => setSubmitted(false)}
+                                    className="mt-8 px-6 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-medium transition-all"
+                                >
+                                    Send another message
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-400">Your Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-white placeholder:text-slate-600"
+                                            placeholder="John Doe"
+                                            value={formData.name}
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-400">Email Address</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-white placeholder:text-slate-600"
+                                            placeholder="john@example.com"
+                                            value={formData.email}
+                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-400">Start with</label>
+                                    <select className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-white">
+                                        <option>General Inquiry</option>
+                                        <option>Sales & Pricing</option>
+                                        <option>Technical Support</option>
+                                        <option>Partnership</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-400">Message</label>
+                                    <textarea
+                                        required
+                                        rows="6"
+                                        className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none text-white placeholder:text-slate-600"
+                                        placeholder="How can we help you?"
+                                        value={formData.message}
+                                        onChange={e => setFormData({ ...formData, message: e.target.value })}
+                                    />
+                                </div>
+
+                                <button type="submit" className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-primary-500/25 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                                    Send Message <Send size={18} />
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}

@@ -6,7 +6,7 @@ import { useAdmin } from '@/contexts/AdminContext'
 
 export default function GlobalSearch() {
     const router = useRouter()
-    const { setSearchQuery: setContextSearch } = useAdmin() || {}
+    const { setSearchQuery: setContextSearch, currentHotel } = useAdmin() || {}
     const [query, setQuery] = useState('')
     const [results, setResults] = useState({ users: [], bookings: [], rooms: [], roomTypes: [] })
     const [isOpen, setIsOpen] = useState(false)
@@ -65,7 +65,9 @@ export default function GlobalSearch() {
         try {
             // const data = await apiFetch(`/search/global?q=${encodeURIComponent(query)}`) 
             // Note: Update path based on actual Controller route prefix, assumed /api/search/global
-            const data = await apiFetch(`/search/global?q=${encodeURIComponent(query)}`)
+            const hotelId = currentHotel?.id
+            const url = `/search/global?q=${encodeURIComponent(query)}${hotelId ? `&hotelId=${hotelId}` : ''}`
+            const data = await apiFetch(url)
             setResults(data)
         } catch (error) {
             console.error("Search failed:", error)

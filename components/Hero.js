@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { MapPin, Calendar, Users } from 'lucide-react'
 
-export default function Hero({ children, title, description, backgroundImage }) {
+export default function Hero(props) {
+  const { children, title, description, backgroundImage, backgroundVideo } = props;
   const bgImage = backgroundImage || "/images/hero-bg.png";
   const heroTitle = title || (
     <>
@@ -16,11 +17,24 @@ export default function Hero({ children, title, description, backgroundImage }) 
       {/* Background with overlay */}
       <div className="absolute inset-x-0 top-0 h-[85vh] rounded-b-[3rem] overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-        <img
-          src={bgImage}
-          alt="Hero Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
-        />
+
+        {props.backgroundVideo ? (
+          <video
+            src={props.backgroundVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
+          />
+        ) : (
+          <img
+            src={bgImage}
+            alt="Hero Background"
+            className="absolute inset-0 w-full h-full object-cover opacity-60"
+          />
+        )}
+
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-transparent" />
         <div className="absolute inset-0 bg-black/30" />
       </div>

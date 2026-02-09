@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import toast from 'react-hot-toast'
 import { Calendar as CalendarIcon, Save, Plus, Trash2, Edit } from 'lucide-react'
+import { useAdmin } from '@/contexts/AdminContext'
 
 export default function RatesAvailability() {
     // const { success, error } = useToast() // Removed
+    const { currentHotel } = useAdmin() || {}
     const [activeTab, setActiveTab] = useState('plans') // plans | calendar
     const [roomTypes, setRoomTypes] = useState([])
     const [ratePlans, setRatePlans] = useState([])
@@ -18,7 +20,7 @@ export default function RatesAvailability() {
 
     useEffect(() => {
         fetchInitialData()
-    }, [])
+    }, [currentHotel?.id])
 
     useEffect(() => {
         if (activeTab === 'calendar' && selectedType) {
@@ -28,16 +30,15 @@ export default function RatesAvailability() {
 
     const fetchInitialData = async () => {
         try {
-            const types = await apiFetch('/room-types')
+            const hotelId = currentHotel?.id;
+
+            if (!hotelId) return;
+
+            const types = await apiFetch(`/room-types?hotelId=${hotelId}`)
             setRoomTypes(types)
             if (types.length > 0) setSelectedType(types[0].id)
 
-            // Assume single hotel context for now, or fetch first hotel
-            // const plans = await apiFetch('/rates/plans?hotelId=...') 
-            // We need hotelId. Let's grab it from the first room type for now or context
-            if (types.length > 0) {
-                fetchPlans(types[0].hotelId)
-            }
+            fetchPlans(hotelId)
         } catch (e) { console.error(e) }
     }
 
@@ -98,7 +99,7 @@ export default function RatesAvailability() {
 
                 <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden p-6">
                     {activeTab === 'plans' ? (
-                        <RatePlansView plans={ratePlans} roomTypes={roomTypes} refresh={() => fetchPlans(roomTypes[0]?.hotelId)} />
+                        <RatePlansView plans={ratePlans} roomTypes={roomTypes} refresh={() => fetchPlans(currentHotel?.id)} />
                     ) : (
                         <CalendarView
                             month={currentMonth}
@@ -143,7 +144,7 @@ function RatePlansView({ plans, roomTypes, refresh }) {
         e.preventDefault()
         const formData = new FormData(e.target)
         const data = {
-            hotelId: roomTypes[0]?.hotelId, // Fallback/Assumption
+            hotelId: currentHotel?.id,
             roomTypeId: formData.get('roomTypeId') || null,
             name: formData.get('name'),
             cancellationRule: formData.get('cancellationRule'),

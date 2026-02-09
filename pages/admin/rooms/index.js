@@ -7,7 +7,7 @@ import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
 
 export default function RoomManagement() {
-  const { searchQuery } = useAdmin() || { searchQuery: '' }
+  const { searchQuery, currentHotel } = useAdmin() || { searchQuery: '' }
   const [activeTab, setActiveTab] = useState('inventory') // 'inventory' | 'types'
   const [rooms, setRooms] = useState([])
   const [roomTypes, setRoomTypes] = useState([])
@@ -53,13 +53,17 @@ export default function RoomManagement() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [currentHotel?.id])
 
   const fetchData = async () => {
     try {
+      const hotelId = currentHotel?.id;
+
+      if (!hotelId) return;
+
       const [rData, tData, hData] = await Promise.all([
-        apiFetch('/rooms'),
-        apiFetch('/room-types'),
+        apiFetch(`/rooms?hotelId=${hotelId}`),
+        apiFetch(`/room-types?hotelId=${hotelId}`),
         apiFetch('/hotels')
       ])
       setRooms(rData)
@@ -158,11 +162,11 @@ export default function RoomManagement() {
   const handleSubmitRoom = async (e) => {
     e.preventDefault()
     if (!roomFormData.roomTypeId) {
-      alert('Error: No Room Type selected');
+      toast.error('Error: No Room Type selected');
       return;
     }
     if (!roomFormData.roomNumber) {
-      alert('Error: Room Number is required');
+      toast.error('Error: Room Number is required');
       return;
     }
 
@@ -194,7 +198,7 @@ export default function RoomManagement() {
       toast.success(roomFormData.isBulk ? 'Rooms generated successfully' : 'Room saved successfully');
     } catch (e) {
       console.error(e);
-      alert('Failed to save room: ' + e.message);
+      toast.error('Failed to save room: ' + (e.message || 'Unknown error'));
     }
   }
 
@@ -246,15 +250,15 @@ export default function RoomManagement() {
     e.preventDefault()
 
     // Validation
-    if (!typeFormData.name) return alert('Name is required');
-    if (!typeFormData.price) return alert('Price is required');
+    if (!typeFormData.name) return toast.error('Name is required');
+    if (!typeFormData.price) return toast.error('Price is required');
 
     // Ensure Hotel ID
     let currentHotelId = typeFormData.hotelId;
     if (!currentHotelId && hotels.length > 0) {
       currentHotelId = hotels[0].id;
     }
-    if (!currentHotelId) return alert('Error: No Hotel selected. Please create a hotel first.');
+    if (!currentHotelId) return toast.error('Error: No Hotel selected. Please create a hotel first.');
 
     try {
       const endpoint = editType ? `/room-types/${editType.id}` : '/room-types'
@@ -275,12 +279,12 @@ export default function RoomManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      alert(editType ? 'Room Type Updated' : 'Room Type Created');
+      toast.success(editType ? 'Room Type Updated' : 'Room Type Created');
       setIsTypeModalOpen(false)
       fetchData()
     } catch (e) {
       console.error(e);
-      alert('Failed to save Room Type: ' + e.message)
+      toast.error('Failed to save Room Type: ' + e.message)
     }
   }
 

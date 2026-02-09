@@ -178,25 +178,14 @@ export default function RegisterPage({ branding }) {
   )
 }
 
+// For SaaS mode, we want to hardcode the branding to BookingKub
 export async function getServerSideProps() {
-  try {
-    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
-    const res = await fetch(`${backend}/public-settings`);
-    const settings = await res.json();
-
-    return {
-      props: {
-        branding: {
-          siteName: settings.siteName || 'BookingKub',
-          logoUrl: settings.logoUrl || null
-        }
-      }
-    };
-  } catch (e) {
-    return {
-      props: {
-        branding: { siteName: 'BookingKub', logoUrl: null }
+  return {
+    props: {
+      branding: {
+        siteName: 'BookingKub',
+        logoUrl: null // Use default SVG
       }
     }
-  }
+  };
 }

@@ -9,7 +9,7 @@ import SearchBar from '@/components/SearchBar'
 
 export default function SearchPage() {
   const router = useRouter();
-  const { checkIn: qCheckIn, checkOut: qCheckOut, guests: qGuests } = router.query;
+  const { checkIn: qCheckIn, checkOut: qCheckOut, adults: qAdults, children: qChildren } = router.query;
 
   // Default to Today/Tomorrow
   const today = new Date();
@@ -20,7 +20,8 @@ export default function SearchPage() {
 
   const checkIn = qCheckIn || formatDate(today);
   const checkOut = qCheckOut || formatDate(tomorrow);
-  const guests = qGuests || '1';
+  const adults = parseInt(qAdults) || 2;
+  const children = parseInt(qChildren) || 0;
 
   const [hotel, setHotel] = useState(null);
   const [rooms, setRooms] = useState([]);
@@ -36,7 +37,10 @@ export default function SearchPage() {
         const params = new URLSearchParams();
         params.append('checkIn', checkIn);
         params.append('checkOut', checkOut);
-        params.append('guests', guests);
+        params.append('adults', adults);
+        params.append('children', children);
+        // Legacy support (Some logic uses 'guests' as total)
+        params.append('guests', adults + children);
 
         // Fetch hotels with availability logic
         const res = await fetch(`${backend}/api/hotels?${params.toString()}`);
@@ -58,7 +62,7 @@ export default function SearchPage() {
       }
     };
     if (router.isReady) load();
-  }, [router.isReady, checkIn, checkOut, guests]);
+  }, [router.isReady, checkIn, checkOut, adults, children]);
 
   // Mock Images if none (for design dev)
   const galleryImages = hotel?.images?.length ? hotel.images : [
@@ -92,7 +96,9 @@ export default function SearchPage() {
       ratePlanName: planName,
       checkIn,
       checkOut,
-      guests,
+      guestsAdult: adults,
+      guestsChild: children,
+      guests: adults + children,
       basePrice: price,
       totalPrice: price * diff
     };

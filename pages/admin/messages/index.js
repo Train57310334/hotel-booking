@@ -3,7 +3,10 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Send, Clock, CheckCircle, Mail, User, Phone, Trash2, Archive, Reply } from 'lucide-react'
 
+import { useAdmin } from '@/contexts/AdminContext'
+
 export default function MessageCenter() {
+  const { currentHotel } = useAdmin() || {}
   const [messages, setMessages] = useState([])
   const [selectedMsg, setSelectedMsg] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -11,13 +14,16 @@ export default function MessageCenter() {
   const [replyText, setReplyText] = useState('')
 
   useEffect(() => {
-    fetchMessages()
-  }, [searchTerm])
+    if (currentHotel) fetchMessages()
+  }, [searchTerm, currentHotel])
 
   const fetchMessages = async () => {
     try {
-      const query = searchTerm ? `?search=${searchTerm}` : ''
-      const data = await apiFetch(`/messages${query}`)
+      const query = new URLSearchParams()
+      if (searchTerm) query.append('search', searchTerm)
+      if (currentHotel?.id) query.append('hotelId', currentHotel.id)
+
+      const data = await apiFetch(`/messages?${query.toString()}`)
       setMessages(data)
     } catch (error) {
       console.error(error)

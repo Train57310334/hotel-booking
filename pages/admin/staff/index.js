@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Plus, User, Mail, Phone, Edit, Trash2, CheckCircle, XCircle, Shield } from 'lucide-react'
 
+import { useAdmin } from '@/contexts/AdminContext'
 import ConfirmationModal from '@/components/ConfirmationModal'
 
 export default function StaffManagement() {
+  const { currentHotel } = useAdmin() || {};
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -16,12 +18,13 @@ export default function StaffManagement() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'reception' })
 
   useEffect(() => {
-    fetchStaff()
-  }, [searchTerm])
+    if (currentHotel) fetchStaff()
+  }, [searchTerm, currentHotel])
 
   const fetchStaff = async () => {
+    if (!currentHotel) return;
     try {
-      const data = await apiFetch(`/staff`) // Uses new endpoint
+      const data = await apiFetch(`/staff?hotelId=${currentHotel.id}`) // Uses new endpoint with hotelId
       setStaff(data)
     } catch (error) {
       console.error(error)
@@ -32,19 +35,21 @@ export default function StaffManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!currentHotel) return;
+
     try {
       if (editUser) {
         // Update Role Only (Password/Profile handled by User)
-        await apiFetch(`/staff/${editUser.id}`, {
+        await apiFetch(`/staff/${editUser.id}?hotelId=${currentHotel.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: formData.role })
+          body: JSON.stringify({ role: formData.role, hotelId: currentHotel.id })
         })
       } else {
-        await apiFetch('/staff', {
+        await apiFetch(`/staff?hotelId=${currentHotel.id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({ ...formData, hotelId: currentHotel.id })
         })
       }
       setIsModalOpen(false)
@@ -65,6 +70,7 @@ export default function StaffManagement() {
   })
 
   const handleDelete = (id) => {
+    if (!currentHotel) return;
     setConfirmModal({
       isOpen: true,
       title: 'Remove Staff',
@@ -72,7 +78,7 @@ export default function StaffManagement() {
       type: 'danger',
       onConfirm: async () => {
         try {
-          await apiFetch(`/staff/${id}`, { method: 'DELETE' })
+          await apiFetch(`/staff/${id}?hotelId=${currentHotel.id}`, { method: 'DELETE' })
           fetchStaff()
         } catch (e) { alert('Delete failed') }
       }

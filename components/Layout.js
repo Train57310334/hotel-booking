@@ -1,4 +1,5 @@
 import NavBar from '@/components/NavBar'
+import Link from 'next/link'
 import { Github, Twitter, Instagram } from 'lucide-react'
 
 export default function Layout({ children, navbarProps, hideFooter = false, hideNavbar = false }) {
@@ -25,9 +26,10 @@ export default function Layout({ children, navbarProps, hideFooter = false, hide
                             <div>
                                 <h4 className="font-bold text-slate-900 mb-4">Company</h4>
                                 <ul className="space-y-2 text-sm text-slate-500">
-                                    <li><a href="#" className="hover:text-primary-600 transition-colors">About Us</a></li>
-                                    <li><a href="#" className="hover:text-primary-600 transition-colors">Careers</a></li>
-                                    <li><a href="#" className="hover:text-primary-600 transition-colors">Blog</a></li>
+                                    <li><Link href="#" className="hover:text-primary-600 transition-colors">About Us</Link></li>
+                                    <li><Link href="#" className="hover:text-primary-600 transition-colors">Careers</Link></li>
+                                    <li><Link href="/partner/register" className="hover:text-primary-600 transition-colors font-medium text-primary-600">List Your Property</Link></li>
+                                    <li><Link href="#" className="hover:text-primary-600 transition-colors">Blog</Link></li>
                                 </ul>
                             </div>
 

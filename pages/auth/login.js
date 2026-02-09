@@ -22,7 +22,36 @@ export default function LoginPage({ branding }) {
     const res = await login(email.trim(), password)
 
     if (res.success) {
-      router.push('/')
+      // Check roles from response or fetch profile to decide redirection
+      // Note: login() in AuthContext already fetches profile into `user` state, 
+      // but state update might be async. Better to rely on the API response if possible 
+      // or wait for the updated user context.
+      // However, for simplicity, we can fetch /auth/me here or trust the AuthContext logic.
+
+      // Let's optimize: The AuthContext.login returns { success: true } but doesn't return the user object directly.
+      // We can modify AuthContext to return the user, OR we can just fetch it here quickly to decide.
+      try {
+        const token = localStorage.getItem('token');
+        // We need to decode token or fetch me. Let's fetch me to be safe.
+        // Actually, AuthContext.login calls checkUser() which updates state.
+        // We can use a small timeout or just redirect to a "decider" page.
+        // BUT, better is to let AuthContext return the user.
+
+        // TEMPORARY FIX: Redirect to /admin if they have access, else /
+        // Since we can't easily see roles here without modifying Context return, 
+        // let's fetch /auth/me one more time or just redirect to /account/bookings for guests.
+
+        // Better approach:
+        const userRes = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(r => r.json());
+
+        if (userRes.roles?.includes('hotel_admin') || userRes.roles?.includes('platform_admin')) {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/');
+        }
+      } catch (err) {
+        router.push('/');
+      }
     } else {
       setError(res.error || 'Invalid email or password')
       setLoading(false)
@@ -182,25 +211,14 @@ export default function LoginPage({ branding }) {
   )
 }
 
+// For SaaS mode, we want to hardcode the branding to BookingKub
 export async function getServerSideProps() {
-  try {
-    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
-    const res = await fetch(`${backend}/public-settings`);
-    const settings = await res.json();
-
-    return {
-      props: {
-        branding: {
-          siteName: settings.siteName || 'BookingKub',
-          logoUrl: settings.logoUrl || null
-        }
-      }
-    };
-  } catch (e) {
-    return {
-      props: {
-        branding: { siteName: 'BookingKub', logoUrl: null }
+  return {
+    props: {
+      branding: {
+        siteName: 'BookingKub',
+        logoUrl: null // Use default SVG
       }
     }
-  }
+  };
 }
