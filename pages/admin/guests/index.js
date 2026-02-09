@@ -7,23 +7,27 @@ import { useRouter } from 'next/router'
 
 export default function GuestManagement() {
   const router = useRouter()
-  const { searchQuery } = useAdmin() || { searchQuery: '' }
+  const { searchQuery, currentHotel } = useAdmin() || { searchQuery: '' }
+
   const [guests, setGuests] = useState([])
   const [loading, setLoading] = useState(true)
-  // const [searchTerm, setSearchTerm] = useState('') // Global Search Used
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchGuests()
+      if (currentHotel) fetchGuests()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery])
+  }, [searchQuery, currentHotel])
 
   const fetchGuests = async () => {
+    if (!currentHotel) return;
     setLoading(true)
     try {
-      const query = searchQuery ? `?search=${searchQuery}` : ''
-      const data = await apiFetch(`/users${query}`)
+      const queryParams = new URLSearchParams();
+      if (searchQuery) queryParams.append('search', searchQuery);
+      if (currentHotel.id) queryParams.append('hotelId', currentHotel.id);
+
+      const data = await apiFetch(`/users?${queryParams.toString()}`)
       setGuests(data)
     } catch (error) {
       console.error(error)

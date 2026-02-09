@@ -21,9 +21,13 @@ import {
     ComposedChart
 } from 'recharts'
 
+import { useAdmin } from '@/contexts/AdminContext'
+
 export default function ReportsPage() {
+    const { currentHotel } = useAdmin() || {}
     const [activeTab, setActiveTab] = useState('general') // 'general' | 'audit'
 
+    // ... (rest of render)
     return (
         <AdminLayout>
             <div className="p-6 max-w-7xl mx-auto">
@@ -56,13 +60,13 @@ export default function ReportsPage() {
                     </div>
                 </div>
 
-                {activeTab === 'general' ? <GeneralReports /> : <NightAuditReports />}
+                {activeTab === 'general' ? <GeneralReports hotelId={currentHotel?.id} /> : <NightAuditReports hotelId={currentHotel?.id} />}
             </div>
-        </AdminLayout>
+        </AdminLayout >
     )
 }
 
-function GeneralReports() {
+function GeneralReports({ hotelId }) {
     const [dateRange, setDateRange] = useState({
         from: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
         to: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0]
@@ -72,22 +76,22 @@ function GeneralReports() {
     const [chartData, setChartData] = useState([])
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false)
 
-    useEffect(() => { fetchData() }, [dateRange])
+    useEffect(() => {
+        if (hotelId) fetchData()
+    }, [dateRange, hotelId])
 
     const fetchData = async () => {
         try {
-            const sum = await apiFetch(`/reports/summary?from=${dateRange.from}&to=${dateRange.to}`)
+            const query = `?hotelId=${hotelId}&from=${dateRange.from}&to=${dateRange.to}`;
+            const sum = await apiFetch(`/reports/summary${query}`)
             setSummary(sum)
 
-            const hotels = await apiFetch('/hotels')
-            if (hotels.length > 0) {
-                const exps = await apiFetch(`/expenses?hotelId=${hotels[0].id}&from=${dateRange.from}&to=${dateRange.to}`)
-                setExpenses(exps)
-            }
+            const exps = await apiFetch(`/expenses${query}`)
+            setExpenses(exps)
 
             const [revData, expData] = await Promise.all([
-                apiFetch(`/reports/revenue?from=${dateRange.from}&to=${dateRange.to}`),
-                apiFetch(`/reports/expenses?from=${dateRange.from}&to=${dateRange.to}`)
+                apiFetch(`/reports/revenue${query}`),
+                apiFetch(`/reports/expenses${query}`)
             ])
 
             const merged = {}
@@ -99,6 +103,7 @@ function GeneralReports() {
             setChartData(Object.values(merged).sort((a, b) => new Date(a.date) - new Date(b.date)))
         } catch (e) { console.error(e); toast.error('Failed to load data') }
     }
+
 
     const exportCSV = () => {
         const headers = ['Date', 'Title', 'Category', 'Amount']

@@ -7,7 +7,10 @@ import ConfirmationModal from '@/components/ConfirmationModal'
 import toast from 'react-hot-toast'
 import DatePicker from '@/components/DatePicker'
 
+import { useAdmin } from '@/contexts/AdminContext'
+
 export default function Promotions() {
+    const { currentHotel } = useAdmin() || {}
     const [promotions, setPromotions] = useState([])
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingId, setEditingId] = useState(null)
@@ -18,11 +21,14 @@ export default function Promotions() {
 
     useEffect(() => {
         fetchPromotions()
-    }, [])
+    }, [currentHotel?.id])
 
     const fetchPromotions = async () => {
         try {
-            const data = await apiFetch('/promotions')
+            const hotelId = currentHotel?.id;
+            if (!hotelId) return;
+
+            const data = await apiFetch(`/promotions?hotelId=${hotelId}`)
             setPromotions(data)
         } catch (e) {
             console.error(e)
@@ -61,6 +67,7 @@ export default function Promotions() {
         e.preventDefault()
         try {
             const payload = {
+                hotelId: currentHotel?.id,
                 code: form.code.toUpperCase(),
                 type: form.type,
                 value: Number(form.value),

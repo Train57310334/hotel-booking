@@ -11,7 +11,7 @@ import CreateBookingModal from '@/components/CreateBookingModal'
 
 export default function BookingManagement() {
   const { user } = useAuth()
-  const { searchQuery } = useAdmin() || { searchQuery: '' }
+  const { searchQuery, currentHotel } = useAdmin() || { searchQuery: '', currentHotel: null }
   const [bookings, setBookings] = useState([])
   const [meta, setMeta] = useState(null)
   const [page, setPage] = useState(1)
@@ -68,13 +68,16 @@ export default function BookingManagement() {
       if (user) fetchBookings()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery, statusFilter, sortConfig, user, page])
+  }, [searchQuery, statusFilter, sortConfig, user, page, useAdmin()?.currentHotel?.id])
 
   const fetchBookings = async () => {
     if (!isLiveMode) setLoading(true)
     try {
-      const hotelId = user?.roleAssignments?.[0]?.hotelId;
-      if (!hotelId) return;
+      const hotelId = currentHotel?.id;
+      if (!hotelId) {
+        setLoading(false);
+        return;
+      }
 
       const query = new URLSearchParams()
       query.append('hotelId', hotelId)
@@ -88,7 +91,7 @@ export default function BookingManagement() {
       }
 
       const res = await apiFetch(`/bookings/admin/all?${query.toString()}`)
-      if (res.data) {
+      if (res && res.data) {
         setBookings(res.data)
         setMeta(res.meta)
       } else {

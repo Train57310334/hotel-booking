@@ -46,9 +46,19 @@ export default function NavBar(props) {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Home</Link>
-            <Link href="/contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Contact</Link>
-            <Link href="/account/bookings" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>My Bookings</Link>
+            {props.mode === 'saas' ? (
+              <>
+                <a href="#features" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Features</a>
+                <a href="#pricing" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Pricing</a>
+                <a href="#contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Contact</a>
+              </>
+            ) : (
+              <>
+                <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Home</Link>
+                <Link href="/contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Contact</Link>
+                <Link href="/account/bookings" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>My Bookings</Link>
+              </>
+            )}
 
             <div className={`pl-4 border-l transition-colors ${showSolidNav ? 'border-slate-200' : 'border-white/20'}`}>
               {user ? (
@@ -68,7 +78,7 @@ export default function NavBar(props) {
                 <div className="flex items-center gap-3">
                   <Link href="/auth/login" className={`text-sm font-medium px-3 py-2 transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Login</Link>
                   <Link href="/auth/register" className="btn-primary flex items-center gap-2 text-sm shadow-lg shadow-primary-900/20">
-                    Register
+                    {props.mode === 'saas' ? 'Start Free' : 'Register'}
                   </Link>
                 </div>
               )}
@@ -125,6 +135,9 @@ export default function NavBar(props) {
                 </Link>
                 <Link href="/auth/register" className="btn-primary w-full py-3 rounded-xl text-center justify-center" onClick={() => setMobileMenuOpen(false)}>
                   Create Account
+                </Link>
+                <Link href="/partner/register" className="w-full py-3 rounded-xl border border-slate-200 text-slate-500 text-center text-sm hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                  List Your Property (Partner)
                 </Link>
               </div>
             )}

@@ -297,7 +297,10 @@ export default function PaymentPage() {
       roomId: bookingData.roomId,
       checkIn: new Date(bookingData.checkIn).toISOString(),
       checkOut: new Date(bookingData.checkOut).toISOString(),
-      guests: { adult: 2, child: 0 },
+      guests: {
+        adult: bookingData.guestsAdult || 2,
+        child: bookingData.guestsChild || 0
+      },
       leadGuest: {
         name: bookingData.guest.name,
         email: bookingData.guest.email,
@@ -570,7 +573,7 @@ export default function PaymentPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Subtotal</span>
-                    <span className="font-bold text-slate-900">฿{totalPrice?.toLocaleString()}</span>
+                    <span className="font-bold text-slate-900">฿{bookingData?.totalPrice?.toLocaleString()}</span>
                   </div>
                   {appliedPromo && (
                     <div className="flex justify-between text-sm text-green-600">

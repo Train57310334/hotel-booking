@@ -21,7 +21,8 @@ import {
     TrendingUp,
     HelpCircle,
     Globe,
-    SprayCan
+    SprayCan,
+    ChevronDown
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -33,10 +34,11 @@ import GlobalSearch from './GlobalSearch'
 export default function AdminLayout({ children }) {
     const router = useRouter()
     const { user, logout, loading } = useAuth()
-    const { searchQuery, setSearchQuery, currentHotel } = useAdmin() || {}
+    const { searchQuery, setSearchQuery, currentHotel, allHotels, switchHotel } = useAdmin() || {}
     const [darkMode, setDarkMode] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [hotelSwitcherOpen, setHotelSwitcherOpen] = useState(false)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const [notifications, setNotifications] = useState([])
     const [guideOpen, setGuideOpen] = useState(false)
@@ -139,6 +141,7 @@ export default function AdminLayout({ children }) {
         { name: 'Staff Management', icon: Users, href: '/admin/staff' },
         { name: 'Message', icon: MessageSquare, href: '/admin/messages' },
         { name: 'My Account', icon: UserCircle, href: '/admin/account', section: 'bottom' },
+        { name: 'Widget Gen.', icon: Globe, href: '/admin/settings/widget', section: 'bottom' },
         { name: 'Settings', icon: Settings, href: '/admin/settings', section: 'bottom' },
     ]
 
@@ -161,16 +164,45 @@ export default function AdminLayout({ children }) {
             <aside className={`fixed inset-y-0 left-0 z-50 w-56 transform transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
                 } bg-slate-900 text-white flex flex-col`}>
                 <div className="h-16 flex items-center justify-between px-6">
-                    <Link href="/" className="flex items-center gap-3">
-                        {currentHotel?.logoUrl ? (
-                            <img src={currentHotel.logoUrl} alt={currentHotel.name} className="h-8 w-8 rounded object-contain bg-white" />
-                        ) : (
-                            <div className="bg-emerald-500 rounded-lg p-1.5">
-                                <BedDouble className="text-white" size={20} />
+                    <div className="relative">
+                        <button
+                            onClick={() => allHotels?.length > 1 && setHotelSwitcherOpen(!hotelSwitcherOpen)}
+                            className="flex items-center gap-3 w-full text-left focus:outline-none hover:bg-slate-800 p-2 rounded-lg transition-colors -ml-2"
+                        >
+                            {currentHotel?.logoUrl ? (
+                                <img src={currentHotel.logoUrl} alt={currentHotel.name} className="h-8 w-8 rounded object-contain bg-white shrink-0" />
+                            ) : (
+                                <div className="bg-emerald-500 rounded-lg p-1.5 shrink-0">
+                                    <BedDouble className="text-white" size={20} />
+                                </div>
+                            )}
+                            <div className="overflow-hidden">
+                                <span className="block text-sm font-bold text-white truncate">{currentHotel?.name || 'BookingKub'}</span>
+                                {allHotels?.length > 1 && <span className="text-[10px] text-slate-400 flex items-center gap-1">Switch Hotel <ChevronDown size={10} /></span>}
                             </div>
+                        </button>
+
+                        {/* Dropdown for Platform Admin */}
+                        {allHotels?.length > 1 && hotelSwitcherOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setHotelSwitcherOpen(false)} />
+                                <div className="absolute top-full left-0 w-48 mt-2 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden z-50">
+                                    {allHotels.map(h => (
+                                        <button
+                                            key={h.id}
+                                            onClick={() => {
+                                                switchHotel(h.id);
+                                                setHotelSwitcherOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-700 transition-colors ${currentHotel?.id === h.id ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}
+                                        >
+                                            {h.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
                         )}
-                        <span className="text-lg font-bold text-white truncate max-w-[140px]">{currentHotel?.name || 'BookingKub'}</span>
-                    </Link>
+                    </div>
                     <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400">
                         <X size={20} />
                     </button>
@@ -187,7 +219,8 @@ export default function AdminLayout({ children }) {
                             return item.name === 'Housekeeping';
                         }
 
-                        const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
+                        const isPlatformAdmin = user?.roles?.includes('platform_admin');
+                        const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role) || isPlatformAdmin;
 
                         // Restricted items for non-admins (Reception/Manager)
                         const restricted = ['Reports', 'Payments', 'Staff Management', 'Settings'];
@@ -222,7 +255,8 @@ export default function AdminLayout({ children }) {
 
                             if (role === 'housekeeper' && item.name !== 'My Account') return false;
 
-                            const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
+                            const isPlatformAdmin = user?.roles?.includes('platform_admin');
+                            const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role) || isPlatformAdmin;
 
                             if (!isOwnerOrAdmin && item.name === 'Settings') return false;
                             return true;

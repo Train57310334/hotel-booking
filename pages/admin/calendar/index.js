@@ -8,8 +8,11 @@ import ConfirmationModal from '@/components/ConfirmationModal'
 
 import CreateBookingModal from '@/components/CreateBookingModal'
 
+import { useAdmin } from '@/contexts/AdminContext'
+
 export default function Calendar() {
     const { user } = useAuth()
+    const { currentHotel } = useAdmin() || {}
     const [currentDate, setCurrentDate] = useState(new Date())
     const [rooms, setRooms] = useState([])
     const [roomTypes, setRoomTypes] = useState([])
@@ -39,7 +42,8 @@ export default function Calendar() {
 
         const interval = setInterval(() => {
             // Silent fetch (no loading spinner) to avoid UI flicker
-            const hotelId = user?.roleAssignments?.[0]?.hotelId;
+            const hotelId = currentHotel?.id;
+
             if (!hotelId) return;
 
             const start = new Date(currentDate)
@@ -54,10 +58,11 @@ export default function Calendar() {
         }, 15000); // Poll every 15 seconds
 
         return () => clearInterval(interval);
-    }, [currentDate, user]);
+    }, [currentDate, user, currentHotel]);
 
     const fetchData = async () => {
-        const hotelId = user?.roleAssignments?.[0]?.hotelId;
+        const hotelId = currentHotel?.id;
+
         if (!hotelId) return;
 
         setLoading(true)
@@ -68,8 +73,8 @@ export default function Calendar() {
             end.setMonth(end.getMonth() + 1)
 
             const [roomsData, typesData, eventsData] = await Promise.all([
-                apiFetch('/rooms'),
-                apiFetch('/room-types'),
+                apiFetch(`/rooms?hotelId=${hotelId}`),
+                apiFetch(`/room-types?hotelId=${hotelId}`),
                 apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`)
             ])
 
@@ -159,7 +164,7 @@ export default function Calendar() {
             type: newStatus === 'cancelled' ? 'danger' : 'warning',
             onConfirm: async () => {
                 try {
-                    const hotelId = user?.roleAssignments?.[0]?.hotelId;
+                    const hotelId = currentHotel?.id;
                     const query = hotelId ? `?hotelId=${hotelId}` : '';
 
                     await apiFetch(`/bookings/admin/${id}/status${query}`, {

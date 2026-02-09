@@ -14,24 +14,24 @@ import {
     Eye,
     Wrench
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
 
 export default function Housekeeping() {
-    const { user } = useAuth()
+    const { currentHotel } = useAdmin() || {}
     const [rooms, setRooms] = useState([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('ALL') // ALL, DIRTY, CLEAN, INSPECTED, OOO
     const [searchTerm, setSearchTerm] = useState('')
 
     useEffect(() => {
-        fetchRooms()
-    }, [])
+        if (currentHotel) fetchRooms()
+    }, [currentHotel])
 
     const fetchRooms = async () => {
         setLoading(true)
         try {
-            const data = await apiFetch('/rooms')
+            const data = await apiFetch(`/rooms?hotelId=${currentHotel?.id}`)
             setRooms(data)
         } catch (error) {
             console.error(error)
@@ -168,8 +168,8 @@ export default function Housekeeping() {
                             key={s}
                             onClick={() => setFilter(s)}
                             className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${filter === s
-                                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                                    : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                                : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {s}
@@ -277,8 +277,8 @@ function StatsCard({ label, value, color, icon: Icon, active, onClick }) {
         <button
             onClick={onClick}
             className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden group ${active
-                    ? 'bg-white dark:bg-slate-800 ring-2 ring-emerald-500 shadow-lg'
-                    : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-emerald-200'
+                ? 'bg-white dark:bg-slate-800 ring-2 ring-emerald-500 shadow-lg'
+                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-emerald-200'
                 }`}
         >
             <div className={`absolute top-0 right-0 w-16 h-16 transform translate-x-4 -translate-y-4 rounded-full opacity-10 ${color}`}></div>

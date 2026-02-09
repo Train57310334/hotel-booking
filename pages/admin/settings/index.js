@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import { useAdmin } from '@/contexts/AdminContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiFetch } from '@/lib/api';
 import { Building2, Image as ImageIcon, Globe, Save, Upload, X, CreditCard, Mail, Bell, LayoutTemplate } from 'lucide-react';
@@ -38,24 +39,30 @@ export default function HotelSettings() {
         bankAccountNumber: ''
     });
 
+    const isPlatformAdmin = user?.roles?.includes('platform_admin');
+    const { searchQuery, setSearchQuery, currentHotel } = useAdmin() || {};
+
     useEffect(() => {
-        if (user && user.roleAssignments && user.roleAssignments.length > 0) {
-            const hotelId = user.roleAssignments[0].hotelId;
-            fetchHotel(hotelId);
-        } else if (user) {
-            setLoading(false); // No hotel assigned
+        if (currentHotel) {
+            fetchHotel(currentHotel.id);
+        } else if (user && !loading && !currentHotel) {
+            if (!isPlatformAdmin && (!user.roleAssignments || user.roleAssignments.length === 0)) {
+                setLoading(false);
+            }
         }
-    }, [user]);
+    }, [user, currentHotel]);
 
     const fetchHotel = async (id) => {
         try {
-            const [hotelData, settingsData] = await Promise.all([
-                apiFetch(`/hotels/${id}`),
-                apiFetch('/settings')
-            ]);
+            const promises = [apiFetch(`/hotels/${id}`)];
+            if (isPlatformAdmin) {
+                promises.push(apiFetch('/settings'));
+            }
+
+            const [hotelData, settingsData] = await Promise.all(promises);
 
             setHotel(hotelData);
-            setSystemSettings(settingsData || {});
+            if (settingsData) setSystemSettings(settingsData);
 
             setFormData({
                 name: hotelData.name || '',
@@ -70,12 +77,18 @@ export default function HotelSettings() {
                 logoUrl: hotelData.logoUrl || '',
                 imageUrl: hotelData.imageUrl || '',
                 images: hotelData.images || [],
-                // Payment Config
+                // Payment Config (Hotel Level)
                 promptPayId: hotelData.promptPayId || '',
                 bankName: hotelData.bankName || '',
                 bankAccountName: hotelData.bankAccountName || '',
                 bankAccountNumber: hotelData.bankAccountNumber || ''
             });
+
+            // If user is not platform admin and on a restricted tab, switch to general
+            if (!isPlatformAdmin && (activeTab === 'platform' || activeTab === 'notifications')) {
+                setActiveTab('general');
+            }
+
         } catch (error) {
             console.error(error);
             toast.error('Failed to load settings');
@@ -87,6 +100,14 @@ export default function HotelSettings() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear error when user types
+        if (errors[name]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
     };
 
     const handleSystemChange = (key, value) => {
@@ -97,17 +118,20 @@ export default function HotelSettings() {
         const file = e.target.files[0];
         if (!file) return;
 
-        const uploadData = new FormData();
-        uploadData.append('file', file);
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+
+        const toastId = toast.loading('Uploading...');
 
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api'}/upload`, {
                 method: 'POST',
-                body: uploadData,
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: uploadFormData
             });
 
             if (!res.ok) throw new Error('Upload failed');
-
             const data = await res.json();
 
             if (field === 'images') {
@@ -115,9 +139,10 @@ export default function HotelSettings() {
             } else {
                 setFormData(prev => ({ ...prev, [field]: data.url }));
             }
+            toast.success('Uploaded successfully', { id: toastId });
         } catch (error) {
-            console.error('Upload Error:', error);
-            toast.error('Upload failed');
+            console.error(error);
+            toast.error('Upload failed', { id: toastId });
         }
     };
 
@@ -130,12 +155,9 @@ export default function HotelSettings() {
 
     const validate = () => {
         const newErrors = {};
-
-        // Email Validation
         if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
-            newErrors.contactEmail = 'Invalid email address';
+            newErrors.contactEmail = 'Invalid email format';
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -144,12 +166,9 @@ export default function HotelSettings() {
         e.preventDefault();
 
         if (!validate()) {
-            // Re-run validate to get immediate errors
             const newErrors = {};
             if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) newErrors.contactEmail = 'Invalid email';
-
             if (newErrors.contactEmail) setActiveTab('general');
-
             toast.error('Please fix validation errors');
             return;
         }
@@ -158,18 +177,25 @@ export default function HotelSettings() {
         if (!hotel) return;
 
         try {
-            await Promise.all([
+            const promises = [
                 apiFetch(`/hotels/${hotel.id}`, {
                     method: 'PUT',
                     body: JSON.stringify(formData)
-                }),
-                apiFetch('/settings', {
-                    method: 'PUT',
-                    body: JSON.stringify(systemSettings)
                 })
-            ]);
+            ];
 
-            toast.success('All settings saved successfully!');
+            if (isPlatformAdmin) {
+                promises.push(
+                    apiFetch('/settings', {
+                        method: 'PUT',
+                        body: JSON.stringify(systemSettings)
+                    })
+                );
+            }
+
+            await Promise.all(promises);
+
+            toast.success('Settings saved successfully!');
             checkUser();
         } catch (error) {
             console.error(error);
@@ -182,14 +208,16 @@ export default function HotelSettings() {
     if (loading) return <AdminLayout>Loading...</AdminLayout>;
     if (!hotel) return <AdminLayout><div className="p-8 text-center text-slate-500">No Hotel Assigned</div></AdminLayout>;
 
-    const tabs = [
+    const allTabs = [
         { id: 'general', label: 'General Info', icon: Building2 },
         { id: 'branding', label: 'Branding', icon: ImageIcon },
         { id: 'web', label: 'Website Content', icon: Globe },
         { id: 'payment', label: 'Bank Accounts', icon: CreditCard },
-        { id: 'platform', label: 'Platform & Gateways', icon: LayoutTemplate },
-        { id: 'notifications', label: 'Notifications', icon: Bell },
+        { id: 'platform', label: 'Platform & Gateways', icon: LayoutTemplate, restricted: true },
+        { id: 'notifications', label: 'Notifications', icon: Bell, restricted: true },
     ];
+
+    const tabs = allTabs.filter(t => !t.restricted || isPlatformAdmin);
 
     return (
         <AdminLayout>
