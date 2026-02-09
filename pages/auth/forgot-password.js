@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { apiFetch, endpoints } from '@/lib/api'
+import { apiFetch, routes } from '@/lib/api'
 
-export default function ForgotPasswordPage(){
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -9,15 +9,15 @@ export default function ForgotPasswordPage(){
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true); setMessage('');
-    try{
-      await apiFetch(endpoints.forgot, {
+    try {
+      await apiFetch(routes.auth.forgotPassword, {
         method: 'POST',
         body: JSON.stringify({ email })
       });
       setMessage('If the email exists, a reset link has been sent.');
-    }catch(err){
+    } catch (err) {
       setMessage('If the email exists, a reset link has been sent.');
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -29,7 +29,7 @@ export default function ForgotPasswordPage(){
       <form onSubmit={submit} className="bg-white p-4 rounded shadow space-y-3">
         <div>
           <label className="block font-medium">Email</label>
-          <input value={email} onChange={e=>setEmail(e.target.value)} type="email" required className="w-full border p-2 rounded"/>
+          <input value={email} onChange={e => setEmail(e.target.value)} type="email" required className="w-full border p-2 rounded" />
         </div>
         <button disabled={loading} className={`w-full py-2 px-4 rounded ${loading ? 'bg-gray-400' : 'bg-blue-600 text-white'}`}>
           {loading ? 'Sending...' : 'Send reset link'}
