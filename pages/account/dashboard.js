@@ -1,4 +1,4 @@
-import { useState } from 'react'
+
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import StatsCard from '@/components/dashboard/StatsCard'
 import { DollarSign, Home, BedDouble, CalendarCheck } from 'lucide-react'
@@ -15,8 +15,10 @@ export default function Dashboard() {
         { title: 'Total Bookings', value: '0', icon: CalendarCheck, subtext: 'Updated just now', color: 'blue' },
     ])
     const [revenueData, setRevenueData] = useState([])
+    const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
+        setMounted(true)
         fetchDashboardData()
     }, [])
 
@@ -99,21 +101,23 @@ export default function Dashboard() {
                         </select>
                     </div>
                     <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={revenueData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                <Bar dataKey="income" fill="url(#colorIncome)" radius={[4, 4, 0, 0]} barSize={20} />
-                                <defs>
-                                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#059669" stopOpacity={1} />
-                                    </linearGradient>
-                                </defs>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {mounted && (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={revenueData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                    <Bar dataKey="income" fill="url(#colorIncome)" radius={[4, 4, 0, 0]} barSize={20} />
+                                    <defs>
+                                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                                            <stop offset="95%" stopColor="#059669" stopOpacity={1} />
+                                        </linearGradient>
+                                    </defs>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </div>
 
