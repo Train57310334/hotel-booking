@@ -7,7 +7,7 @@ import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
 
 export default function RoomManagement() {
-  const { searchQuery, currentHotel } = useAdmin() || { searchQuery: '' }
+  const { searchQuery, currentHotel, openUpgradeModal } = useAdmin() || { searchQuery: '' }
   const [activeTab, setActiveTab] = useState('inventory') // 'inventory' | 'types'
   const [rooms, setRooms] = useState([])
   const [roomTypes, setRoomTypes] = useState([])
@@ -22,6 +22,7 @@ export default function RoomManagement() {
   const [itemToDelete, setItemToDelete] = useState(null) // { id, type: 'room' | 'type', name }
 
   const [editRoom, setEditRoom] = useState(null)
+  const [editType, setEditType] = useState(null)
 
   const [expandedTypes, setExpandedTypes] = useState({}); // { [typeId]: boolean }
 
@@ -75,7 +76,7 @@ export default function RoomManagement() {
       }))
       setHotels(hData)
       if (hData.length > 0) {
-        setTypeFormData(prev => ({ ...prev, hotelId: hData[0].id }))
+        setTypeFormData(prev => ({ ...prev, hotelId: currentHotel?.id || hData[0].id }))
       }
 
       // Auto-expand all types initially if total rooms < 50, otherwise collapse
@@ -165,7 +166,12 @@ export default function RoomManagement() {
       toast.error('Error: No Room Type selected');
       return;
     }
-    if (!roomFormData.roomNumber) {
+    if (roomFormData.isBulk) {
+      if (!roomFormData.startNumber || !roomFormData.count) {
+        toast.error('Error: Start Number and Count are required');
+        return;
+      }
+    } else if (!roomFormData.roomNumber) {
       toast.error('Error: Room Number is required');
       return;
     }
@@ -198,6 +204,12 @@ export default function RoomManagement() {
       toast.success(roomFormData.isBulk ? 'Rooms generated successfully' : 'Room saved successfully');
     } catch (e) {
       console.error(e);
+      // Check for Limit Reached (409 Conflict is often used, or 403 Forbidden. Assuming 409 based on context)
+      if (e.status === 409 || e.message?.includes('Limit reached') || e.message?.includes('Maximum number of rooms')) {
+        setIsRoomModalOpen(false) // Close the room modal so they see the upgrade modal
+        openUpgradeModal()
+        return
+      }
       toast.error('Failed to save room: ' + (e.message || 'Unknown error'));
     }
   }
@@ -226,15 +238,18 @@ export default function RoomManagement() {
   }
 
   const openRoomModal = (room = null) => {
-    setEditRoom(room)
-    if (room) {
+    // Check if it's a real room (has ID) or just a preset for creation
+    const isEdit = room && room.id;
+    setEditRoom(isEdit ? room : null);
+
+    if (isEdit) {
       setRoomFormData({
         roomTypeId: room.roomTypeId,
         roomNumber: room.roomNumber || ''
       })
     } else {
       setRoomFormData({
-        roomTypeId: roomTypes[0]?.id || '',
+        roomTypeId: room?.roomTypeId || roomTypes[0]?.id || '',
         roomNumber: '',
         prefix: '',
         startNumber: '101',
@@ -255,9 +270,10 @@ export default function RoomManagement() {
 
     // Ensure Hotel ID
     let currentHotelId = typeFormData.hotelId;
-    if (!currentHotelId && hotels.length > 0) {
-      currentHotelId = hotels[0].id;
+    if (!currentHotelId) {
+      currentHotelId = currentHotel?.id || (hotels.length > 0 ? hotels[0].id : null);
     }
+
     if (!currentHotelId) return toast.error('Error: No Hotel selected. Please create a hotel first.');
 
     try {
@@ -269,7 +285,8 @@ export default function RoomManagement() {
         maxAdults: parseInt(typeFormData.maxAdults) || 2,
         maxChildren: parseInt(typeFormData.maxChildren) || 0,
         isFeatured: typeFormData.isFeatured,
-        hotelId: currentHotelId
+        hotelId: currentHotelId,
+        images: typeFormData.images // Explicitly include images
       }
 
       console.log('Submitting Room Type:', payload); // DEBUG
@@ -296,7 +313,7 @@ export default function RoomManagement() {
         price: type.basePrice || '',
         images: type.images || [],
         description: type.description || '',
-        hotelId: type.hotelId || (hotels.length > 0 ? hotels[0].id : ''),
+        hotelId: type.hotelId || (currentHotel?.id || ''), // Use Data
         bedConfig: type.bedConfig || 'King Bed',
         sizeSqm: type.sizeSqm || '',
         maxAdults: type.maxAdults || 2,
@@ -310,7 +327,7 @@ export default function RoomManagement() {
         price: '',
         images: [],
         description: '',
-        hotelId: hotels.length > 0 ? hotels[0].id : '',
+        hotelId: currentHotel?.id || (hotels.length > 0 ? hotels[0].id : ''), // Preference for current
         bedConfig: 'King Bed',
         sizeSqm: '',
         maxAdults: 2,
