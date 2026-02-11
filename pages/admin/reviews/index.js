@@ -1,23 +1,27 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
+import { useAdmin } from '@/contexts/AdminContext'
 import { Star, CheckCircle, XCircle, MessageSquare, AlertCircle, Trash2 } from 'lucide-react'
 
 export default function ReviewManagement() {
+    const { currentHotel } = useAdmin() || {}
     const [reviews, setReviews] = useState([])
     const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, averageRating: 0 })
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('All')
 
     useEffect(() => {
-        fetchReviews()
-        fetchStats()
-    }, [filter])
+        if (currentHotel) {
+            fetchReviews()
+            fetchStats()
+        }
+    }, [filter, currentHotel?.id])
 
     const fetchReviews = async () => {
         setLoading(true)
         try {
-            const data = await apiFetch(`/reviews/admin/all?status=${filter}`)
+            const data = await apiFetch(`/reviews/admin/all?status=${filter}&hotelId=${currentHotel?.id}`)
             setReviews(data)
         } catch (error) {
             console.error(error)
@@ -28,7 +32,7 @@ export default function ReviewManagement() {
 
     const fetchStats = async () => {
         try {
-            const data = await apiFetch('/reviews/admin/stats')
+            const data = await apiFetch(`/reviews/admin/stats?hotelId=${currentHotel?.id}`)
             setStats(data)
         } catch (error) { console.error(error) }
     }

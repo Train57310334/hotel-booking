@@ -45,7 +45,7 @@ export default function LoginPage({ branding }) {
         const userRes = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(r => r.json());
 
         if (userRes.roles?.includes('hotel_admin') || userRes.roles?.includes('platform_admin')) {
-          router.push('/admin/dashboard');
+          router.push('/admin');
         } else {
           router.push('/');
         }

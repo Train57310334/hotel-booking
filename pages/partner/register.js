@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import { User, Mail, Lock, ArrowRight, Loader2, Building, Phone } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -14,11 +14,22 @@ export default function RegisterPartnerPage() {
         name: '',
         email: '',
         password: '',
-        phone: ''
+        phone: '',
+        package: 'LITE'
     })
 
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
+
+    // Set initial package from URL query
+    useEffect(() => {
+        if (router.query.plan) {
+            const plan = router.query.plan.toUpperCase();
+            if (['LITE', 'PRO', 'ENTERPRISE'].includes(plan)) {
+                setFormData(prev => ({ ...prev, package: plan }))
+            }
+        }
+    }, [router.query.plan])
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -32,7 +43,7 @@ export default function RegisterPartnerPage() {
         const res = await registerPartner(formData)
 
         if (res.success) {
-            router.push('/admin/dashboard')
+            router.push('/admin')
         } else {
             setError(res.error || 'Registration failed')
             setLoading(false)
@@ -91,6 +102,16 @@ export default function RegisterPartnerPage() {
                                 {error}
                             </div>
                         )}
+
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
+                            <div>
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Selected Plan</p>
+                                <p className="text-xl font-bold text-primary-600">{formData.package}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-slate-900 font-bold">{formData.package === 'LITE' ? 'Free Forever' : formData.package === 'PRO' ? '฿990 /mo' : 'Custom'}</p>
+                            </div>
+                        </div>
 
                         <form onSubmit={handleRegister} className="space-y-5">
                             <div className="space-y-4">

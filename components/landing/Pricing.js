@@ -16,7 +16,7 @@ const plans = [
             'Email Support'
         ],
         cta: 'Start for Free',
-        ctaLink: '/auth/register',
+        ctaLink: '/partner/register?plan=lite',
         popular: false
     },
     {
@@ -33,7 +33,7 @@ const plans = [
             'Priority Support 24/7'
         ],
         cta: 'Start Pro Trial',
-        ctaLink: '/auth/register?plan=pro',
+        ctaLink: '/partner/register?plan=pro',
         popular: true
     },
     {

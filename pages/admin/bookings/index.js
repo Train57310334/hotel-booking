@@ -122,7 +122,8 @@ export default function BookingManagement() {
       type: newStatus === 'cancelled' ? 'danger' : 'warning',
       onConfirm: async () => {
         try {
-          const hotelId = user?.roleAssignments?.[0]?.hotelId;
+          // Use currentHotel.id if available, otherwise fallback (though currentHotel should be set)
+          const hotelId = currentHotel?.id || user?.roleAssignments?.[0]?.hotelId;
           const query = hotelId ? `?hotelId=${hotelId}` : '';
 
           await apiFetch(`/bookings/admin/${id}/status${query}`, {

@@ -10,6 +10,11 @@ export function AdminProvider({ children }) {
     const [currentHotel, setCurrentHotel] = useState(null)
     const [allHotels, setAllHotels] = useState([])
 
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+
+    const openUpgradeModal = () => setIsUpgradeModalOpen(true)
+    const closeUpgradeModal = () => setIsUpgradeModalOpen(false)
+
     useEffect(() => {
         if (!user) return;
 
@@ -43,7 +48,12 @@ export function AdminProvider({ children }) {
     }
 
     return (
-        <AdminContext.Provider value={{ searchQuery, setSearchQuery, currentHotel, setCurrentHotel, allHotels, switchHotel }}>
+        <AdminContext.Provider value={{
+            searchQuery, setSearchQuery,
+            currentHotel, setCurrentHotel,
+            allHotels, switchHotel,
+            isUpgradeModalOpen, openUpgradeModal, closeUpgradeModal
+        }}>
             {children}
         </AdminContext.Provider>
     )

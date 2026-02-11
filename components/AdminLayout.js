@@ -11,7 +11,6 @@ import {
     Star,
     Settings,
     Bell,
-    Search,
     Moon,
     X,
     Menu,
@@ -22,7 +21,8 @@ import {
     HelpCircle,
     Globe,
     SprayCan,
-    ChevronDown
+    ChevronDown,
+    Zap
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -30,18 +30,24 @@ import { useState, useEffect } from 'react'
 import GuideModal from './GuideModal'
 import { guideData, defaultGuide } from '@/data/guides'
 import GlobalSearch from './GlobalSearch'
+import UpgradeModal from './UpgradeModal'
 
 export default function AdminLayout({ children }) {
     const router = useRouter()
     const { user, logout, loading } = useAuth()
-    const { searchQuery, setSearchQuery, currentHotel, allHotels, switchHotel } = useAdmin() || {}
+    const [guideOpen, setGuideOpen] = useState(false)
+    const {
+        currentHotel, allHotels, switchHotel,
+        isUpgradeModalOpen, closeUpgradeModal, openUpgradeModal,
+        setSearchQuery
+    } = useAdmin() || {}
+
     const [darkMode, setDarkMode] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [hotelSwitcherOpen, setHotelSwitcherOpen] = useState(false)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const [notifications, setNotifications] = useState([])
-    const [guideOpen, setGuideOpen] = useState(false)
 
     // Determine current guide content
     const currentGuide = guideData[router.pathname] || defaultGuide
@@ -50,7 +56,6 @@ export default function AdminLayout({ children }) {
     useEffect(() => {
         if (setSearchQuery) setSearchQuery('')
     }, [router.pathname, setSearchQuery])
-
 
     // Fetch Notifications (Poll every 30s)
     useEffect(() => {
@@ -104,7 +109,7 @@ export default function AdminLayout({ children }) {
         const interval = setInterval(fetchNotes, 60000)
 
         return () => clearInterval(interval)
-    }, [user])
+    }, [user, loading, router])
 
     // Handle Dark Mode
     useEffect(() => {
@@ -155,6 +160,8 @@ export default function AdminLayout({ children }) {
 
     return (
         <div className={`flex min-h-screen font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
+            <UpgradeModal isOpen={isUpgradeModalOpen} onClose={closeUpgradeModal} />
+
             {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
                 <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileMenuOpen(false)} />
@@ -245,6 +252,24 @@ export default function AdminLayout({ children }) {
                     })}
 
                     <div className="my-4 border-t border-slate-800" />
+
+                    {/* Plan Badge */}
+                    <div className="px-3 mb-6">
+                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 border border-slate-700 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Current Plan</h4>
+                            <div className="flex justify-between items-center mb-3">
+                                <span className="text-lg font-bold text-white">LITE</span>
+                                <span className="bg-slate-700 text-xs px-2 py-0.5 rounded text-slate-300">Free</span>
+                            </div>
+                            <button
+                                onClick={openUpgradeModal}
+                                className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Zap size={14} className="fill-current" /> Upgrade to PRO
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Settings Section */}
                     <div>

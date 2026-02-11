@@ -97,17 +97,41 @@ export default function NavBar(props) {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white md:hidden pt-24 px-6 animate-in slide-in-from-top-10 duration-200">
+        <div className="fixed inset-0 z-40 bg-white md:hidden pt-24 px-6 animate-in slide-in-from-top-10 duration-200 flex flex-col h-screen overflow-y-auto pb-20">
           <div className="flex flex-col gap-6 text-lg font-medium text-slate-800">
-            <Link href="/account/bookings" className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary-600 shadow-sm">
-                <CalendarDays size={20} />
-              </div>
-              My Bookings
-            </Link>
+
+            {/* Mode Specific Links */}
+            {props.mode === 'saas' ? (
+              <>
+                <a href="#features" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  Features
+                </a>
+                <a href="#pricing" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  Pricing
+                </a>
+                <a href="#contact" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  Contact
+                </a>
+              </>
+            ) : (
+              <>
+                <Link href="/" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Home size={20} className="text-slate-400" />
+                  Home
+                </Link>
+                <Link href="/account/bookings" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <CalendarDays size={20} className="text-slate-400" />
+                  My Bookings
+                </Link>
+                <Link href="/contact" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  Contact
+                </Link>
+              </>
+            )}
 
             <hr className="border-slate-100" />
 
+            {/* User / Auth Actions */}
             {user ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
@@ -134,11 +158,13 @@ export default function NavBar(props) {
                   Sign In
                 </Link>
                 <Link href="/auth/register" className="btn-primary w-full py-3 rounded-xl text-center justify-center" onClick={() => setMobileMenuOpen(false)}>
-                  Create Account
+                  {props.mode === 'saas' ? 'Start Free' : 'Create Account'}
                 </Link>
-                <Link href="/partner/register" className="w-full py-3 rounded-xl border border-slate-200 text-slate-500 text-center text-sm hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
-                  List Your Property (Partner)
-                </Link>
+                {props.mode === 'saas' && (
+                  <Link href="/partner/register" className="w-full py-3 rounded-xl border border-slate-200 text-slate-500 text-center text-sm hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                    List Your Property (Partner)
+                  </Link>
+                )}
               </div>
             )}
           </div>
