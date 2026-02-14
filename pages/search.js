@@ -16,7 +16,11 @@ export default function SearchPage() {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  const formatDate = (d) => d.toISOString().split('T')[0];
+  const formatDate = (d) => {
+    const offset = d.getTimezoneOffset()
+    const local = new Date(d.getTime() - (offset * 60 * 1000))
+    return local.toISOString().split('T')[0]
+  };
 
   const checkIn = qCheckIn || formatDate(today);
   const checkOut = qCheckOut || formatDate(tomorrow);

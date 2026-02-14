@@ -314,8 +314,14 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
 
     const handleSaveCallback = async (formData) => {
         try {
+            // Fix: Use local date string to avoid timezone shift
+            const year = formData.date.getFullYear();
+            const month = String(formData.date.getMonth() + 1).padStart(2, '0');
+            const day = String(formData.date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
             // Update Inventory
-            await apiFetch(`/inventory/${selectedType}/${formData.date.toISOString().split('T')[0]}`, {
+            await apiFetch(`/inventory/${selectedType}/${dateStr}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
                     allotment: Number(formData.allotment),
@@ -329,12 +335,21 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                 toast.error('No Rate Plan found. Please create a Rate Plan first.')
                 return
             }
+            // Fix: Send local date string or date object that won't be shifted
+            // The backend likely expects an ISO string or Date, but if we send a string YYYY-MM-DD it might be safer if the backend supports it.
+            // However, the backend is NestJS with Prisma. Prisma usually expects Date objects.
+            // If we send `formData.date`, it sends UTC.
+            // We should construct a Date object that represents noon UTC for that specific date to be safe, or just use the string if our API handles it.
+            // Looking at the previous code: `date: formData.date`
+            // Let's create a UTC date from the local components to ensure it lands on the correct day in DB.
+            const utcDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+
             await apiFetch('/rates/overrides', {
                 method: 'POST',
                 body: JSON.stringify({
                     roomTypeId: selectedType,
                     ratePlanId: defaultPlanId,
-                    date: formData.date,
+                    date: utcDate, // Send UTC date
                     baseRate: Number(formData.price)
                 })
             })

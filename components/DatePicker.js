@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/themes/airbnb.css"; // Clean, modern base theme
@@ -11,22 +12,35 @@ export default function DatePicker({
     className = "",
     wrapperClassName = "",
 }) {
+    const formattedValue = useMemo(() => {
+        return value ? new Date(value) : null;
+    }, [value]);
+
+    const memoizedOptions = useMemo(() => ({
+        dateFormat: "Y-m-d",
+        disableMobile: "true",
+        ...options,
+    }), [options]);
+
     return (
         <div className={`relative group w-full ${wrapperClassName}`}>
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors pointer-events-none z-10">
                 <Calendar size={20} />
             </div>
             <Flatpickr
-                value={value}
+                value={formattedValue}
                 onChange={(selectedDates) => {
-                    // Return array for range, or single date depending on config
-                    onChange(selectedDates);
+                    if (selectedDates && selectedDates.length > 0) {
+                        // Fix: Manually format to local YYYY-MM-DD to avoid UTC shifts
+                        const date = selectedDates[0];
+                        const offset = date.getTimezoneOffset();
+                        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+                        onChange([localDate.toISOString().split('T')[0]]);
+                    } else {
+                        onChange([]);
+                    }
                 }}
-                options={{
-                    dateFormat: "Y-m-d",
-                    disableMobile: "true", // Force custom picker on mobile for consistency
-                    ...options,
-                }}
+                options={memoizedOptions}
                 className={`w-full bg-white/50 hover:bg-white focus:bg-white border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 focus:ring-2 focus:ring-primary-200 transition-all outline-none cursor-pointer ${className}`}
                 placeholder={placeholder}
             />

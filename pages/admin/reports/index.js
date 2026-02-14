@@ -66,10 +66,16 @@ export default function ReportsPage() {
     )
 }
 
+const toLocalISO = (date) => {
+    const offset = date.getTimezoneOffset()
+    const local = new Date(date.getTime() - (offset * 60 * 1000))
+    return local.toISOString().split('T')[0]
+}
+
 function GeneralReports({ hotelId }) {
     const [dateRange, setDateRange] = useState({
-        from: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-        to: new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0]
+        from: toLocalISO(new Date(new Date().getFullYear(), 0, 1)),
+        to: toLocalISO(new Date(new Date().getFullYear(), 11, 31))
     })
     const [summary, setSummary] = useState({ totalRevenue: 0, totalExpenses: 0, totalProfit: 0, totalBookings: 0 })
     const [expenses, setExpenses] = useState([])
@@ -107,7 +113,7 @@ function GeneralReports({ hotelId }) {
 
     const exportCSV = () => {
         const headers = ['Date', 'Title', 'Category', 'Amount']
-        const rows = expenses.map(e => [new Date(e.date).toISOString().split('T')[0], e.title, e.category, e.amount])
+        const rows = expenses.map(e => [toLocalISO(new Date(e.date)), e.title, e.category, e.amount])
         const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n")
         const link = document.createElement("a")
         link.setAttribute("href", encodeURI(csvContent))
@@ -349,7 +355,7 @@ function AddExpenseModal({ isOpen, onClose, onSuccess }) {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Date</label>
-                            <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            <input name="date" type="date" required defaultValue={toLocalISO(new Date())} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
                         </div>
                     </div>
                     <div>

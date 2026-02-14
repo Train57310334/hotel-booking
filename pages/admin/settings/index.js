@@ -39,7 +39,7 @@ export default function HotelSettings() {
         bankAccountNumber: ''
     });
 
-    const isPlatformAdmin = user?.roles?.includes('platform_admin');
+    const isPlatformAdmin = user?.roles?.includes('platform_admin') || user?.roles?.includes('owner') || user?.roles?.includes('admin');
     const { searchQuery, setSearchQuery, currentHotel } = useAdmin() || {};
 
     useEffect(() => {

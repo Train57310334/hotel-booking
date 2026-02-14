@@ -44,6 +44,12 @@ export default function Promotions() {
         } catch (e) { toast.error('Failed to delete') }
     }
 
+    const toLocalISO = (date) => {
+        const offset = date.getTimezoneOffset()
+        const local = new Date(date.getTime() - (offset * 60 * 1000))
+        return local.toISOString().split('T')[0]
+    }
+
     const handleEdit = (promo) => {
         setEditingId(promo.id)
         setForm({
@@ -223,7 +229,7 @@ export default function Promotions() {
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
                                     <DatePicker
                                         value={form.startDate}
-                                        onChange={([date]) => setForm({ ...form, startDate: date ? date.toISOString().split('T')[0] : '' })}
+                                        onChange={([date]) => setForm({ ...form, startDate: date ? toLocalISO(date) : '' })}
                                         options={{ minDate: "today" }}
                                         className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                         wrapperClassName="w-full"
@@ -233,7 +239,7 @@ export default function Promotions() {
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
                                     <DatePicker
                                         value={form.endDate}
-                                        onChange={([date]) => setForm({ ...form, endDate: date ? date.toISOString().split('T')[0] : '' })}
+                                        onChange={([date]) => setForm({ ...form, endDate: date ? toLocalISO(date) : '' })}
                                         options={{ minDate: form.startDate || "today" }}
                                         className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                         wrapperClassName="w-full"

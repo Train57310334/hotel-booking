@@ -3,11 +3,13 @@ import { apiFetch } from '@/lib/api'
 import { Plus, Trash2, CreditCard, Receipt } from 'lucide-react'
 import toast from 'react-hot-toast'
 import PaymentModal from '@/components/PaymentModal'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 export default function FolioTab({ booking, onUpdate }) {
     const [folio, setFolio] = useState(null)
     const [isAddChargeOpen, setIsAddChargeOpen] = useState(false)
     const [showPayment, setShowPayment] = useState(false)
+    const [chargeToVoid, setChargeToVoid] = useState(null)
 
     // Form State
     const [description, setDescription] = useState('')
@@ -50,15 +52,17 @@ export default function FolioTab({ booking, onUpdate }) {
         }
     }
 
-    const handleVoidCharge = async (id) => {
-        if (!confirm('Are you sure you want to void this charge?')) return
+    const confirmVoid = async () => {
+        if (!chargeToVoid) return
         try {
-            await apiFetch(`/folio/charges/${id}`, { method: 'DELETE' })
+            await apiFetch(`/folio/charges/${chargeToVoid}`, { method: 'DELETE' })
             toast.success('Charge voided')
             fetchFolio()
             onUpdate && onUpdate()
         } catch (error) {
             toast.error('Failed to void charge')
+        } finally {
+            setChargeToVoid(null)
         }
     }
 
@@ -109,7 +113,7 @@ export default function FolioTab({ booking, onUpdate }) {
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-700/50">
+                        <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-700/50">
                             <tr>
                                 <th className="px-4 py-3">Item / Description</th>
                                 <th className="px-4 py-3">Type</th>
@@ -121,8 +125,8 @@ export default function FolioTab({ booking, onUpdate }) {
                             {/* Room Charge */}
                             <tr className="bg-white dark:bg-slate-800">
                                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">Room Charge ({booking.roomType?.name})</td>
-                                <td className="px-4 py-3"><span className="px-2 py-1 bg-slate-100 rounded text-xs text-slate-500 font-bold">ROOM</span></td>
-                                <td className="px-4 py-3 text-right font-bold">฿{folio.roomTotal.toLocaleString()}</td>
+                                <td className="px-4 py-3"><span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs text-slate-500 dark:text-slate-300 font-bold">ROOM</span></td>
+                                <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">฿{folio.roomTotal.toLocaleString()}</td>
                                 <td className="px-4 py-3 text-center text-slate-300">-</td>
                             </tr>
 
@@ -134,12 +138,12 @@ export default function FolioTab({ booking, onUpdate }) {
                                         <div className="text-[10px] text-slate-400">{new Date(charge.date).toLocaleString()}</div>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-xs font-bold uppercase">{charge.type.replace('_', ' ')}</span>
+                                        <span className="px-2 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded text-xs font-bold uppercase">{charge.type.replace('_', ' ')}</span>
                                     </td>
                                     <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white">฿{charge.amount.toLocaleString()}</td>
                                     <td className="px-4 py-3 text-center">
                                         <button
-                                            onClick={() => handleVoidCharge(charge.id)}
+                                            onClick={() => setChargeToVoid(charge.id)}
                                             className="text-slate-400 hover:text-rose-500 transition-colors" title="Void Charge"
                                         >
                                             <Trash2 size={16} />
@@ -153,13 +157,13 @@ export default function FolioTab({ booking, onUpdate }) {
                                 <tr key={tx.id} className="bg-emerald-50/30 dark:bg-emerald-900/10">
                                     <td className="px-4 py-3 text-emerald-800 dark:text-emerald-400 font-medium">
                                         Payment Received ({tx.provider})
-                                        <div className="text-[10px] text-emerald-600/70">{tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 'N/A'}</div>
+                                        <div className="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">{tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 'N/A'}</div>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-bold uppercase">PAYMENT</span>
+                                        <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded text-xs font-bold uppercase">PAYMENT</span>
                                     </td>
-                                    <td className="px-4 py-3 text-right font-bold text-emerald-600">- ฿{tx.amount.toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-center text-emerald-300">
+                                    <td className="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">- ฿{tx.amount.toLocaleString()}</td>
+                                    <td className="px-4 py-3 text-center text-emerald-300 dark:text-emerald-600/50">
                                         <div className="text-[10px] uppercase font-bold">{tx.status}</div>
                                     </td>
                                 </tr>
@@ -233,6 +237,16 @@ export default function FolioTab({ booking, onUpdate }) {
                     }}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!chargeToVoid}
+                onClose={() => setChargeToVoid(null)}
+                onConfirm={confirmVoid}
+                title="Void Charge"
+                message="Are you sure you want to remove this charge? This action cannot be undone."
+                confirmText="Yes, Void it"
+                type="danger"
+            />
         </div>
     )
 }
