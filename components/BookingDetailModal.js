@@ -63,16 +63,16 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-100 dark:border-slate-700 px-6 bg-slate-50/30 shrink-0">
+                <div className="flex border-b border-slate-100 dark:border-slate-700 px-6 bg-slate-50/30 dark:bg-slate-900/20 shrink-0">
                     <button
                         onClick={() => setActiveTab('details')}
-                        className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                     >
                         <LayoutDashboard size={16} /> Overview
                     </button>
                     <button
                         onClick={() => setActiveTab('folio')}
-                        className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'folio' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'folio' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                     >
                         <Receipt size={16} /> Folio / Billing
                     </button>

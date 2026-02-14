@@ -18,8 +18,14 @@ export default function SearchBar({ query = {} }) {
   const handleSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (dates.checkIn) params.append('checkIn', dates.checkIn.toISOString().split('T')[0]);
-    if (dates.checkOut) params.append('checkOut', dates.checkOut.toISOString().split('T')[0]);
+    const toLocalISO = (date) => {
+      const offset = date.getTimezoneOffset()
+      const local = new Date(date.getTime() - (offset * 60 * 1000))
+      return local.toISOString().split('T')[0]
+    }
+
+    if (dates.checkIn) params.append('checkIn', toLocalISO(dates.checkIn));
+    if (dates.checkOut) params.append('checkOut', toLocalISO(dates.checkOut));
     params.append('adults', guests.adults);
     params.append('children', guests.children);
 

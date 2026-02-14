@@ -9,6 +9,7 @@ import ConfirmationModal from '@/components/ConfirmationModal'
 import CreateBookingModal from '@/components/CreateBookingModal'
 
 import { useAdmin } from '@/contexts/AdminContext'
+import toast from 'react-hot-toast'
 
 export default function Calendar() {
     const { user } = useAuth()
@@ -34,16 +35,37 @@ export default function Calendar() {
         roomTypeId: 'All'
     })
 
+
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'warning',
+        onConfirm: () => { }
+    })
+
+    const [createModal, setCreateModal] = useState({
+        isOpen: false,
+        initialData: {}
+    })
+
+    const [statusMenu, setStatusMenu] = useState({ // Keeping this variable name for now to avoid massive diff, but it acts as a tooltip state now
+        isOpen: false,
+        roomId: null,
+        x: 0,
+        y: 0,
+        room: null // Added room data
+    })
+
     // Real-time Polling
     useEffect(() => {
         if (!user) return;
+        if (createModal.isOpen || isDetailOpen) return; // Pause polling when working in modal
 
         fetchData(); // Initial Fetch
 
         const interval = setInterval(() => {
-            // Silent fetch (no loading spinner) to avoid UI flicker
             const hotelId = currentHotel?.id;
-
             if (!hotelId) return;
 
             const start = new Date(currentDate)
@@ -51,14 +73,19 @@ export default function Calendar() {
             const end = new Date(start)
             end.setMonth(end.getMonth() + 1)
 
-            apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`)
-                .then(eventsData => setEvents(eventsData))
-                .catch(err => console.error("Polling error", err));
+            // Poll both Events AND Rooms for real-time status
+            Promise.all([
+                apiFetch(`/bookings/admin/calendar-events?hotelId=${hotelId}&start=${start.toISOString()}&end=${end.toISOString()}`),
+                apiFetch(`/rooms?hotelId=${hotelId}`)
+            ]).then(([eventsData, roomsData]) => {
+                setEvents(eventsData)
+                setRooms(roomsData)
+            }).catch(err => console.error("Polling error", err));
 
-        }, 15000); // Poll every 15 seconds
+        }, 10000); // Relax polling to 10s to reduce load
 
         return () => clearInterval(interval);
-    }, [currentDate, user, currentHotel]);
+    }, [currentDate, user, currentHotel, createModal.isOpen, isDetailOpen]);
 
     const fetchData = async () => {
         const hotelId = currentHotel?.id;
@@ -131,21 +158,28 @@ export default function Calendar() {
         setHoveredBooking(null)
     }
 
-    const [confirmModal, setConfirmModal] = useState({
-        isOpen: false,
-        title: '',
-        message: '',
-        type: 'warning',
-        onConfirm: () => { }
-    })
 
-    const [createModal, setCreateModal] = useState({
-        isOpen: false,
-        initialData: {}
-    })
+
+    // Helper
+    const formatDuration = (dateStr) => {
+        if (!dateStr) return '-'
+        const date = new Date(dateStr)
+        const now = new Date()
+        const diff = now - date
+        const minutes = Math.floor(diff / 60000)
+        const hours = Math.floor(minutes / 60)
+        const checkDays = Math.floor(hours / 24)
+
+        if (checkDays > 0) return `${checkDays}d`
+        if (hours > 0) return `${hours}h ${minutes % 60}m`
+        return `${minutes}m`
+    }
 
     const handleCellClick = (room, date) => {
-        const dateStr = date.toISOString().split('T')[0]
+        // Fix: Use local date string
+        const offset = date.getTimezoneOffset()
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000))
+        const dateStr = localDate.toISOString().split('T')[0]
         setCreateModal({
             isOpen: true,
             initialData: {
@@ -288,7 +322,25 @@ export default function Calendar() {
                                             {/* Room Label (Sticky Left) */}
                                             <div className="w-32 flex-shrink-0 p-2 font-medium text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky left-0 z-10 shadow-sm flex items-center justify-between text-xs group">
                                                 <span>{room.roomNumber || room.id.slice(-4)}</span>
-                                                <span className={`w-2 h-2 rounded-full ${room.status === 'CLEAN' ? 'bg-emerald-500' : room.status === 'DIRTY' ? 'bg-red-500' : 'bg-slate-300'}`} title={room.status}></span>
+                                                <button
+                                                    onMouseEnter={(e) => {
+                                                        const rect = e.currentTarget.getBoundingClientRect()
+                                                        setStatusMenu({
+                                                            isOpen: true,
+                                                            roomId: room.id,
+                                                            x: rect.right + 10,
+                                                            y: rect.top,
+                                                            room: room // Pass room data
+                                                        })
+                                                    }}
+                                                    onMouseLeave={() => setStatusMenu(prev => ({ ...prev, isOpen: false }))}
+                                                    className={`w-3 h-3 rounded-full transition-transform ${room.status === 'CLEAN' ? 'bg-blue-500' :
+                                                        room.status === 'DIRTY' ? 'bg-red-500' :
+                                                            room.status === 'CLEANING' ? 'bg-amber-500' :
+                                                                room.status === 'INSPECTED' ? 'bg-emerald-500' :
+                                                                    room.status === 'OOO' ? 'bg-slate-500' : 'bg-slate-600'
+                                                        }`}
+                                                />
                                             </div>
 
                                             {/* Days Grid Cells */}
@@ -427,6 +479,39 @@ export default function Calendar() {
                     onSuccess={fetchData}
                     initialData={createModal.initialData}
                 />
+            )}
+
+            {/* Room Status Detail Tooltip */}
+            {statusMenu.isOpen && statusMenu.room && (
+                <div
+                    className="fixed z-50 bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700 w-48 text-xs pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+                    style={{ top: statusMenu.y, left: statusMenu.x }}
+                >
+                    <div className="flex items-center gap-2 mb-2 border-b border-slate-700 pb-2">
+                        <div className={`w-2 h-2 rounded-full ${statusMenu.room.status === 'CLEAN' ? 'bg-blue-500' :
+                            statusMenu.room.status === 'DIRTY' ? 'bg-red-500' :
+                                statusMenu.room.status === 'CLEANING' ? 'bg-amber-500' :
+                                    statusMenu.room.status === 'INSPECTED' ? 'bg-emerald-500' :
+                                        statusMenu.room.status === 'OOO' ? 'bg-slate-500' : 'bg-slate-600'
+                            }`}></div>
+                        <span className="font-bold uppercase text-sm">{statusMenu.room.status}</span>
+                    </div>
+
+                    {statusMenu.room.statusLogs && statusMenu.room.statusLogs[0] ? (
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-slate-400">
+                                <span>Started:</span>
+                                <span className="text-white">{new Date(statusMenu.room.statusLogs[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-400">
+                                <span>Duration:</span>
+                                <span className="text-emerald-400 font-bold">{formatDuration(statusMenu.room.statusLogs[0].createdAt)}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-slate-400 italic">No recent logs</div>
+                    )}
+                </div>
             )}
         </AdminLayout>
     )

@@ -31,6 +31,7 @@ import GuideModal from './GuideModal'
 import { guideData, defaultGuide } from '@/data/guides'
 import GlobalSearch from './GlobalSearch'
 import UpgradeModal from './UpgradeModal'
+import NotificationMenu from './NotificationMenu'
 
 export default function AdminLayout({ children }) {
     const router = useRouter()
@@ -43,7 +44,6 @@ export default function AdminLayout({ children }) {
     } = useAdmin() || {}
 
     const [darkMode, setDarkMode] = useState(false)
-    const [notificationsOpen, setNotificationsOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [hotelSwitcherOpen, setHotelSwitcherOpen] = useState(false)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -135,14 +135,14 @@ export default function AdminLayout({ children }) {
         { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
         { name: 'Calendar', icon: CalendarDays, href: '/admin/calendar' },
         { name: 'Booking', icon: CalendarDays, href: '/admin/bookings' },
+        { name: 'Housekeeping', icon: SprayCan, href: '/admin/housekeeping' },
         { name: 'Guest', icon: UserCircle, href: '/admin/guests' },
         { name: 'Room', icon: BedDouble, href: '/admin/rooms' },
         { name: 'Rates & Avail.', icon: Filter, href: '/admin/rates' },
         { name: 'Promotions', icon: TicketPercent, href: '/admin/promotions' },
+        { name: 'Reviews', icon: Star, href: '/admin/reviews' },
         { name: 'Reports', icon: TrendingUp, href: '/admin/reports' },
         { name: 'Payments', icon: CreditCard, href: '/admin/payments' },
-        { name: 'Reviews', icon: Star, href: '/admin/reviews' },
-        { name: 'Housekeeping', icon: SprayCan, href: '/admin/housekeeping' },
         { name: 'Staff Management', icon: Users, href: '/admin/staff' },
         { name: 'Message', icon: MessageSquare, href: '/admin/messages' },
         { name: 'My Account', icon: UserCircle, href: '/admin/account', section: 'bottom' },
@@ -255,19 +255,38 @@ export default function AdminLayout({ children }) {
 
                     {/* Plan Badge */}
                     <div className="px-3 mb-6">
-                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 border border-slate-700 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                        <div className={`rounded-xl p-4 border relative overflow-hidden group ${currentHotel?.package === 'PRO'
+                                ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
+                                : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'
+                            }`}>
+                            {currentHotel?.package === 'PRO' && (
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/20 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                            )}
                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Current Plan</h4>
                             <div className="flex justify-between items-center mb-3">
-                                <span className="text-lg font-bold text-white">LITE</span>
-                                <span className="bg-slate-700 text-xs px-2 py-0.5 rounded text-slate-300">Free</span>
+                                <span className={`text-lg font-bold ${currentHotel?.package === 'PRO' ? 'text-indigo-300' : 'text-white'}`}>
+                                    {currentHotel?.package || 'LITE'}
+                                </span>
+                                <span className={`text-xs px-2 py-0.5 rounded ${currentHotel?.package === 'PRO'
+                                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                        : 'bg-slate-700 text-slate-300'
+                                    }`}>
+                                    {currentHotel?.package === 'PRO' ? 'Active' : 'Free'}
+                                </span>
                             </div>
-                            <button
-                                onClick={openUpgradeModal}
-                                className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Zap size={14} className="fill-current" /> Upgrade to PRO
-                            </button>
+                            {currentHotel?.package !== 'PRO' && (
+                                <button
+                                    onClick={openUpgradeModal}
+                                    className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Zap size={14} className="fill-current" /> Upgrade to PRO
+                                </button>
+                            )}
+                            {currentHotel?.package === 'PRO' && (
+                                <div className="text-[10px] text-slate-400 text-center">
+                                    Expires: {new Date(currentHotel.subscriptionEnd).toLocaleDateString()}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -351,64 +370,8 @@ export default function AdminLayout({ children }) {
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-4">
-                        {/* Notifications */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                                className={`relative p-2 transition-colors rounded-full hover:bg-slate-100 ${darkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'}`}
-                            >
-                                <Bell size={20} />
-                                {notifications.some(n => !n.isRead) && (
-                                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                                )}
-                            </button>
-
-                            {/* Notification Dropdown */}
-                            {notificationsOpen && (
-                                <div className={`absolute right-0 mt-2 w-80 rounded-xl shadow-xl border overflow-hidden z-50 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'
-                                    }`}>
-                                    <div className="p-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                                        <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifications</h3>
-                                        <button
-                                            onClick={() => {
-                                                import('@/lib/api').then(({ apiFetch }) => {
-                                                    apiFetch('/notifications/read-all', { method: 'PUT' })
-                                                        .then(() => setNotifications(prev => prev.map(n => ({ ...n, isRead: true }))))
-                                                })
-                                            }}
-                                            className="text-xs text-emerald-500 font-medium hover:text-emerald-600">
-                                            Mark as read
-                                        </button>
-                                    </div>
-                                    <div className="max-h-64 overflow-y-auto">
-                                        {notifications.length > 0 ? notifications.map((n, i) => (
-                                            <div
-                                                key={i}
-                                                onClick={() => {
-                                                    import('@/lib/api').then(({ apiFetch }) => {
-                                                        apiFetch(`/notifications/${n.id}/read`, { method: 'PUT' })
-                                                            .then(() => {
-                                                                setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, isRead: true } : item))
-                                                            })
-                                                    })
-                                                }}
-                                                className={`p-3 border-b last:border-0 transition-colors cursor-pointer ${n.isRead ? 'opacity-50' : 'bg-emerald-50/50 dark:bg-emerald-900/10'} hover:bg-slate-50 dark:hover:bg-slate-700 ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}
-                                            >
-                                                <div className="flex gap-3">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.isRead ? 'bg-slate-100 text-slate-400' : 'bg-emerald-100 text-emerald-600'}`}>
-                                                        <CalendarDays size={14} />
-                                                    </div>
-                                                    <div>
-                                                        <p className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{n.title}</p>
-                                                        <p className="text-xs text-slate-500 mt-1">{n.message}</p>
-                                                        <p className="text-[10px] text-slate-400 mt-1">{n.time}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )) : <div className="p-4 text-center text-slate-500 text-sm">No new notifications</div>}
-                                    </div>
-                                </div>
-                            )}
+                        <div className="hidden lg:block">
+                            <NotificationMenu notifications={notifications} setNotifications={setNotifications} darkMode={darkMode} />
                         </div>
 
                         <div className={`relative pl-4 border-l ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
@@ -456,7 +419,7 @@ export default function AdminLayout({ children }) {
                     </div>
                 </header>
 
-                <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+                <main className="flex-1 p-2 md:p-4 overflow-x-hidden">
                     {children}
                 </main>
             </div>

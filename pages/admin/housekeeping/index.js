@@ -12,7 +12,8 @@ import {
     MoreVertical,
     SprayCan,
     Eye,
-    Wrench
+    Wrench,
+    Loader
 } from 'lucide-react'
 import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
@@ -21,7 +22,7 @@ export default function Housekeeping() {
     const { currentHotel } = useAdmin() || {}
     const [rooms, setRooms] = useState([])
     const [loading, setLoading] = useState(true)
-    const [filter, setFilter] = useState('ALL') // ALL, DIRTY, CLEAN, INSPECTED, OOO
+    const [filter, setFilter] = useState('ALL') // ALL, DIRTY, CLEANING, CLEAN, INSPECTED, OOO
     const [searchTerm, setSearchTerm] = useState('')
 
     useEffect(() => {
@@ -66,6 +67,7 @@ export default function Housekeeping() {
     const stats = {
         total: rooms.length,
         dirty: rooms.filter(r => r.status === 'DIRTY').length,
+        cleaning: rooms.filter(r => r.status === 'CLEANING').length,
         clean: rooms.filter(r => r.status === 'CLEAN').length,
         inspected: rooms.filter(r => r.status === 'INSPECTED').length,
         ooo: rooms.filter(r => r.status === 'OOO').length
@@ -82,6 +84,7 @@ export default function Housekeeping() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'DIRTY': return 'bg-red-100 text-red-700 border-red-200'
+            case 'CLEANING': return 'bg-amber-100 text-amber-700 border-amber-200'
             case 'CLEAN': return 'bg-blue-100 text-blue-700 border-blue-200'
             case 'INSPECTED': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
             case 'OOO': return 'bg-gray-100 text-gray-700 border-gray-200'
@@ -92,11 +95,24 @@ export default function Housekeeping() {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'DIRTY': return <AlertCircle size={16} />
+            case 'CLEANING': return <Loader size={16} className="animate-spin" />
             case 'CLEAN': return <SprayCan size={16} />
             case 'INSPECTED': return <CheckCircle size={16} />
             case 'OOO': return <Wrench size={16} />
             default: return <Clock size={16} />
         }
+    }
+
+    const formatDuration = (date) => {
+        const now = new Date()
+        const diff = now - date
+        const minutes = Math.floor(diff / 60000)
+        const hours = Math.floor(minutes / 60)
+        const checkDays = Math.floor(hours / 24)
+
+        if (checkDays > 0) return `${checkDays}d`
+        if (hours > 0) return `${hours}h ${minutes % 60}m`
+        return `${minutes}m`
     }
 
     return (
@@ -115,7 +131,7 @@ export default function Housekeeping() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                 <StatsCard
                     label="Dirty Rooms"
                     value={stats.dirty}
@@ -123,6 +139,14 @@ export default function Housekeeping() {
                     icon={AlertCircle}
                     active={filter === 'DIRTY'}
                     onClick={() => setFilter(filter === 'DIRTY' ? 'ALL' : 'DIRTY')}
+                />
+                <StatsCard
+                    label="Cleaning"
+                    value={stats.cleaning}
+                    color="bg-amber-500"
+                    icon={Loader}
+                    active={filter === 'CLEANING'}
+                    onClick={() => setFilter(filter === 'CLEANING' ? 'ALL' : 'CLEANING')}
                 />
                 <StatsCard
                     label="Clean Rooms"
@@ -163,7 +187,7 @@ export default function Housekeeping() {
                     />
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-                    {['ALL', 'DIRTY', 'CLEAN', 'INSPECTED', 'OOO'].map(s => (
+                    {['ALL', 'DIRTY', 'CLEANING', 'CLEAN', 'INSPECTED', 'OOO'].map(s => (
                         <button
                             key={s}
                             onClick={() => setFilter(s)}
@@ -203,29 +227,75 @@ export default function Housekeeping() {
 
                             {/* Content */}
                             <div className="p-4 flex-1">
-                                {/* Occupancy Status */}
-                                {room.bookings && room.bookings.length > 0 ? (
-                                    <div className="mb-3 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-500/20">
-                                        <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-1">Occupied</div>
-                                        <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                                            {room.bookings[0].leadName || 'Guest'}
-                                        </div>
-                                        <div className="text-xs text-slate-500">
-                                            Out: {new Date(room.bookings[0].checkOut).toLocaleDateString()}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="mb-3 p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-700">
-                                        <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Vacant</div>
-                                    </div>
-                                )}
+                                {/* Occupancy / Priority Status */}
+                                {(() => {
+                                    const now = new Date();
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+
+                                    const isSameDay = (d1, d2) => {
+                                        const date1 = new Date(d1);
+                                        const date2 = new Date(d2);
+                                        return date1.getDate() === date2.getDate() &&
+                                            date1.getMonth() === date2.getMonth() &&
+                                            date1.getFullYear() === date2.getFullYear();
+                                    };
+
+                                    const activeBooking = room.bookings?.find(b => new Date(b.checkIn) <= now && new Date(b.checkOut) > now);
+                                    const arrivalToday = room.bookings?.find(b => isSameDay(b.checkIn, today));
+                                    const departureToday = activeBooking && isSameDay(activeBooking.checkOut, today);
+
+                                    if (activeBooking) {
+                                        return (
+                                            <div className={`mb-3 p-2 rounded-lg border ${departureToday ? 'bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-500/20' : 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-500/20'}`}>
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <div className={`text-xs font-bold uppercase tracking-wide ${departureToday ? 'text-orange-600 dark:text-orange-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                                                        {departureToday ? 'Due Out Today' : 'Occupied'}
+                                                    </div>
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                                    {activeBooking.leadName || 'Guest'}
+                                                </div>
+                                                <div className="text-xs text-slate-500">
+                                                    Out: {new Date(activeBooking.checkOut).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        );
+                                    } else if (arrivalToday) {
+                                        return (
+                                            <div className="mb-3 p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
+                                                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1">
+                                                    Arrival Today
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                                    {arrivalToday.leadName}
+                                                </div>
+                                                <div className="text-xs text-slate-500">
+                                                    In: {new Date(arrivalToday.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        );
+                                    } else {
+                                        return (
+                                            <div className="mb-3 p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                                                    Vacant
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                })()}
 
                                 {/* Last Updated Log */}
                                 {room.statusLogs && room.statusLogs[0] ? (
-                                    <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-auto">
-                                        <Clock size={10} />
-                                        Updated {new Date(room.statusLogs[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        {room.statusLogs[0].updatedBy && ' (Manual)'}
+                                    <div className="mt-auto">
+                                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                                            <Clock size={10} />
+                                            <span>Since {new Date(room.statusLogs[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 ml-3.5">
+                                            {formatDuration(new Date(room.statusLogs[0].createdAt))} ago
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="text-[10px] text-slate-400 mt-auto">No recent status log</div>
@@ -233,24 +303,34 @@ export default function Housekeeping() {
                             </div>
 
                             {/* Actions */}
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 grid grid-cols-3 gap-2">
+                            <div className="p-2 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 grid grid-cols-2 gap-2">
                                 {/* Dirty Button */}
                                 <button
                                     onClick={() => updateStatus(room.id, 'DIRTY')}
                                     disabled={room.status === 'DIRTY'}
-                                    className="flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-30 disabled:hover:bg-transparent"
+                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-red-200"
                                 >
-                                    <AlertCircle size={16} className="mb-1" />
+                                    <AlertCircle size={14} className="mr-1.5" />
                                     Dirty
+                                </button>
+
+                                {/* Cleaning Button */}
+                                <button
+                                    onClick={() => updateStatus(room.id, 'CLEANING')}
+                                    disabled={room.status === 'CLEANING'}
+                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-amber-200"
+                                >
+                                    <Loader size={14} className="mr-1.5" />
+                                    Cleaning
                                 </button>
 
                                 {/* Clean Button */}
                                 <button
                                     onClick={() => updateStatus(room.id, 'CLEAN')}
                                     disabled={room.status === 'CLEAN'}
-                                    className="flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 disabled:opacity-30 disabled:hover:bg-transparent"
+                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-blue-200"
                                 >
-                                    <SprayCan size={16} className="mb-1" />
+                                    <SprayCan size={14} className="mr-1.5" />
                                     Clean
                                 </button>
 
@@ -258,9 +338,9 @@ export default function Housekeeping() {
                                 <button
                                     onClick={() => updateStatus(room.id, 'INSPECTED')}
                                     disabled={room.status === 'INSPECTED'}
-                                    className="flex flex-col items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 disabled:opacity-30 disabled:hover:bg-transparent"
+                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-emerald-200"
                                 >
-                                    <CheckCircle size={16} className="mb-1" />
+                                    <CheckCircle size={14} className="mr-1.5" />
                                     Inspect
                                 </button>
                             </div>

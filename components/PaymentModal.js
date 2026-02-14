@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { apiFetch } from '@/lib/api'
-import { X, CreditCard, Lock } from 'lucide-react'
+import { X, CreditCard, Lock, Banknote, Building, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 function CheckoutForm({ amount, onSuccess, onError }) {
@@ -52,7 +52,7 @@ function CheckoutForm({ amount, onSuccess, onError }) {
                 className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 disabled:opacity-50 flex justify-center items-center gap-2"
             >
                 {loading ? (
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                     <>
                         <Lock size={16} /> Pay ฿{amount.toLocaleString()}
@@ -64,13 +64,16 @@ function CheckoutForm({ amount, onSuccess, onError }) {
 }
 
 export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
+    const [activeTab, setActiveTab] = useState('card')
     const [clientSecret, setClientSecret] = useState('')
     const [stripePromise, setStripePromise] = useState(null)
     const [error, setError] = useState(null)
+    const [manualLoading, setManualLoading] = useState(false)
+    const [reference, setReference] = useState('')
 
     // 1. Fetch Key & Init Stripe
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && activeTab === 'card') {
             apiFetch('/public-settings')
                 .then(settings => {
                     if (settings.stripePublicKey) {
@@ -84,11 +87,11 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                     setError('Failed to load payment configuration')
                 })
         }
-    }, [isOpen])
+    }, [isOpen, activeTab])
 
     // 2. Create Intent (only if we have stripe promise)
     useEffect(() => {
-        if (isOpen && booking && stripePromise) {
+        if (isOpen && booking && stripePromise && activeTab === 'card') {
             apiFetch('/payments/intent', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -101,35 +104,79 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                 .then(res => setClientSecret(res.clientSecret))
                 .catch(err => {
                     console.error(err)
-                    toast.error('Failed to initialize payment')
-                    onClose()
+                    setError(err.message || 'Failed to initialize payment')
                 })
         }
-    }, [isOpen, booking, stripePromise])
+    }, [isOpen, booking, stripePromise, activeTab])
+
+    const handleManualPayment = async (method) => {
+        setManualLoading(true)
+        try {
+            await apiFetch('/payments/manual', {
+                method: 'POST',
+                body: JSON.stringify({
+                    bookingId: booking.id,
+                    amount: booking.totalAmount,
+                    method,
+                    reference
+                })
+            })
+            toast.success(`Payment via ${method} recorded!`)
+            onSuccess && onSuccess()
+            onClose()
+        } catch (err) {
+            toast.error(err.message || 'Payment failed')
+        } finally {
+            setManualLoading(false)
+        }
+    }
 
     if (!isOpen) return null
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-indigo-100 text-indigo-600 p-2 rounded-lg">
-                            <CreditCard size={20} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-slate-900 dark:text-white">Secure Payment</h3>
-                            <p className="text-xs text-slate-500">Encrypted via Stripe</p>
-                        </div>
-                    </div>
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0">
+                    <h3 className="font-bold text-slate-900 dark:text-white">Payment</h3>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                         <X size={20} className="text-slate-400" />
                     </button>
                 </div>
 
+                {/* Tabs */}
+                <div className="flex p-2 gap-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                    <button
+                        onClick={() => setActiveTab('card')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'card'
+                            ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        <CreditCard size={16} /> Card
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('cash')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'cash'
+                            ? 'bg-white dark:bg-slate-800 text-emerald-600 shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        <Banknote size={16} /> Cash
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('transfer')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'transfer'
+                            ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        <Building size={16} /> Transfer
+                    </button>
+                </div>
+
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto">
                     <div className="mb-6 bg-slate-50 dark:bg-slate-700/30 p-4 rounded-xl">
                         <div className="flex justify-between text-sm mb-1">
                             <span className="text-slate-500 font-bold">Total Amount</span>
@@ -140,33 +187,78 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                         </div>
                     </div>
 
-                    {error ? (
-                        <div className="text-center text-rose-500 font-bold p-4 bg-rose-50 rounded-xl">
-                            {error}
-                        </div>
-                    ) : clientSecret && stripePromise ? (
-                        <Elements stripe={stripePromise} options={{ clientSecret }}>
-                            <CheckoutForm
-                                amount={booking.totalAmount}
-                                onSuccess={(pi) => {
-                                    onSuccess && onSuccess(pi)
-                                    setTimeout(onClose, 2000)
-                                }}
-                            />
-                        </Elements>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
-                            <span className="w-8 h-8 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
-                            <span className="text-xs font-bold">Initializing Secure Connection...</span>
+                    {activeTab === 'card' && (
+                        <>
+                            {error ? (
+                                <div className="text-center text-rose-500 font-bold p-4 bg-rose-50 rounded-xl">
+                                    {error}
+                                </div>
+                            ) : clientSecret && stripePromise ? (
+                                <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                    <CheckoutForm
+                                        amount={booking.totalAmount}
+                                        onSuccess={(pi) => {
+                                            onSuccess && onSuccess(pi)
+                                            setTimeout(onClose, 2000)
+                                        }}
+                                    />
+                                </Elements>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
+                                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                                    <span className="text-xs font-bold">Initializing Secure Connection...</span>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activeTab === 'cash' && (
+                        <div className="text-center space-y-6">
+                            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                                <Banknote size={32} />
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-300">
+                                Confirm receipt of <b>฿{booking?.totalAmount?.toLocaleString()}</b> in cash from the guest.
+                            </p>
+                            <button
+                                onClick={() => handleManualPayment('CASH')}
+                                disabled={manualLoading}
+                                className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-50 flex justify-center items-center gap-2"
+                            >
+                                {manualLoading ? <Loader2 className="animate-spin" /> : 'Confirm Cash Payment'}
+                            </button>
                         </div>
                     )}
-                </div>
 
-                {/* Footer */}
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-3 text-center border-t border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
-                        <Lock size={10} /> Payments are processed securely by Stripe. No card data is stored on our servers.
-                    </p>
+                    {activeTab === 'transfer' && (
+                        <div className="space-y-4">
+                            <div className="text-center mb-4">
+                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Building size={32} />
+                                </div>
+                                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                                    Enter bank transfer details / reference number.
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Reference / Slip ID (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={reference}
+                                    onChange={(e) => setReference(e.target.value)}
+                                    placeholder="e.g. 0123456789"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                />
+                            </div>
+                            <button
+                                onClick={() => handleManualPayment('BANK_TRANSFER')}
+                                disabled={manualLoading}
+                                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 disabled:opacity-50 flex justify-center items-center gap-2"
+                            >
+                                {manualLoading ? <Loader2 className="animate-spin" /> : 'Confirm Transfer'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

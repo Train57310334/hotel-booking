@@ -1,13 +1,29 @@
 import { useState, useEffect } from 'react'
-import { XCircle } from 'lucide-react'
+import { XCircle, HelpCircle } from 'lucide-react'
 import DatePicker from '@/components/DatePicker'
 import { apiFetch } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
+import { useAdmin } from '@/contexts/AdminContext'
+import ConfirmationModal from '@/components/ConfirmationModal'
+
+const LabelWithTooltip = ({ label, text }) => (
+    <div className="flex items-center gap-2 mb-1 group relative w-fit">
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 pointer-events-none">{label}</label>
+        <HelpCircle size={14} className="text-slate-400 cursor-help" />
+        <div className="absolute left-full top-0 ml-2 w-48 p-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none shadow-xl">
+            {text}
+            <div className="absolute right-full top-2 -mr-1 border-4 border-transparent border-r-slate-800"></div>
+        </div>
+    </div>
+)
 
 export default function CreateBookingModal({ onClose, onSuccess, initialData = {} }) {
     const { success, error } = useToast()
+    const { currentHotel } = useAdmin()
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState([])
+    const [allPlans, setAllPlans] = useState([])
+    const [showConflict, setShowConflict] = useState(false)
     const [form, setForm] = useState({
         checkIn: initialData.checkIn || '',
         checkOut: '',
@@ -20,17 +36,26 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
         totalAmount: 0,
         paymentMethod: '',
         paymentStatus: 'pending',
-        hotelId: 'cmkms2e6m000110p913ga7fon' // Default to first (or fetch from user context)
+        hotelId: currentHotel?.id || ''
     })
 
     useEffect(() => {
-        apiFetch('/room-types').then(setData).catch(console.error)
-    }, [])
+        if (currentHotel) {
+            Promise.all([
+                apiFetch(`/room-types?hotelId=${currentHotel.id}`),
+                apiFetch(`/rates/plans?hotelId=${currentHotel.id}`)
+            ]).then(([types, plans]) => {
+                setData(types)
+                setAllPlans(plans || [])
+            }).catch(console.error)
+        }
+    }, [currentHotel])
 
     // If initialData has roomId, we need to ensure roomTypeId follows suit (if not provided)
     // For now assuming initialData passes strictly matches.
 
     const selectedType = data.find(t => t.id === form.roomTypeId)
+    const availablePlans = allPlans.filter(p => !p.roomTypeId || (selectedType && p.roomTypeId === selectedType.id))
 
     // Auto-calculate total amount
     useEffect(() => {
@@ -39,25 +64,25 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
             const end = new Date(form.checkOut);
             const days = (end - start) / (1000 * 60 * 60 * 24);
 
-            if (days > 0) {
-                let price = selectedType.basePrice || 1000;
+            let price = selectedType.basePrice || 1000;
+            // TODO: Fetch dynamic price from backend /rates/calculate for accurate pricing with overrides
 
-                // If rate plan selected, try to find specific price modifier (mock logic as ratePlan structure varies)
-                if (form.ratePlanId) {
-                    const plan = selectedType.ratePlans?.find(p => p.id === form.ratePlanId);
-                    if (plan && plan.price) {
-                        price = plan.price;
-                    }
-                }
-
-                setForm(prev => ({ ...prev, totalAmount: price * days }));
-            }
+            const validDays = days > 0 ? days : 0;
+            setForm(prev => ({ ...prev, totalAmount: price * validDays }));
         }
     }, [form.checkIn, form.checkOut, form.ratePlanId, selectedType]);
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
+
+        // Validation: Check dates
+        if (new Date(form.checkIn) >= new Date(form.checkOut)) {
+            error('Check-out date must be after Check-in date')
+            setLoading(false)
+            return
+        }
+
         try {
             if (!selectedType) throw new Error("Please select a room type")
 
@@ -85,7 +110,11 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
             onClose()
             success('Booking created successfully!')
         } catch (err) {
-            error('Failed to create booking: ' + err.message)
+            if (err.message && err.message.includes('already booked')) {
+                setShowConflict(true)
+            } else {
+                error('Failed to create booking: ' + err.message)
+            }
         } finally {
             setLoading(false)
         }
@@ -101,19 +130,19 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Guest Name</label>
+                            <LabelWithTooltip label="Guest Name" text="Primary guest name for the reservation" />
                             <input required type="text" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.leadName}
                                 onChange={e => setForm({ ...form, leadName: e.target.value })} />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                            <LabelWithTooltip label="Email" text="Booking confirmation will be sent here" />
                             <input required type="email" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.leadEmail}
                                 onChange={e => setForm({ ...form, leadEmail: e.target.value })} />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Phone</label>
+                            <LabelWithTooltip label="Phone" text="Contact number for urgent updates" />
                             <input type="text" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.leadPhone}
                                 onChange={e => setForm({ ...form, leadPhone: e.target.value })} />
@@ -122,20 +151,20 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Check In</label>
+                            <LabelWithTooltip label="Check In" text="Date of arrival (start of stay)" />
                             <DatePicker
                                 value={form.checkIn}
-                                onChange={([date]) => setForm({ ...form, checkIn: date ? date.toISOString().split('T')[0] : '' })}
+                                onChange={([dateStr]) => setForm({ ...form, checkIn: dateStr || '' })}
                                 options={{ minDate: "today" }}
                                 className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 wrapperClassName="w-full"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Check Out</label>
+                            <LabelWithTooltip label="Check Out" text="Date of departure (end of stay)" />
                             <DatePicker
                                 value={form.checkOut}
-                                onChange={([date]) => setForm({ ...form, checkOut: date ? date.toISOString().split('T')[0] : '' })}
+                                onChange={([dateStr]) => setForm({ ...form, checkOut: dateStr || '' })}
                                 options={{ minDate: form.checkIn || "today" }}
                                 className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 wrapperClassName="w-full"
@@ -145,7 +174,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Room Type</label>
+                            <LabelWithTooltip label="Room Type" text="Category of room (e.g. Deluxe, Suite)" />
                             <select required className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.roomTypeId}
                                 onChange={e => setForm({ ...form, roomTypeId: e.target.value })}>
@@ -154,7 +183,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Room Number</label>
+                            <LabelWithTooltip label="Room Number" text="Assign specific room now (Optional)" />
                             <select required className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.roomId}
                                 disabled={!selectedType}
@@ -167,17 +196,17 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Rate Plan</label>
+                            <LabelWithTooltip label="Rate Plan" text="Pricing package (e.g. Standard, Breakfast Included)" />
                             <select required className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.ratePlanId}
                                 disabled={!selectedType}
                                 onChange={e => setForm({ ...form, ratePlanId: e.target.value })}>
                                 <option value="">Select Rate Plan</option>
-                                {selectedType?.ratePlans?.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                {availablePlans.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Total Amount</label>
+                            <LabelWithTooltip label="Total Amount" text="Calculated price based on nights & rate" />
                             <input required type="number" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 value={form.totalAmount}
                                 onChange={e => setForm({ ...form, totalAmount: e.target.value })} />
@@ -189,7 +218,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                         <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Payment Details</h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
+                                <LabelWithTooltip label="Payment Method" text="How the guest will pay" />
                                 <select className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                     value={form.paymentMethod}
                                     onChange={e => setForm({ ...form, paymentMethod: e.target.value })}>
@@ -200,7 +229,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                                <LabelWithTooltip label="Status" text="Current payment status" />
                                 <select className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                     value={form.paymentStatus}
                                     onChange={e => setForm({ ...form, paymentStatus: e.target.value })}>
@@ -214,8 +243,20 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                     <button disabled={loading} className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg mt-4">
                         {loading ? 'Creating...' : 'Create Booking'}
                     </button>
+
+                    <ConfirmationModal
+                        isOpen={showConflict}
+                        onClose={() => setShowConflict(false)}
+                        onConfirm={() => setShowConflict(false)}
+                        title="Room Unavailable"
+                        message="The selected room is already booked for these dates."
+                        type="danger"
+                        singleButton={true}
+                        confirmText="OK"
+                    />
                 </form>
             </div >
         </div >
     )
 }
+
