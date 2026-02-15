@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import { Mail, Lock, ArrowRight, Loader2, ArrowLeft, Check } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { apiFetch } from '@/lib/api'
 
 export default function LoginPage({ branding }) {
   const router = useRouter()
@@ -42,7 +43,8 @@ export default function LoginPage({ branding }) {
         // let's fetch /auth/me one more time or just redirect to /account/bookings for guests.
 
         // Better approach:
-        const userRes = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(r => r.json());
+        console.log('Fetching user profile to determine role...');
+        const userRes = await apiFetch('/auth/me');
 
         if (userRes.roles?.includes('hotel_admin') || userRes.roles?.includes('platform_admin')) {
           router.push('/admin');
