@@ -20,7 +20,7 @@ export default function ConfirmationPage() {
   }, [id]);
 
   const fetchBooking = () => {
-    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
+    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
     const token = localStorage.getItem('token');
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;

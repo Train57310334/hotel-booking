@@ -11,7 +11,7 @@ import HotelLanding from '@/components/HotelLanding';
 
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function Home({ hotel, error, isSaaSLanding }) {
+export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
   const router = useRouter();
   const { user } = useAuth();
 
@@ -22,8 +22,12 @@ export default function Home({ hotel, error, isSaaSLanding }) {
 
   // --- SaaS Landing Page ---
   return (
-    <Layout navbarProps={{ brandName: 'BookingKub', mode: 'saas' }} hideFooter>
-      <Hero />
+    <Layout navbarProps={{ brandName: saasSettings?.siteName || 'BookingKub', mode: 'saas' }} hideFooter>
+      <Hero
+        title={saasSettings?.landingHeroTitle}
+        description={saasSettings?.landingHeroDescription}
+        ctaText={saasSettings?.landingCTA}
+      />
       <Features />
       <Pricing />
       <ContactSection />
@@ -45,11 +49,13 @@ export async function getServerSideProps(context) {
 
   // If we want to show a specific hotel (e.g. demo mode), fetch it
   let hotel = null;
+  let saasSettings = null;
   let error = null;
+
+  const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
 
   if (!isSaaSLanding) {
     try {
-      const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:3001/api';
       // If hotelId is provided in query, use it. Otherwise fetch all (legacy demo)
       const endpoint = query.hotelId ? `${backend}/hotels/${query.hotelId}` : `${backend}/hotels`;
 
@@ -71,13 +77,24 @@ export async function getServerSideProps(context) {
     } catch (err) {
       error = err.message;
     }
+  } else {
+    // Fetch SaaS Settings
+    try {
+      const res = await fetch(`${backend}/public-settings`);
+      if (res.ok) {
+        saasSettings = await res.json();
+      }
+    } catch (e) {
+      console.error("Failed to fetch SaaS settings", e);
+    }
   }
 
   return {
     props: {
       hotel,
       error,
-      isSaaSLanding
+      isSaaSLanding,
+      saasSettings: saasSettings || null
     }
   };
 }

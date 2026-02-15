@@ -160,11 +160,6 @@ export default function NavBar(props) {
                 <Link href="/auth/register" className="btn-primary w-full py-3 rounded-xl text-center justify-center" onClick={() => setMobileMenuOpen(false)}>
                   {props.mode === 'saas' ? 'Start Free' : 'Create Account'}
                 </Link>
-                {props.mode === 'saas' && (
-                  <Link href="/partner/register" className="w-full py-3 rounded-xl border border-slate-200 text-slate-500 text-center text-sm hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
-                    List Your Property (Partner)
-                  </Link>
-                )}
               </div>
             )}
           </div>
