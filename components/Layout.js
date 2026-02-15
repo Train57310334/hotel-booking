@@ -28,7 +28,7 @@ export default function Layout({ children, navbarProps, hideFooter = false, hide
                                 <ul className="space-y-2 text-sm text-slate-500">
                                     <li><Link href="#" className="hover:text-primary-600 transition-colors">About Us</Link></li>
                                     <li><Link href="#" className="hover:text-primary-600 transition-colors">Careers</Link></li>
-                                    <li><Link href="/partner/register" className="hover:text-primary-600 transition-colors font-medium text-primary-600">List Your Property</Link></li>
+                                    <li><Link href="/auth/register" className="hover:text-primary-600 transition-colors font-medium text-primary-600">List Your Property</Link></li>
                                     <li><Link href="#" className="hover:text-primary-600 transition-colors">Blog</Link></li>
                                 </ul>
                             </div>

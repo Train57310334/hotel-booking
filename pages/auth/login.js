@@ -194,7 +194,7 @@ export default function LoginPage({ branding }) {
                 <p className="text-slate-500 font-medium">
                   Don't have an account?{' '}
                   <Link href="/auth/register" className="text-primary-600 font-bold hover:underline">
-                    Create Account
+                    Register your hotel
                   </Link>
                 </p>
               </div>

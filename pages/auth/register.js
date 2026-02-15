@@ -1,28 +1,49 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import { User, Mail, Lock, ArrowRight, Loader2, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function RegisterPage({ branding }) {
   const router = useRouter()
-  const { register } = useAuth()
+  const { registerPartner } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [hotelName, setHotelName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [selectedPackage, setSelectedPackage] = useState('LITE') // Default to LITE
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  // Read plan from URL
+  useEffect(() => {
+    if (router.query.plan) {
+      const plan = router.query.plan.toUpperCase();
+      if (['LITE', 'PRO', 'ENTERPRISE'].includes(plan)) {
+        setSelectedPackage(plan)
+      }
+    }
+  }, [router.query.plan])
 
   const handleRegister = async (e) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    const res = await register({ name, email, password })
+    // Call registerPartner instead of register
+    const res = await registerPartner({
+      name,
+      email,
+      password,
+      hotelName,
+      phone,
+      package: selectedPackage
+    })
 
     if (res.success) {
-      router.push('/')
+      router.push('/admin') // Redirect to Admin Dashboard directly
     } else {
       setError(res.error || 'Registration failed')
       setLoading(false)
@@ -39,8 +60,8 @@ export default function RegisterPage({ branding }) {
         {/* Left Side - Image & Branding */}
         <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2500"
-            alt="Luxury Resort"
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2500"
+            alt="Luxury Hotel"
             className="absolute inset-0 w-full h-full object-cover opacity-80"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
@@ -63,11 +84,11 @@ export default function RegisterPage({ branding }) {
 
             <div className="space-y-6">
               <h2 className="text-4xl font-display font-bold text-white leading-tight">
-                Start your journey to <br />
-                unforgettable places.
+                Manage your hotel <br />
+                with ease.
               </h2>
               <p className="text-lg text-slate-200 max-w-md leading-relaxed">
-                Join our community of travelers and get access to exclusive member-only rates.
+                Join thousands of hotel owners growing their business with our all-in-one platform.
               </p>
             </div>
           </div>
@@ -82,11 +103,27 @@ export default function RegisterPage({ branding }) {
             </Link>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center px-8 md:px-24 xl:px-32">
+          <div className="flex-1 flex flex-col justify-center px-8 md:px-24 xl:px-32 py-10">
             <div className="max-w-md w-full mx-auto space-y-8">
               <div className="space-y-2">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900">Create Account</h1>
-                <p className="text-slate-500 text-lg">Join us to unlock exclusive deals and offers.</p>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900">Get Started</h1>
+                <p className="text-slate-500 text-lg">Create your hotel management account.</p>
+              </div>
+
+              {/* Package Badge */}
+              <div className={`p-4 rounded-xl border flex justify-between items-center ${selectedPackage === 'PRO' ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'
+                }`}>
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Selected Plan</p>
+                  <p className={`text-xl font-bold ${selectedPackage === 'PRO' ? 'text-indigo-600' : 'text-slate-700'}`}>
+                    {selectedPackage}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-slate-900 font-bold">
+                    {selectedPackage === 'LITE' ? 'Free Forever' : selectedPackage === 'PRO' ? '฿990 /mo' : 'Custom'}
+                  </p>
+                </div>
               </div>
 
               {error && (
@@ -97,8 +134,27 @@ export default function RegisterPage({ branding }) {
               )}
 
               <form onSubmit={handleRegister} className="space-y-5">
+
+                {/* Hotel Name */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-slate-700 ml-1">Full Name</label>
+                  <label className="text-sm font-bold text-slate-700 ml-1">Hotel Name</label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2z" /></svg>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="My Awesome Hotel"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all outline-none font-medium placeholder:text-slate-400"
+                      value={hotelName}
+                      onChange={(e) => setHotelName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-700 ml-1">Owner Name</label>
                   <div className="relative group">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                     <input
@@ -123,6 +179,24 @@ export default function RegisterPage({ branding }) {
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all outline-none font-medium placeholder:text-slate-400"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-700 ml-1">Phone Number</label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="0812345678"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-12 pr-4 text-slate-900 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all outline-none font-medium placeholder:text-slate-400"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                     />
                   </div>
                 </div>

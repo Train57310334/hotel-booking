@@ -404,6 +404,38 @@ export default function HotelSettings() {
                         {/* WEB CONTENT TAB */}
                         {activeTab === 'web' && (
                             <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
+                                {/* Public URL Section */}
+                                <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
+                                    <label className="block text-sm font-bold text-emerald-800 dark:text-emerald-400 mb-2">Public Website URL</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            readOnly
+                                            value={typeof window !== 'undefined' ? `${window.location.origin}/?hotelId=${hotel?.id}` : ''}
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-mono text-sm"
+                                            onClick={(e) => e.target.select()}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`${window.location.origin}/?hotelId=${hotel?.id}`);
+                                                toast.success('Copied to clipboard');
+                                            }}
+                                            className="px-4 py-2 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/20 transition-colors"
+                                        >
+                                            Copy
+                                        </button>
+                                        <a
+                                            href={`/?hotelId=${hotel?.id}`}
+                                            target="_blank"
+                                            className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors flex items-center gap-2"
+                                        >
+                                            <Globe size={18} /> View Live
+                                        </a>
+                                    </div>
+                                    <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-2">
+                                        Share this link with your customers to let them book directly.
+                                    </p>
+                                </div>
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Headline (Hero Title)</label>
                                     <input
@@ -539,6 +571,42 @@ export default function HotelSettings() {
                                             <option value="USD">USD ($)</option>
                                             <option value="EUR">EUR (€)</option>
                                         </select>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
+
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">SaaS Landing Page Content</h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Hero Title</label>
+                                        <input
+                                            type="text"
+                                            value={systemSettings.landingHeroTitle || ''}
+                                            onChange={e => handleSystemChange('landingHeroTitle', e.target.value)}
+                                            placeholder="Everything You Need to Run Your Hotel."
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Hero Description</label>
+                                        <textarea
+                                            rows={3}
+                                            value={systemSettings.landingHeroDescription || ''}
+                                            onChange={e => handleSystemChange('landingHeroDescription', e.target.value)}
+                                            placeholder="Manage bookings, guests, and payments in one place..."
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">CTA Button Text</label>
+                                        <input
+                                            type="text"
+                                            value={systemSettings.landingCTA || ''}
+                                            onChange={e => handleSystemChange('landingCTA', e.target.value)}
+                                            placeholder="Start for Free"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                        />
                                     </div>
                                 </div>
 

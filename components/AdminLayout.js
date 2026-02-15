@@ -256,8 +256,8 @@ export default function AdminLayout({ children }) {
                     {/* Plan Badge */}
                     <div className="px-3 mb-6">
                         <div className={`rounded-xl p-4 border relative overflow-hidden group ${currentHotel?.package === 'PRO'
-                                ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
-                                : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'
+                            ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
+                            : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'
                             }`}>
                             {currentHotel?.package === 'PRO' && (
                                 <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/20 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
@@ -268,8 +268,8 @@ export default function AdminLayout({ children }) {
                                     {currentHotel?.package || 'LITE'}
                                 </span>
                                 <span className={`text-xs px-2 py-0.5 rounded ${currentHotel?.package === 'PRO'
-                                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                        : 'bg-slate-700 text-slate-300'
+                                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                    : 'bg-slate-700 text-slate-300'
                                     }`}>
                                     {currentHotel?.package === 'PRO' ? 'Active' : 'Free'}
                                 </span>
@@ -350,7 +350,7 @@ export default function AdminLayout({ children }) {
                         <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-slate-500">
                             <Menu size={20} />
                         </button>
-                        <a href="/" target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
+                        <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
                             <Globe size={16} />
                             View Website
                         </a>

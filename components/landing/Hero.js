@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ArrowRight, CheckCircle, PlayCircle } from 'lucide-react';
 import DemoModal from './DemoModal';
 
-export default function Hero() {
+export default function Hero({ title, description, ctaText }) {
     const [isDemoOpen, setIsDemoOpen] = useState(false);
 
     return (
@@ -22,17 +22,21 @@ export default function Hero() {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-tight animate-fade-in-up delay-100">
-                        Everything You Need to <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Run Your Hotel.</span>
+                        {title ? title : (
+                            <>
+                                Everything You Need to <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Run Your Hotel.</span>
+                            </>
+                        )}
                     </h1>
 
                     <p className="text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto animate-fade-in-up delay-200">
-                        Manage bookings, guests, and payments in one place. No more spreadsheets, no more double bookings. Start with our Lite Plan for free.
+                        {description || "Manage bookings, guests, and payments in one place. No more spreadsheets, no more double bookings. Start with our Lite Plan for free."}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 animate-fade-in-up delay-300">
                         <Link href="/auth/register" className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all flex items-center gap-2 transform hover:-translate-y-1">
-                            Start for Free <ArrowRight size={20} />
+                            {ctaText || "Start for Free"} <ArrowRight size={20} />
                         </Link>
                         <button
                             onClick={() => setIsDemoOpen(true)}
