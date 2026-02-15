@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { API_BASE } from '@/lib/api';
 import Navbar from '@/components/NavBar';
+import Layout from '@/components/Layout';
 import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy, Lock, CreditCard } from 'lucide-react';
 import PaymentModal from '@/components/PaymentModal';
 import toast from 'react-hot-toast';
