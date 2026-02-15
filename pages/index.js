@@ -10,6 +10,7 @@ import Footer from '@/components/landing/Footer';
 import HotelLanding from '@/components/HotelLanding';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE } from '@/lib/api';
 
 export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
   const router = useRouter();
@@ -52,7 +53,7 @@ export async function getServerSideProps(context) {
   let saasSettings = null;
   let error = null;
 
-  const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
+  const backend = API_BASE;
 
   if (!isSaaSLanding) {
     try {

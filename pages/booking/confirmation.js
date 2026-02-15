@@ -1,7 +1,8 @@
 // ✅ pages/booking/confirmation.js
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
+import { API_BASE } from '@/lib/api';
+import Navbar from '@/components/NavBar';
 import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy, Lock, CreditCard } from 'lucide-react';
 import PaymentModal from '@/components/PaymentModal';
 import toast from 'react-hot-toast';
@@ -20,7 +21,7 @@ export default function ConfirmationPage() {
   }, [id]);
 
   const fetchBooking = () => {
-    const backend = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
+    const backend = API_BASE;
     const token = localStorage.getItem('token');
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
