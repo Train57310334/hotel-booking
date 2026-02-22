@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { useAdmin } from '@/contexts/AdminContext'
 import { Star, CheckCircle, XCircle, MessageSquare, AlertCircle, Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 export default function ReviewManagement() {
     const { currentHotel } = useAdmin() || {}
@@ -10,6 +12,7 @@ export default function ReviewManagement() {
     const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, averageRating: 0 })
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('All')
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, reviewId: null })
 
     useEffect(() => {
         if (currentHotel) {
@@ -46,19 +49,27 @@ export default function ReviewManagement() {
             })
             fetchReviews()
             fetchStats()
+            toast.success('Status updated')
         } catch (error) {
-            alert('Action failed')
+            toast.error('Action failed')
         }
     }
 
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this review?')) return;
+    const handleDeleteClick = (id) => {
+        setConfirmModal({ isOpen: true, reviewId: id })
+    }
+
+    const handleDelete = async () => {
+        if (!confirmModal.reviewId) return;
         try {
-            await apiFetch(`/reviews/admin/${id}`, { method: 'DELETE' })
+            await apiFetch(`/reviews/admin/${confirmModal.reviewId}`, { method: 'DELETE' })
             fetchReviews()
             fetchStats()
+            toast.success('Review deleted')
         } catch (error) {
-            alert('Delete failed')
+            toast.error('Delete failed')
+        } finally {
+            setConfirmModal({ isOpen: false, reviewId: null })
         }
     }
 
@@ -187,7 +198,7 @@ export default function ReviewManagement() {
                                                     <XCircle size={18} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(review.id)}
+                                                    onClick={() => handleDeleteClick(review.id)}
                                                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 rounded-lg transition-colors"
                                                     title="Delete"
                                                 >
@@ -203,6 +214,15 @@ export default function ReviewManagement() {
                 </div>
             </div>
 
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, reviewId: null })}
+                onConfirm={handleDelete}
+                title="Delete Review"
+                message="Are you sure you want to delete this review?"
+                type="danger"
+                confirmText="Delete"
+            />
         </AdminLayout>
     )
 }

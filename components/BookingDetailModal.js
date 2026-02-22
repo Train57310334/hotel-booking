@@ -4,6 +4,7 @@ import GuestManager from './GuestManager'
 import FolioTab from './FolioTab' // Import
 import { apiFetch } from '@/lib/api'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 // ... imports
 import PaymentModal from '@/components/PaymentModal';
@@ -12,6 +13,10 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
     const [booking, setBooking] = useState(initialBooking)
     const [showPayment, setShowPayment] = useState(false)
     const [activeTab, setActiveTab] = useState('details') // 'details' | 'folio'
+    const [isAssigningRoom, setIsAssigningRoom] = useState(false)
+    const [availableRooms, setAvailableRooms] = useState([])
+    const [selectedRoomId, setSelectedRoomId] = useState('')
+    const [loadingRooms, setLoadingRooms] = useState(false)
 
     if (!booking) return null;
 
@@ -42,6 +47,32 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
     const handlePaymentSuccess = () => {
         setShowPayment(false)
         refreshBooking()
+    }
+
+    const handleInitiateCheckIn = async () => {
+        setIsAssigningRoom(true)
+        setLoadingRooms(true)
+        try {
+            // Fetch available rooms for this room type
+            // Note: In a real app, you might want an endpoint specifically for "available rooms between dates"
+            // For now, we fetch all rooms of this type and filter out ones currently occupied using a new or existing endpoint
+            const res = await apiFetch(`/rooms/available?roomTypeId=${booking.roomType.id}&checkIn=${booking.checkIn}&checkOut=${booking.checkOut}`)
+            setAvailableRooms(res)
+        } catch (error) {
+            console.error("Failed to fetch rooms:", error)
+            setAvailableRooms([])
+        } finally {
+            setLoadingRooms(false)
+        }
+    }
+
+    const handleConfirmCheckIn = () => {
+        if (!selectedRoomId) {
+            toast.error('Please select a room first');
+            return;
+        }
+        onUpdateStatus(booking.id, 'checked_in', selectedRoomId)
+        setIsAssigningRoom(false)
     }
 
     return (
@@ -81,7 +112,47 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                 {/* Content (Scrollable) */}
                 <div className="p-6 overflow-y-auto grow">
                     {activeTab === 'details' ? (
-                        <div className="grid md:grid-cols-2 gap-8">
+                        <div className="grid md:grid-cols-2 gap-8 relative">
+                            {/* Room Assignment Overlay */}
+                            {isAssigningRoom && (
+                                <div className="absolute inset-0 z-10 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm flex items-center justify-center p-6 rounded-2xl">
+                                    <div className="bg-white dark:bg-slate-700 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 dark:border-slate-600">
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Assign Room for Check-in</h3>
+                                        <p className="text-sm text-slate-500 mb-4">{booking.roomType?.name}</p>
+
+                                        {loadingRooms ? (
+                                            <div className="animate-pulse flex space-x-4 mb-4">
+                                                <div className="flex-1 space-y-4 py-1">
+                                                    <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                                    <div className="h-4 bg-slate-200 rounded"></div>
+                                                </div>
+                                            </div>
+                                        ) : availableRooms.length > 0 ? (
+                                            <div className="space-y-3 mb-6 max-h-48 overflow-y-auto custom-scrollbar">
+                                                {availableRooms.map(room => (
+                                                    <label key={room.id} className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all ${selectedRoomId === room.id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-slate-200 hover:border-primary-300 dark:border-slate-600'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="room" value={room.id} checked={selectedRoomId === room.id} onChange={(e) => setSelectedRoomId(e.target.value)} className="w-4 h-4 text-primary-600 focus:ring-primary-500 border-slate-300" />
+                                                            <span className="font-bold text-slate-700 dark:text-slate-200">Room {room.roomNumber}</span>
+                                                        </div>
+                                                        <span className="text-xs px-2 py-1 bg-slate-100 text-slate-500 rounded font-medium dark:bg-slate-800">{room.status || 'CLEAN'}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-6 text-sm">
+                                                No clean or available rooms found for this type.
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-3 justify-end">
+                                            <button onClick={() => setIsAssigningRoom(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg font-medium transition-colors">Cancel</button>
+                                            <button onClick={handleConfirmCheckIn} disabled={!selectedRoomId} className="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-700 transition-colors shadow-lg shadow-primary-600/30">Confirm Check-in</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Guest Info */}
                             <div>
                                 <h4 className="text-sm font-bold text-slate-400 uppercase mb-4 flex items-center gap-2"><User size={16} /> Guest Information</h4>
@@ -198,7 +269,7 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                     {booking.status === 'confirmed' && (
                         <>
                             <button
-                                onClick={() => onUpdateStatus(booking.id, 'checked_in')}
+                                onClick={handleInitiateCheckIn}
                                 className="px-6 py-2 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20"
                             >
                                 Check In

@@ -144,7 +144,7 @@ export default function RoomManagement() {
 
       setTypeFormData(prev => ({ ...prev, images: [...prev.images, data.url] }))
     } catch (error) {
-      alert('Upload Error: ' + error.message)
+      toast.error('Upload Error: ' + error.message)
     } finally {
       setUploading(false)
     }
@@ -204,8 +204,8 @@ export default function RoomManagement() {
       toast.success(roomFormData.isBulk ? 'Rooms generated successfully' : 'Room saved successfully');
     } catch (e) {
       console.error(e);
-      // Check for Limit Reached (409 Conflict is often used, or 403 Forbidden. Assuming 409 based on context)
-      if (e.status === 409 || e.message?.includes('Limit reached') || e.message?.includes('Maximum number of rooms')) {
+      // Check for Limit Reached
+      if (e.status === 409 || e.status === 400 || e.message?.includes('limited') || e.message?.includes('upgrade')) {
         setIsRoomModalOpen(false) // Close the room modal so they see the upgrade modal
         openUpgradeModal()
         return
@@ -233,7 +233,7 @@ export default function RoomManagement() {
       fetchData()
     } catch (err) {
       console.error(err);
-      alert('Failed to delete: ' + err.message);
+      toast.error('Failed to delete: ' + err.message);
     }
   }
 
@@ -301,6 +301,11 @@ export default function RoomManagement() {
       fetchData()
     } catch (e) {
       console.error(e);
+      if (e.status === 400 && e.message?.includes('limited')) {
+        setIsTypeModalOpen(false);
+        openUpgradeModal();
+        return;
+      }
       toast.error('Failed to save Room Type: ' + e.message)
     }
   }
@@ -361,6 +366,44 @@ export default function RoomManagement() {
           </button>
         </div>
       </div>
+
+      {/* Plan Limits Usage Indicators */}
+      {currentHotel && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Room Limits</div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">
+                {rooms.length} <span className="text-sm font-normal text-slate-400">/ {currentHotel.maxRooms} used</span>
+              </div>
+            </div>
+            <div className="w-1/2">
+              <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${rooms.length >= currentHotel.maxRooms ? 'bg-red-500' : 'bg-emerald-500'}`}
+                  style={{ width: `${Math.min(100, (rooms.length / currentHotel.maxRooms) * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Room Type Limits</div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">
+                {roomTypes.length} <span className="text-sm font-normal text-slate-400">/ {currentHotel.maxRoomTypes} used</span>
+              </div>
+            </div>
+            <div className="w-1/2">
+              <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${roomTypes.length >= currentHotel.maxRoomTypes ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                  style={{ width: `${Math.min(100, (roomTypes.length / currentHotel.maxRoomTypes) * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search Indicator */}
       {searchQuery && (

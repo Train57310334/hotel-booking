@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
 import { Search, Plus, CreditCard, Eye, User } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
@@ -133,8 +134,9 @@ export default function BookingManagement() {
           })
           fetchBookings()
           setIsDetailOpen(false)
+          toast.success('Status updated')
         } catch (error) {
-          alert('Update failed')
+          toast.error('Update failed')
         }
       }
     })

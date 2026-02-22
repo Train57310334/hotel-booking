@@ -22,7 +22,11 @@ import {
     Globe,
     SprayCan,
     ChevronDown,
-    Zap
+    Building2,
+    Crown,
+    Zap,
+    ShieldAlert,
+    Package
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -146,8 +150,19 @@ export default function AdminLayout({ children }) {
         { name: 'Staff Management', icon: Users, href: '/admin/staff' },
         { name: 'Message', icon: MessageSquare, href: '/admin/messages' },
         { name: 'My Account', icon: UserCircle, href: '/admin/account', section: 'bottom' },
+        { name: 'Subscription', icon: Crown, href: '/admin/subscription', section: 'bottom' },
         { name: 'Widget Gen.', icon: Globe, href: '/admin/settings/widget', section: 'bottom' },
         { name: 'Settings', icon: Settings, href: '/admin/settings', section: 'bottom' },
+    ]
+
+    const superMenuItems = [
+        { name: 'Platform Overview', icon: LayoutDashboard, href: '/admin' },
+        { name: 'Tenants & Hotels', icon: Building2, href: '/admin/super/hotels' },
+        { name: 'Platform Bookings', icon: CalendarDays, href: '/admin/super/bookings' },
+        { name: 'Platform Packages', icon: Package, href: '/admin/super/packages' },
+        { name: 'Platform Messages', icon: MessageSquare, href: '/admin/super/messages' },
+        { name: 'Landing CMS', icon: Globe, href: '/admin/super/cms' },
+        { name: 'Platform Billing', icon: CreditCard, href: '/admin/super/billing' },
     ]
 
     if (loading) {
@@ -171,45 +186,52 @@ export default function AdminLayout({ children }) {
             <aside className={`fixed inset-y-0 left-0 z-50 w-56 transform transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
                 } bg-slate-900 text-white flex flex-col`}>
                 <div className="h-16 flex items-center justify-between px-6">
-                    <div className="relative">
-                        <button
-                            onClick={() => allHotels?.length > 1 && setHotelSwitcherOpen(!hotelSwitcherOpen)}
-                            className="flex items-center gap-3 w-full text-left focus:outline-none hover:bg-slate-800 p-2 rounded-lg transition-colors -ml-2"
-                        >
-                            {currentHotel?.logoUrl ? (
-                                <img src={currentHotel.logoUrl} alt={currentHotel.name} className="h-8 w-8 rounded object-contain bg-white shrink-0" />
-                            ) : (
-                                <div className="bg-emerald-500 rounded-lg p-1.5 shrink-0">
-                                    <BedDouble className="text-white" size={20} />
+                    {!user?.roles?.includes('platform_admin') ? (
+                        <div className="relative">
+                            <button
+                                onClick={() => allHotels?.length > 1 && setHotelSwitcherOpen(!hotelSwitcherOpen)}
+                                className="flex items-center gap-3 w-full text-left focus:outline-none hover:bg-slate-800 p-2 rounded-lg transition-colors -ml-2"
+                            >
+                                {currentHotel?.logoUrl ? (
+                                    <img src={currentHotel.logoUrl} alt={currentHotel.name} className="h-8 w-8 rounded object-contain bg-white shrink-0" />
+                                ) : (
+                                    <div className="bg-emerald-500 rounded-lg p-1.5 shrink-0 flex items-center justify-center">
+                                        <img src="/logo.png" alt="BookingKub" className="h-5 w-5 object-contain brightness-0 invert" />
+                                    </div>
+                                )}
+                                <div className="overflow-hidden">
+                                    <span className="block text-sm font-bold text-white truncate">{currentHotel?.name || 'BookingKub'}</span>
+                                    {allHotels?.length > 1 && <span className="text-[10px] text-slate-400 flex items-center gap-1">Switch Hotel <ChevronDown size={10} /></span>}
                                 </div>
-                            )}
-                            <div className="overflow-hidden">
-                                <span className="block text-sm font-bold text-white truncate">{currentHotel?.name || 'BookingKub'}</span>
-                                {allHotels?.length > 1 && <span className="text-[10px] text-slate-400 flex items-center gap-1">Switch Hotel <ChevronDown size={10} /></span>}
-                            </div>
-                        </button>
+                            </button>
 
-                        {/* Dropdown for Platform Admin */}
-                        {allHotels?.length > 1 && hotelSwitcherOpen && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setHotelSwitcherOpen(false)} />
-                                <div className="absolute top-full left-0 w-48 mt-2 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden z-50">
-                                    {allHotels.map(h => (
-                                        <button
-                                            key={h.id}
-                                            onClick={() => {
-                                                switchHotel(h.id);
-                                                setHotelSwitcherOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-700 transition-colors ${currentHotel?.id === h.id ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}
-                                        >
-                                            {h.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                            {/* Dropdown for Hotel Owners */}
+                            {allHotels?.length > 1 && hotelSwitcherOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setHotelSwitcherOpen(false)} />
+                                    <div className="absolute top-full left-0 w-48 mt-2 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden z-50">
+                                        {allHotels.map(h => (
+                                            <button
+                                                key={h.id}
+                                                onClick={() => {
+                                                    switchHotel(h.id);
+                                                    setHotelSwitcherOpen(false);
+                                                }}
+                                                className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-700 transition-colors ${currentHotel?.id === h.id ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}
+                                            >
+                                                {h.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3 font-black text-indigo-400 tracking-wide">
+                            <ShieldAlert size={20} />
+                            SUPER ADMIN
+                        </div>
+                    )}
                     <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400">
                         <X size={20} />
                     </button>
@@ -217,7 +239,7 @@ export default function AdminLayout({ children }) {
 
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-2">
                     {/* Primary Navigation */}
-                    {menuItems.filter(i => !i.section).filter(item => {
+                    {!user?.roles?.includes('platform_admin') && menuItems.filter(i => !i.section).filter(item => {
                         // 🔒 RBAC Logic
                         const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role || '';
 
@@ -226,8 +248,7 @@ export default function AdminLayout({ children }) {
                             return item.name === 'Housekeeping';
                         }
 
-                        const isPlatformAdmin = user?.roles?.includes('platform_admin');
-                        const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role) || isPlatformAdmin;
+                        const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
 
                         // Restricted items for non-admins (Reception/Manager)
                         const restricted = ['Reports', 'Payments', 'Staff Management', 'Settings'];
@@ -235,7 +256,29 @@ export default function AdminLayout({ children }) {
 
                         return true;
                     }).map((item) => {
-                        const isActive = router.pathname === item.href
+                        const isActive = router.pathname.startsWith(item.href) &&
+                            (item.href !== '/admin' || router.pathname === '/admin');
+
+                        // 🔒 Feature Locks based on Plan
+                        const isLocked = (item.name === 'Promotions' && !currentHotel?.hasPromotions) ||
+                            (item.name === 'Payments' && !currentHotel?.hasOnlinePayment);
+
+                        if (isLocked) {
+                            return (
+                                <button
+                                    key={item.name}
+                                    onClick={openUpgradeModal}
+                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all font-medium mb-1 text-slate-400 hover:text-white hover:bg-slate-800 text-left cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <item.icon size={18} />
+                                        {item.name}
+                                    </div>
+                                    <span title="Upgrade to PRO to unlock" className="text-amber-500">🔒</span>
+                                </button>
+                            )
+                        }
+
                         return (
                             <Link
                                 key={item.name}
@@ -253,54 +296,85 @@ export default function AdminLayout({ children }) {
 
                     <div className="my-4 border-t border-slate-800" />
 
-                    {/* Plan Badge */}
-                    <div className="px-3 mb-6">
-                        <div className={`rounded-xl p-4 border relative overflow-hidden group ${currentHotel?.package === 'PRO'
-                            ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
-                            : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'
-                            }`}>
-                            {currentHotel?.package === 'PRO' && (
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/20 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-                            )}
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Current Plan</h4>
-                            <div className="flex justify-between items-center mb-3">
-                                <span className={`text-lg font-bold ${currentHotel?.package === 'PRO' ? 'text-indigo-300' : 'text-white'}`}>
-                                    {currentHotel?.package || 'LITE'}
-                                </span>
-                                <span className={`text-xs px-2 py-0.5 rounded ${currentHotel?.package === 'PRO'
-                                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                    : 'bg-slate-700 text-slate-300'
-                                    }`}>
-                                    {currentHotel?.package === 'PRO' ? 'Active' : 'Free'}
-                                </span>
+                    {/* Platform Admin Navigation */}
+                    {user?.roles?.includes('platform_admin') && (
+                        <div className="mb-6">
+                            <div className="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                Platform Admin
                             </div>
-                            {currentHotel?.package !== 'PRO' && (
-                                <button
-                                    onClick={openUpgradeModal}
-                                    className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <Zap size={14} className="fill-current" /> Upgrade to PRO
-                                </button>
-                            )}
-                            {currentHotel?.package === 'PRO' && (
-                                <div className="text-[10px] text-slate-400 text-center">
-                                    Expires: {new Date(currentHotel.subscriptionEnd).toLocaleDateString()}
-                                </div>
-                            )}
+                            {superMenuItems.map((item) => {
+                                const isActive = item.href === '/admin'
+                                    ? router.pathname === '/admin'
+                                    : router.pathname.startsWith(item.href);
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${isActive
+                                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                            : 'text-indigo-400/70 hover:text-indigo-100 hover:bg-slate-800'
+                                            }`}
+                                    >
+                                        <item.icon size={18} />
+                                        {item.name}
+                                    </Link>
+                                )
+                            })}
+                            <div className="my-4 border-t border-slate-800" />
                         </div>
-                    </div>
+                    )}
+
+                    {/* Plan Badge */}
+                    {!user?.roles?.includes('platform_admin') && (
+                        <div className="px-3 mb-6">
+                            <div className={`rounded-xl p-4 border relative overflow-hidden group ${currentHotel?.package === 'PRO'
+                                ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
+                                : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'
+                                }`}>
+                                {currentHotel?.package === 'PRO' && (
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/20 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                                )}
+                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Current Plan</h4>
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className={`text-lg font-bold ${currentHotel?.package === 'PRO' ? 'text-indigo-300' : 'text-white'}`}>
+                                        {currentHotel?.package || 'LITE'}
+                                    </span>
+                                    <span className={`text-xs px-2 py-0.5 rounded ${currentHotel?.package === 'PRO'
+                                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                        : 'bg-slate-700 text-slate-300'
+                                        }`}>
+                                        {currentHotel?.package === 'PRO' ? 'Active' : 'Free'}
+                                    </span>
+                                </div>
+                                {currentHotel?.package !== 'PRO' && currentHotel?.package !== 'ENTERPRISE' && (
+                                    <button
+                                        onClick={openUpgradeModal}
+                                        className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Zap size={14} className="fill-current" /> Upgrade
+                                    </button>
+                                )}
+                                {currentHotel?.package === 'PRO' && currentHotel?.subscriptionEnd && (
+                                    <div className="text-[10px] text-slate-400 text-center">
+                                        Expires: {new Date(currentHotel.subscriptionEnd).toLocaleDateString()}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Settings Section */}
                     <div>
-                        <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">Settings</div>
-                        {menuItems.filter(i => i.section === 'bottom').filter(item => {
+                        {!user?.roles?.includes('platform_admin') && (
+                            <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">Settings</div>
+                        )}
+                        {!user?.roles?.includes('platform_admin') && menuItems.filter(i => i.section === 'bottom').filter(item => {
                             // 🔒 RBAC Logic for Bottom Section
                             const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role || '';
 
                             if (role === 'housekeeper' && item.name !== 'My Account') return false;
 
-                            const isPlatformAdmin = user?.roles?.includes('platform_admin');
-                            const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role) || isPlatformAdmin;
+                            const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
 
                             if (!isOwnerOrAdmin && item.name === 'Settings') return false;
                             return true;
@@ -320,6 +394,19 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             )
                         })}
+
+                        {user?.roles?.includes('platform_admin') && (
+                            <Link
+                                href="/admin/account"
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${router.pathname.startsWith('/admin/account')
+                                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                    }`}
+                            >
+                                <UserCircle size={18} />
+                                My Account
+                            </Link>
+                        )}
                     </div>
                 </nav>
 
@@ -350,10 +437,13 @@ export default function AdminLayout({ children }) {
                         <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-slate-500">
                             <Menu size={20} />
                         </button>
-                        <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
-                            <Globe size={16} />
-                            View Website
-                        </a>
+
+                        {!user?.roles?.includes('platform_admin') && (
+                            <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
+                                <Globe size={16} />
+                                View Website
+                            </a>
+                        )}
 
                         {/* Help / Guide Button */}
                         <button

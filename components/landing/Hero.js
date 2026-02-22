@@ -22,7 +22,9 @@ export default function Hero({ title, description, ctaText }) {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-tight animate-fade-in-up delay-100">
-                        {title ? title : (
+                        {title ? (
+                            <div dangerouslySetInnerHTML={{ __html: title.replace(/\n/g, '<br/>') }} />
+                        ) : (
                             <>
                                 Everything You Need to <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Run Your Hotel.</span>

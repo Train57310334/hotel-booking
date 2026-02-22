@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/router'
 import { apiFetch } from '@/lib/api'
+import toast from 'react-hot-toast'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 export default function MyBookings() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, bookingId: null })
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -44,19 +47,25 @@ export default function MyBookings() {
     </Layout>
   )
 
-  const handleCancel = async (bookingId) => {
-    if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) return;
+  const handleCancelClick = (bookingId) => {
+    setConfirmModal({ isOpen: true, bookingId })
+  }
+
+  const handleCancel = async () => {
+    if (!confirmModal.bookingId) return;
 
     try {
-      const res = await apiFetch(`/bookings/${bookingId}/cancel`, { method: 'PUT' });
+      const res = await apiFetch(`/bookings/${confirmModal.bookingId}/cancel`, { method: 'PUT' });
       if (res && res.status === 'cancelled') {
-        alert('Booking cancelled successfully');
+        toast.success('Booking cancelled successfully');
         // Update local state
-        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'cancelled' } : b));
+        setBookings(prev => prev.map(b => b.id === confirmModal.bookingId ? { ...b, status: 'cancelled' } : b));
       }
     } catch (error) {
       console.error('Failed to cancel booking:', error);
-      alert('Failed to cancel booking: ' + (error.message || 'Unknown error'));
+      toast.error('Failed to cancel booking: ' + (error.message || 'Unknown error'));
+    } finally {
+      setConfirmModal({ isOpen: false, bookingId: null });
     }
   }
 
@@ -102,7 +111,7 @@ export default function MyBookings() {
                       </span>
                       {(booking.status === 'confirmed' || booking.status === 'pending') && (
                         <button
-                          onClick={() => handleCancel(booking.id)}
+                          onClick={() => handleCancelClick(booking.id)}
                           className="px-3 py-1 text-xs font-bold text-red-600 border border-red-200 rounded-full hover:bg-red-50 transition-colors"
                         >
                           Cancel
@@ -161,6 +170,15 @@ export default function MyBookings() {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, bookingId: null })}
+        onConfirm={handleCancel}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        type="danger"
+        confirmText="Cancel Booking"
+      />
     </Layout >
   )
 }

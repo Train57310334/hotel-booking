@@ -40,7 +40,7 @@ export default function HotelSettings() {
     });
 
     const isPlatformAdmin = user?.roles?.includes('platform_admin') || user?.roles?.includes('owner') || user?.roles?.includes('admin');
-    const { searchQuery, setSearchQuery, currentHotel } = useAdmin() || {};
+    const { searchQuery, setSearchQuery, currentHotel, openUpgradeModal } = useAdmin() || {};
 
     useEffect(() => {
         if (currentHotel) {
@@ -54,15 +54,9 @@ export default function HotelSettings() {
 
     const fetchHotel = async (id) => {
         try {
-            const promises = [apiFetch(`/hotels/${id}`)];
-            if (isPlatformAdmin) {
-                promises.push(apiFetch('/settings'));
-            }
-
-            const [hotelData, settingsData] = await Promise.all(promises);
+            const hotelData = await apiFetch(`/hotels/${id}`);
 
             setHotel(hotelData);
-            if (settingsData) setSystemSettings(settingsData);
 
             setFormData({
                 name: hotelData.name || '',
@@ -84,10 +78,7 @@ export default function HotelSettings() {
                 bankAccountNumber: hotelData.bankAccountNumber || ''
             });
 
-            // If user is not platform admin and on a restricted tab, switch to general
-            if (!isPlatformAdmin && (activeTab === 'platform' || activeTab === 'notifications')) {
-                setActiveTab('general');
-            }
+
 
         } catch (error) {
             console.error(error);
@@ -110,9 +101,7 @@ export default function HotelSettings() {
         }
     };
 
-    const handleSystemChange = (key, value) => {
-        setSystemSettings(prev => ({ ...prev, [key]: value }));
-    };
+
 
     const handleUpload = async (e, field) => {
         const file = e.target.files[0];
@@ -177,23 +166,10 @@ export default function HotelSettings() {
         if (!hotel) return;
 
         try {
-            const promises = [
-                apiFetch(`/hotels/${hotel.id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(formData)
-                })
-            ];
-
-            if (isPlatformAdmin) {
-                promises.push(
-                    apiFetch('/settings', {
-                        method: 'PUT',
-                        body: JSON.stringify(systemSettings)
-                    })
-                );
-            }
-
-            await Promise.all(promises);
+            await apiFetch(`/hotels/${hotel.id}`, {
+                method: 'PUT',
+                body: JSON.stringify(formData)
+            });
 
             toast.success('Settings saved successfully!');
             checkUser();
@@ -208,16 +184,12 @@ export default function HotelSettings() {
     if (loading) return <AdminLayout>Loading...</AdminLayout>;
     if (!hotel) return <AdminLayout><div className="p-8 text-center text-slate-500">No Hotel Assigned</div></AdminLayout>;
 
-    const allTabs = [
+    const tabs = [
         { id: 'general', label: 'General Info', icon: Building2 },
         { id: 'branding', label: 'Branding', icon: ImageIcon },
         { id: 'web', label: 'Website Content', icon: Globe },
-        { id: 'payment', label: 'Bank Accounts', icon: CreditCard },
-        { id: 'platform', label: 'Platform & Gateways', icon: LayoutTemplate, restricted: true },
-        { id: 'notifications', label: 'Notifications', icon: Bell, restricted: true },
+        { id: 'payment', label: 'Bank Accounts', icon: CreditCard }
     ];
-
-    const tabs = allTabs.filter(t => !t.restricted || isPlatformAdmin);
 
     return (
         <AdminLayout>
@@ -538,203 +510,6 @@ export default function HotelSettings() {
 
                         )}
 
-                        {/* PLATFORM CONFIG TAB */}
-                        {activeTab === 'platform' && (
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-8">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 mb-6">Platform Settings</h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                            Site Name
-                                            <InfoTooltip content="The name of your website as it appears in the browser tab and search engines." />
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={systemSettings.siteName || ''}
-                                            onChange={e => handleSystemChange('siteName', e.target.value)}
-                                            placeholder="BookingKub"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                            Currency
-                                            <InfoTooltip content="The currency used across the platform (e.g. THB, USD)." />
-                                        </label>
-                                        <select
-                                            value={systemSettings.currency || 'THB'}
-                                            onChange={e => handleSystemChange('currency', e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        >
-                                            <option value="THB">THB (฿)</option>
-                                            <option value="USD">USD ($)</option>
-                                            <option value="EUR">EUR (€)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
-
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">SaaS Landing Page Content</h3>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Hero Title</label>
-                                        <input
-                                            type="text"
-                                            value={systemSettings.landingHeroTitle || ''}
-                                            onChange={e => handleSystemChange('landingHeroTitle', e.target.value)}
-                                            placeholder="Everything You Need to Run Your Hotel."
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Hero Description</label>
-                                        <textarea
-                                            rows={3}
-                                            value={systemSettings.landingHeroDescription || ''}
-                                            onChange={e => handleSystemChange('landingHeroDescription', e.target.value)}
-                                            placeholder="Manage bookings, guests, and payments in one place..."
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">CTA Button Text</label>
-                                        <input
-                                            type="text"
-                                            value={systemSettings.landingCTA || ''}
-                                            onChange={e => handleSystemChange('landingCTA', e.target.value)}
-                                            placeholder="Start for Free"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
-
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <CreditCard size={20} className="text-emerald-500" /> Payment Gateways
-                                </h3>
-                                <div className="space-y-4">
-                                    <h4 className="font-bold text-slate-700 dark:text-slate-300">Stripe</h4>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                            Stripe Public Key
-                                            <InfoTooltip content="pk_..." />
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={systemSettings.stripeKey || ''}
-                                            onChange={e => handleSystemChange('stripeKey', e.target.value)}
-                                            placeholder="pk_test_..."
-                                            className={`w-full px-4 py-2.5 rounded-xl border ${errors.stripeKey ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
-                                        />
-                                        {errors.stripeKey && <p className="text-red-500 text-xs mt-1">{errors.stripeKey}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                            Stripe Secret Key
-                                            <InfoTooltip content="sk_..." />
-                                        </label>
-                                        <input
-                                            type="password"
-                                            value={systemSettings.stripeSecret || ''}
-                                            onChange={e => handleSystemChange('stripeSecret', e.target.value)}
-                                            placeholder="sk_test_..."
-                                            className={`w-full px-4 py-2.5 rounded-xl border ${errors.stripeSecret ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
-                                        />
-                                        {errors.stripeSecret && <p className="text-red-500 text-xs mt-1">{errors.stripeSecret}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-slate-100 dark:border-slate-700 pt-6">
-                                    <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-4">Omise</h4>
-                                    <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                                Omise Public Key
-                                                <InfoTooltip content="pkey_..." />
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={systemSettings.omisePublicKey || ''}
-                                                onChange={e => handleSystemChange('omisePublicKey', e.target.value)}
-                                                placeholder="pkey_test_..."
-                                                className={`w-full px-4 py-2.5 rounded-xl border ${errors.omisePublicKey ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
-                                            />
-                                            {errors.omisePublicKey && <p className="text-red-500 text-xs mt-1">{errors.omisePublicKey}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                                Omise Secret Key
-                                                <InfoTooltip content="skey_..." />
-                                            </label>
-                                            <input
-                                                type="password"
-                                                value={systemSettings.omiseSecretKey || ''}
-                                                onChange={e => handleSystemChange('omiseSecretKey', e.target.value)}
-                                                placeholder="skey_test_..."
-                                                className={`w-full px-4 py-2.5 rounded-xl border ${errors.omiseSecretKey ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} bg-slate-50 dark:bg-slate-700/50 font-mono text-sm`}
-                                            />
-                                            {errors.omiseSecretKey && <p className="text-red-500 text-xs mt-1">{errors.omiseSecretKey}</p>}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* NOTIFICATIONS TAB */}
-                        {activeTab === 'notifications' && (
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 mb-6 flex items-center gap-2">
-                                    <Mail size={20} className="text-emerald-500" /> SMTP Configuration
-                                </h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Host</label>
-                                        <input
-                                            type="text"
-                                            value={systemSettings.smtpHost || ''}
-                                            onChange={e => handleSystemChange('smtpHost', e.target.value)}
-                                            placeholder="smtp.gmail.com"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Port</label>
-                                        <input
-                                            type="number"
-                                            value={systemSettings.smtpPort || ''}
-                                            onChange={e => handleSystemChange('smtpPort', e.target.value)}
-                                            placeholder="587"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">SMTP Username</label>
-                                        <input
-                                            type="text"
-                                            value={systemSettings.smtpUser || ''}
-                                            onChange={e => handleSystemChange('smtpUser', e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                            SMTP Password
-                                            <InfoTooltip content="App Password for Gmail or your SMTP server password." />
-                                        </label>
-                                        <input
-                                            type="password"
-                                            value={systemSettings.smtpPass || ''}
-                                            onChange={e => handleSystemChange('smtpPass', e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

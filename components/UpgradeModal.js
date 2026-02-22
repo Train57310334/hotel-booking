@@ -1,4 +1,4 @@
-import { X, Check, Star, Zap, Shield, Sparkles, Loader2, Lock } from 'lucide-react'
+import { X, Check, Star, Rocket, Shield, Crown, Loader2, Lock } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -56,7 +56,7 @@ function CheckoutForm({ onSuccess, onError }) {
                     <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                     <>
-                        Confirm Upgrade <Zap size={18} className="group-hover:text-yellow-300 transition-colors" />
+                        Confirm Upgrade <Rocket size={18} className="group-hover:text-yellow-300 transition-colors" />
                     </>
                 )}
             </button>
@@ -155,7 +155,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
 
                     <div className="relative z-10">
                         <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-emerald-300 mb-3 border border-white/10 uppercase tracking-wider">
-                            <Sparkles size={12} /> Recommended
+                            <Crown size={12} /> Recommended
                         </div>
                         <h2 className="text-3xl font-display font-bold mb-2">Upgrade to PRO</h2>
                         <p className="text-slate-300">Unlock the full potential of your hotel management system.</p>
@@ -170,7 +170,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
                     </div>
 
                     <div className="space-y-4 mb-8">
-                        <FeatureItem icon={<Zap className="text-amber-500" />} title="Unlimited Rooms" desc="Remove the 5-room limit and manage your entire property." />
+                        <FeatureItem icon={<Rocket className="text-amber-500" />} title="Unlimited Rooms" desc="Remove the 5-room limit and manage your entire property." />
                         <FeatureItem icon={<Shield className="text-emerald-500" />} title="Automated Payments" desc="Accept credit cards via Stripe/Omise directly." />
                         <FeatureItem icon={<Star className="text-blue-500" />} title="Advanced Analytics" desc="Deep dive into occupancy rates, RevPAR, and trends." />
                         <FeatureItem icon={<Check className="text-slate-400" />} title="Priority Support" desc="24/7 dedicated support channel." />

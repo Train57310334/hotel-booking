@@ -19,7 +19,7 @@ export default function WidgetGenerator() {
         )
     }
 
-    const shortcode = `[hotel_booking_search hotel_id="${currentHotel.id}"]`;
+    const shortcode = `[hotel_booking_search]`;
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(shortcode);
@@ -79,14 +79,15 @@ export default function WidgetGenerator() {
                     <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">2</div>
-                            Install on WordPress
+                            Install and Configure
                         </h2>
                         <ol className="list-decimal list-inside space-y-2 text-slate-600 dark:text-slate-300 ml-2">
                             <li>Log in to your WordPress Admin Dashboard.</li>
-                            <li>Go to <strong>Plugins &gt; Add New</strong>.</li>
-                            <li>Click <strong>Upload Plugin</strong> at the top.</li>
-                            <li>Choose the <code>kb-hotel-booking.zip</code> file you just downloaded.</li>
-                            <li>Click <strong>Install Now</strong> and then <strong>Activate</strong>.</li>
+                            <li>Go to <strong>Plugins &gt; Add New</strong> and click <strong>Upload Plugin</strong>.</li>
+                            <li>Upload and activate the <code>kb-hotel-booking.zip</code> file.</li>
+                            <li>Go to <strong>Settings &gt; Hotel Booking Widget</strong>.</li>
+                            <li>Enter your Hotel ID: <code className="bg-slate-100 px-2 py-1 rounded text-emerald-600 font-bold">{currentHotel.id}</code></li>
+                            <li>Click <strong>Save Settings</strong>.</li>
                         </ol>
                     </div>
 
@@ -99,7 +100,6 @@ export default function WidgetGenerator() {
 
                         <p className="text-slate-600 dark:text-slate-300 mb-4">
                             Copy and paste the following shortcode into any Page, Post, or Widget area on your WordPress site.
-                            This code is specific to <strong>{currentHotel.name}</strong>.
                         </p>
 
                         <div className="relative group">

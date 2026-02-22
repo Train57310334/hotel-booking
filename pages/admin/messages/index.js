@@ -2,6 +2,8 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Send, Clock, CheckCircle, Mail, User, Phone, Trash2, Archive, Reply } from 'lucide-react'
+import toast from 'react-hot-toast'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 import { useAdmin } from '@/contexts/AdminContext'
 
@@ -12,6 +14,7 @@ export default function MessageCenter() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [replyText, setReplyText] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false })
 
   useEffect(() => {
     if (currentHotel) fetchMessages()
@@ -51,24 +54,30 @@ export default function MessageCenter() {
         method: 'POST',
         body: JSON.stringify({ content: replyText })
       })
-      alert(`Reply sent to ${selectedMsg.email} successfully`)
+      toast.success(`Reply sent to ${selectedMsg.email} successfully`)
       setReplyText('')
       setMessages(prev => prev.map(m => m.id === selectedMsg.id ? { ...m, status: 'replied' } : m))
     } catch (err) {
       console.error(err)
-      alert('Failed to send reply')
+      toast.error('Failed to send reply')
     }
   }
 
+  const handleDeleteClick = () => {
+    setConfirmModal({ isOpen: true })
+  }
+
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this message?')) return
     try {
       await apiFetch(`/messages/${selectedMsg.id}`, { method: 'DELETE' })
       setMessages(prev => prev.filter(m => m.id !== selectedMsg.id))
       setSelectedMsg(null)
+      setConfirmModal({ isOpen: false })
+      toast.success('Message deleted')
     } catch (err) {
       console.error(err)
-      alert('Failed to delete message')
+      toast.error('Failed to delete message')
+      setConfirmModal({ isOpen: false })
     }
   }
 
@@ -77,9 +86,10 @@ export default function MessageCenter() {
       await apiFetch(`/messages/${selectedMsg.id}/archive`, { method: 'PUT' })
       setMessages(prev => prev.filter(m => m.id !== selectedMsg.id)) // Remove from main inbox
       setSelectedMsg(null)
+      toast.success('Message archived')
     } catch (err) {
       console.error(err)
-      alert('Failed to archive message')
+      toast.error('Failed to archive message')
     }
   }
 
@@ -161,7 +171,7 @@ export default function MessageCenter() {
                   </div>
                   <div className="flex gap-2 text-slate-400">
                     <button onClick={handleArchive} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-amber-500" title="Archive"><Archive size={18} /></button>
-                    <button onClick={handleDelete} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-rose-500" title="Delete"><Trash2 size={18} /></button>
+                    <button onClick={handleDeleteClick} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-rose-500" title="Delete"><Trash2 size={18} /></button>
                   </div>
                 </div>
 
@@ -209,6 +219,15 @@ export default function MessageCenter() {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false })}
+        onConfirm={handleDelete}
+        title="Delete Message"
+        message="Are you sure you want to delete this message?"
+        type="danger"
+        confirmText="Delete"
+      />
     </AdminLayout>
   )
 }
