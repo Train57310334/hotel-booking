@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { User, Mail, Phone, Calendar, ArrowRight, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, Calendar, ArrowRight, ArrowLeft, BedDouble, Info, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function GuestInfoPage() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export default function GuestInfoPage() {
   const [guest, setGuest] = useState({ name: '', email: '', phone: '', requests: '' });
 
   useEffect(() => {
-    const stored = localStorage.getItem('bookingSelection');
+    const stored = localStorage.getItem('bookingCart');
     if (stored) {
       setBookingInfo(JSON.parse(stored));
     } else {
@@ -20,17 +21,56 @@ export default function GuestInfoPage() {
     }
   }, [router]);
 
-  const handleContinue = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleContinue = async () => {
     if (!guest.name || !guest.email || !guest.phone) {
       setShowError(true);
       return;
     }
-    const payload = {
-      ...bookingInfo,
-      guest,
-    };
-    localStorage.setItem('bookingPayload', JSON.stringify(payload));
-    router.push('/booking/payment');
+    setLoading(true);
+
+    try {
+      const payload = {
+        hotelId: bookingInfo.hotelId,
+        guestId: null, // Will be created/matched by backend
+        guestDetails: guest,
+        checkInDate: new Date(bookingInfo.checkIn).toISOString(),
+        checkOutDate: new Date(bookingInfo.checkOut).toISOString(),
+        adults: bookingInfo.adults,
+        children: bookingInfo.children,
+        totalPrice: bookingInfo.subtotal,
+        rooms: bookingInfo.selections.map(opt => ({
+          roomTypeId: opt.roomTypeId,
+          ratePlanId: opt.ratePlanId,
+          quantity: opt.quantity,
+          priceAtBooking: opt.totalPrice / opt.quantity // per room
+        }))
+      };
+
+      // Ensure your backend URL is correct
+      const API_URL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
+      const res = await fetch(`${API_URL}/bookings/public`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to create booking');
+      }
+
+      const createdBooking = await res.json();
+      localStorage.removeItem('bookingCart');
+      // Redirect to confirmation page (we'll need to create this)
+      router.push(`/booking/confirmation?id=${createdBooking.id}`);
+    } catch (e) {
+      console.error(e);
+      toast.error(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!bookingInfo) return null;
@@ -120,8 +160,9 @@ export default function GuestInfoPage() {
                 <button
                   className="flex-1 btn-primary py-3 flex items-center justify-center gap-2 group"
                   onClick={handleContinue}
+                  disabled={loading}
                 >
-                  Continue to Payment <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  {loading ? 'Processing...' : 'Confirm & Book (Pay at Hotel)'} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
@@ -155,31 +196,45 @@ export default function GuestInfoPage() {
 
                 <hr className="border-slate-100 my-4" />
 
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Check-in</span>
-                    <span className="font-bold text-slate-900">{new Date(bookingInfo.checkIn).toLocaleDateString()}</span>
+                <div className="space-y-4 text-sm font-medium">
+                  <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span className="flex items-center gap-2 text-slate-500"><Calendar size={16} /> Check-in</span>
+                    <span className="text-slate-900">{new Date(bookingInfo.checkIn).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Check-out</span>
-                    <span className="font-bold text-slate-900">{new Date(bookingInfo.checkOut).toLocaleDateString()}</span>
+                  <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span className="flex items-center gap-2 text-slate-500"><Calendar size={16} /> Check-out</span>
+                    <span className="text-slate-900">{new Date(bookingInfo.checkOut).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Duration</span>
-                    <span className="font-bold text-slate-900">{Math.ceil((new Date(bookingInfo.checkOut) - new Date(bookingInfo.checkIn)) / (1000 * 60 * 60 * 24))} Nights</span>
+                  <div className="flex justify-between items-center px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-800">
+                    <span className="flex items-center gap-2"><Info size={16} /> Duration</span>
+                    <span className="font-bold">{Math.ceil((new Date(bookingInfo.checkOut) - new Date(bookingInfo.checkIn)) / (1000 * 60 * 60 * 24))} Nights</span>
                   </div>
                 </div>
 
                 <hr className="border-slate-100 my-4" />
 
-                <div className="bg-slate-50 p-4 rounded-xl space-y-2 mb-4">
-                  <p className="font-bold text-slate-900">{bookingInfo.roomTypeName}</p>
-                  <p className="text-xs text-slate-500">{bookingInfo.ratePlanName}</p>
+                <div className="space-y-3 mb-6 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                  {bookingInfo.selections.map((sel, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-xl border-2 border-slate-100 hover:border-emerald-200 transition-colors shadow-sm relative overflow-hidden group">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-emerald-400 transition-colors" />
+                      <div className="flex justify-between items-start pl-2">
+                        <div className="pr-4">
+                          <p className="font-bold text-slate-900 leading-tight flex items-center gap-2">
+                            <BedDouble size={16} className="text-slate-400" />
+                            <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">{sel.quantity}x</span>
+                            {sel.roomTypeName}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5"><CheckCircle size={12} className="text-emerald-500" /> {sel.ratePlanName}</p>
+                        </div>
+                        <span className="font-bold text-slate-700 whitespace-nowrap">฿{sel.totalPrice?.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="flex justify-between items-end">
-                  <span className="text-slate-500 font-medium">Total Price</span>
-                  <span className="text-2xl font-bold text-primary-600 font-display">฿{bookingInfo.totalPrice?.toLocaleString()}</span>
+                <div className="flex justify-between items-end bg-emerald-50 p-4 rounded-xl border border-emerald-100 mt-6">
+                  <span className="text-emerald-800 font-bold uppercase tracking-wider text-sm">Total Price</span>
+                  <span className="text-3xl font-black text-emerald-600 font-display">฿{bookingInfo.subtotal?.toLocaleString()}</span>
                 </div>
               </div>
             </div>

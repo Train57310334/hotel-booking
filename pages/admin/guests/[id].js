@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { apiFetch } from '@/lib/api'
 import { User, Mail, Phone, Calendar, Star, Tag, StickyNote, Save, Clock, ArrowLeft, Edit } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function GuestProfile() {
     const router = useRouter()
@@ -45,9 +46,9 @@ export default function GuestProfile() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tags, notes, preferences })
             })
-            alert('Guest profile updated!')
+            toast.success('Guest profile updated!')
         } catch (error) {
-            alert('Failed to update')
+            toast.error('Failed to update')
         } finally {
             setSaving(false)
         }
@@ -62,9 +63,9 @@ export default function GuestProfile() {
             })
             setGuest(prev => ({ ...prev, ...data }))
             setIsEditModalOpen(false)
-            alert('Profile updated')
+            toast.success('Profile updated')
         } catch (error) {
-            alert('Failed to update profile')
+            toast.error('Failed to update profile')
         }
     }
 

@@ -7,6 +7,8 @@ import { useRouter } from 'next/router'
 import { InfoTooltip } from '@/components/Tooltip'
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
+import SuperAdminDashboard from '@/components/SuperAdminDashboard'
+import toast from 'react-hot-toast'
 
 import {
   BarChart as BarChartIcon,
@@ -89,7 +91,7 @@ export default function AdminDashboard() {
     if (!authLoading) {
       if (!user) {
         router.push('/auth/login')
-      } else {
+      } else if (!user.roles?.includes('platform_admin')) {
         fetchData() // Initial
         const interval = setInterval(() => fetchData(searchQuery, true), 30000) // Background Silent Refresh (30s)
         return () => clearInterval(interval)
@@ -174,7 +176,7 @@ export default function AdminDashboard() {
           fetchData(searchQuery) // Refresh dashboard
           setIsDetailOpen(false)
         } catch (error) {
-          alert('Update failed')
+          toast.error('Update failed')
         }
       }
     })
@@ -223,11 +225,19 @@ export default function AdminDashboard() {
   // Quick Onboarding Check
   const showOnboarding = stats.totalRooms === 0;
 
-  if (authLoading || loading) return (
+  if (authLoading || (!user?.roles?.includes('platform_admin') && loading)) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-400">
       <div className="animate-pulse">Loading Dashboard...</div>
     </div>
   )
+
+  if (user?.roles?.includes('platform_admin')) {
+    return (
+      <AdminLayout>
+        <SuperAdminDashboard />
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

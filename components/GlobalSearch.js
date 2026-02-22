@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, User, Calendar, BedDouble, Loader2, X, ChevronRight } from 'lucide-react'
+import { Search, User, Calendar, BedDouble, Loader2, X, ChevronRight, Building2, Package } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { apiFetch } from '@/lib/api'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -8,7 +8,7 @@ export default function GlobalSearch() {
     const router = useRouter()
     const { setSearchQuery: setContextSearch, currentHotel } = useAdmin() || {}
     const [query, setQuery] = useState('')
-    const [results, setResults] = useState({ users: [], bookings: [], rooms: [], roomTypes: [] })
+    const [results, setResults] = useState({ users: [], bookings: [], rooms: [], roomTypes: [], hotels: [], packages: [] })
     const [isOpen, setIsOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const containerRef = useRef(null)
@@ -19,7 +19,7 @@ export default function GlobalSearch() {
             if (query.length >= 2) {
                 performSearch()
             } else {
-                setResults({ users: [], bookings: [], rooms: [], roomTypes: [] })
+                setResults({ users: [], bookings: [], rooms: [], roomTypes: [], hotels: [], packages: [] })
             }
         }, 300)
 
@@ -109,7 +109,18 @@ export default function GlobalSearch() {
         setIsOpen(false)
     }
 
-    const hasResults = results.users.length > 0 || results.bookings.length > 0 || results.rooms.length > 0 || results.roomTypes.length > 0
+    const handleHotelClick = (id) => {
+        router.push(`/admin/super/hotels`)
+        setIsOpen(false)
+    }
+
+    const handlePackageClick = (id) => {
+        router.push(`/admin/super/packages`)
+        setIsOpen(false)
+    }
+
+    const hasResults = results.users?.length > 0 || results.bookings?.length > 0 || results.rooms?.length > 0 ||
+        results.roomTypes?.length > 0 || results.hotels?.length > 0 || results.packages?.length > 0
 
     return (
         <div className="relative w-full max-w-sm" ref={containerRef}>
@@ -169,7 +180,7 @@ export default function GlobalSearch() {
                             )}
 
                             {/* Bookings Section */}
-                            {results.bookings.length > 0 && (
+                            {results.bookings?.length > 0 && (
                                 <div className="mb-2">
                                     <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                         <Calendar size={12} /> Bookings
@@ -195,8 +206,62 @@ export default function GlobalSearch() {
                                 </div>
                             )}
 
+                            {/* Hotels Section */}
+                            {results.hotels?.length > 0 && (
+                                <div className="mb-2">
+                                    <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                        <Building2 size={12} /> Hotels
+                                    </div>
+                                    {results.hotels.map(hotel => (
+                                        <button
+                                            key={hotel.id}
+                                            onClick={() => handleHotelClick(hotel.id)}
+                                            className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                                                <Building2 size={16} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-slate-900 dark:text-white text-sm">{hotel.name}</p>
+                                                <p className="text-xs text-slate-500">
+                                                    Owner: {hotel.owner?.email || 'Unknown'}
+                                                </p>
+                                            </div>
+                                            <ChevronRight size={14} className="text-slate-300" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Packages Section */}
+                            {results.packages?.length > 0 && (
+                                <div className="mb-2">
+                                    <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                        <Package size={12} /> Packages
+                                    </div>
+                                    {results.packages.map(pkg => (
+                                        <button
+                                            key={pkg.id}
+                                            onClick={() => handlePackageClick(pkg.id)}
+                                            className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                                                <Package size={16} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-slate-900 dark:text-white text-sm">{pkg.name}</p>
+                                                <p className="text-xs text-slate-500">
+                                                    {pkg.price === 0 ? 'Free Plan' : `฿${pkg.price.toLocaleString()}${pkg.period}`}
+                                                </p>
+                                            </div>
+                                            <ChevronRight size={14} className="text-slate-300" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
                             {/* Rooms Section */}
-                            {(results.rooms.length > 0 || results.roomTypes.length > 0) && (
+                            {(results.rooms?.length > 0 || results.roomTypes?.length > 0) && (
                                 <div>
                                     <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                         <BedDouble size={12} /> Inventory

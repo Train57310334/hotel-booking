@@ -209,7 +209,7 @@ export default function Calendar() {
                     fetchData() // Reload calendar
                     setIsDetailOpen(false)
                 } catch (error) {
-                    alert('Update failed')
+                    toast.error('Update failed')
                 }
             }
         })

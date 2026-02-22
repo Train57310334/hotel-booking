@@ -1,15 +1,36 @@
 import Layout from '@/components/Layout';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
+import { apiFetch } from '@/lib/api';
 
 export default function ContactPage() {
-    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', subject: 'General Inquiry', message: '' });
     const [submitted, setSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // In a real app, send to API. For now, just show success.
-        setTimeout(() => setSubmitted(true), 1000);
+        setLoading(true);
+        setError('');
+        try {
+            await apiFetch('/messages', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    subject: formData.subject,
+                    content: formData.message,
+                })
+            });
+            setSubmitted(true);
+            setFormData({ name: '', email: '', subject: 'General Inquiry', message: '' });
+        } catch (err) {
+            console.error('Failed to send message:', err);
+            setError('Failed to send message. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -121,13 +142,23 @@ export default function ContactPage() {
                                         </div>
                                     </div>
 
+                                    {error && (
+                                        <div className="bg-red-500/10 text-red-500 p-4 rounded-xl text-sm mb-6 border border-red-500/20">
+                                            {error}
+                                        </div>
+                                    )}
+
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-slate-400">Start with</label>
-                                        <select className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-white">
-                                            <option>General Inquiry</option>
-                                            <option>Sales & Pricing</option>
-                                            <option>Technical Support</option>
-                                            <option>Partnership</option>
+                                        <select
+                                            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all text-white"
+                                            value={formData.subject}
+                                            onChange={e => setFormData({ ...formData, subject: e.target.value })}
+                                        >
+                                            <option value="General Inquiry">General Inquiry</option>
+                                            <option value="Sales & Pricing">Sales & Pricing</option>
+                                            <option value="Technical Support">Technical Support</option>
+                                            <option value="Partnership">Partnership</option>
                                         </select>
                                     </div>
 
@@ -143,8 +174,12 @@ export default function ContactPage() {
                                         />
                                     </div>
 
-                                    <button type="submit" className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-primary-500/25 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1">
-                                        Send Message <Send size={18} />
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-primary-500/25 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? 'Sending...' : 'Send Message'} <Send size={18} />
                                     </button>
                                 </form>
                             )}

@@ -1,18 +1,21 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 import { apiFetch } from '@/lib/api'
+import { useRouter } from 'next/router'
 
 const AdminContext = createContext()
 
 export function AdminProvider({ children }) {
     const { user } = useAuth()
+    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState('')
     const [currentHotel, setCurrentHotel] = useState(null)
     const [allHotels, setAllHotels] = useState([])
 
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
 
-    const openUpgradeModal = () => setIsUpgradeModalOpen(true)
+    // Intercept upgrade clicks to route to the new SaaS pricing page
+    const openUpgradeModal = () => router.push('/admin/subscription')
     const closeUpgradeModal = () => setIsUpgradeModalOpen(false)
 
     useEffect(() => {
@@ -47,11 +50,25 @@ export function AdminProvider({ children }) {
         if (target) setCurrentHotel(target);
     }
 
+    const refreshHotelData = async () => {
+        if (!user) return;
+        const assignedHotelId = user.roleAssignments?.[0]?.hotelId;
+        if (assignedHotelId) {
+            try {
+                const data = await apiFetch(`/hotels/${assignedHotelId}`);
+                setCurrentHotel(data);
+            } catch (e) {
+                console.error("Failed to refresh hotel data", e);
+            }
+        }
+    };
+
     return (
         <AdminContext.Provider value={{
             searchQuery, setSearchQuery,
             currentHotel, setCurrentHotel,
             allHotels, switchHotel,
+            refreshHotelData,
             isUpgradeModalOpen, openUpgradeModal, closeUpgradeModal
         }}>
             {children}

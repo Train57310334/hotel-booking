@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { CreditCard, QrCode, Building, Lock, CheckCircle, Tag, X, Copy, Globe } from 'lucide-react';
 import Script from 'next/script';
+import toast from 'react-hot-toast';
 
 // Stripe Imports
 import { loadStripe } from '@stripe/stripe-js';
@@ -24,7 +25,7 @@ const OmisePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) =
 
     const { Omise } = window;
     if (!Omise) {
-      alert('Omise not loaded');
+      toast.error('Omise not loaded');
       setIsProcessing(false);
       return;
     }
@@ -34,7 +35,7 @@ const OmisePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) =
         onSuccess(response.id);
       } else {
         setIsProcessing(false);
-        alert(`Omise Token Failed: ${response.message}`);
+        toast.error(`Omise Token Failed: ${response.message}`);
       }
     });
   };
@@ -282,7 +283,7 @@ export default function PaymentPage() {
 
       await completeBooking('Omise Credit Card', 'confirmed');
     } catch (e) {
-      alert('Omise Charge Failed Backend: ' + e.message);
+      toast.error('Omise Charge Failed Backend: ' + e.message);
       setIsProcessing(false);
     }
   }

@@ -2,6 +2,7 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Search, Plus, User, Mail, Phone, Edit, Trash2, CheckCircle, XCircle, Shield } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 import { useAdmin } from '@/contexts/AdminContext'
 import ConfirmationModal from '@/components/ConfirmationModal'
@@ -57,7 +58,7 @@ export default function StaffManagement() {
       setFormData({ name: '', email: '', phone: '', password: '', role: 'reception' })
       fetchStaff()
     } catch (error) {
-      alert('Operation failed: ' + error.message)
+      toast.error('Operation failed: ' + error.message)
     }
   }
 
@@ -80,7 +81,7 @@ export default function StaffManagement() {
         try {
           await apiFetch(`/staff/${id}?hotelId=${currentHotel.id}`, { method: 'DELETE' })
           fetchStaff()
-        } catch (e) { alert('Delete failed') }
+        } catch (e) { toast.error('Delete failed') }
       }
     })
   }

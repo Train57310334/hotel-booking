@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
-import { Plus, Trash2, CreditCard, Receipt } from 'lucide-react'
+import { Plus, Trash2, CreditCard, Receipt, FileText } from 'lucide-react'
 import toast from 'react-hot-toast'
 import PaymentModal from '@/components/PaymentModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
@@ -66,6 +66,26 @@ export default function FolioTab({ booking, onUpdate }) {
         }
     }
 
+    const handleDownloadInvoice = async () => {
+        try {
+            const data = await apiFetch(`/bookings/${booking.id}/invoice`)
+            // Simplest way to "download" JSON as a file
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `Invoice-${booking.id}.json`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+            toast.success('Invoice downloaded')
+        } catch (error) {
+            console.error('Failed to download invoice', error)
+            toast.error('Failed to get invoice')
+        }
+    }
+
     if (!folio) return <div className="p-8 text-center text-slate-400">Loading Billing Details...</div>
 
     return (
@@ -103,12 +123,20 @@ export default function FolioTab({ booking, onUpdate }) {
                     <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                         <Receipt size={18} /> Transactions
                     </h3>
-                    <button
-                        onClick={() => setIsAddChargeOpen(true)}
-                        className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 border border-indigo-100 transition-colors flex items-center gap-1"
-                    >
-                        <Plus size={14} /> Add Charge
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleDownloadInvoice}
+                            className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-50 border border-slate-200 transition-colors flex items-center gap-1 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700"
+                        >
+                            <FileText size={14} /> Get Invoice
+                        </button>
+                        <button
+                            onClick={() => setIsAddChargeOpen(true)}
+                            className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 border border-indigo-100 transition-colors flex items-center gap-1"
+                        >
+                            <Plus size={14} /> Add Charge
+                        </button>
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">

@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/api'
 import Tesseract from 'tesseract.js'
 import { parse } from 'mrz'
 import toast from 'react-hot-toast'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 export default function GuestManager({ bookingId, guests, onUpdate }) {
     const [isAdding, setIsAdding] = useState(false)
@@ -12,6 +13,7 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
     const [scanning, setScanning] = useState(false)
     const [scanProgress, setScanProgress] = useState(0)
     const fileInputRef = useRef(null)
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, guestId: null })
 
     const [newGuest, setNewGuest] = useState({
         name: '',
@@ -247,22 +249,29 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
             if (onUpdate) onUpdate()
         } catch (error) {
             console.error(error)
-            alert('Failed to add guest')
+            toast.error('Failed to add guest')
         } finally {
             setLoading(false)
         }
     }
 
     // Remove guest
-    const handleRemoveGuest = async (guestId) => {
-        if (!confirm('Are you sure?')) return
+    const handleRemoveClick = (guestId) => {
+        setConfirmModal({ isOpen: true, guestId })
+    }
+
+    const handleRemoveGuest = async () => {
+        if (!confirmModal.guestId) return
 
         try {
-            await apiFetch(`/guests/${guestId}`, { method: 'DELETE' })
+            await apiFetch(`/guests/${confirmModal.guestId}`, { method: 'DELETE' })
+            toast.success('Guest removed')
             if (onUpdate) onUpdate()
         } catch (error) {
             console.error(error)
-            alert('Failed to remove guest')
+            toast.error('Failed to remove guest')
+        } finally {
+            setConfirmModal({ isOpen: false, guestId: null })
         }
     }
 
@@ -306,7 +315,7 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
                                     </a>
                                 )}
                                 <button
-                                    onClick={() => handleRemoveGuest(guest.id)}
+                                    onClick={() => handleRemoveClick(guest.id)}
                                     className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                                 >
                                     <Trash2 size={16} />
@@ -391,6 +400,16 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, guestId: null })}
+                onConfirm={handleRemoveGuest}
+                title="Remove Guest"
+                message="Are you sure you want to remove this guest?"
+                type="danger"
+                confirmText="Remove"
+            />
         </div>
     )
 }

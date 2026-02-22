@@ -11,7 +11,12 @@ import {
     MessageSquare,
     Star,
     Filter,
-    UserCircle
+    UserCircle,
+    SprayCan,
+    Crown,
+    Globe,
+    Building2,
+    Package
 } from 'lucide-react'
 
 export const guideData = {
@@ -190,8 +195,8 @@ export const guideData = {
             }
         ]
     },
-    '/admin/owners': {
-        title: 'Staff & Owners',
+    '/admin/staff': {
+        title: 'Staff Management',
         icon: Users,
         steps: [
             {
@@ -229,6 +234,110 @@ export const guideData = {
             {
                 title: 'Security',
                 content: 'Change your password and enable Two-Factor Authentication (if available).'
+            }
+        ]
+    },
+    '/admin/housekeeping': {
+        title: 'Housekeeping',
+        icon: SprayCan,
+        steps: [
+            {
+                title: 'Room Status',
+                content: 'View and update the cleanliness status of all rooms in real-time.'
+            },
+            {
+                title: 'Task Assignment',
+                content: 'Housekeepers can quickly find which rooms require immediate cleaning after a checkout.'
+            }
+        ]
+    },
+    '/admin/subscription': {
+        title: 'Subscription & Billing',
+        icon: Crown,
+        steps: [
+            {
+                title: 'Current Plan',
+                content: 'View your active plan, room limits, and unlocked software features.'
+            },
+            {
+                title: 'Upgrade Package',
+                content: 'Select a higher tier to increase your room capacity and access premium tools instantly.'
+            }
+        ]
+    },
+    '/admin/settings/widget': {
+        title: 'Booking Widget',
+        icon: Globe,
+        steps: [
+            {
+                title: 'Generate Code',
+                content: 'Copy the HTML code snippet to embed our booking engine directly on your own website.'
+            },
+            {
+                title: 'WordPress Plugin',
+                content: 'Download the official WordPress plugin for an easy, no-code installation on WP sites.'
+            }
+        ]
+    },
+    '/admin/super/hotels': {
+        title: 'Tenants & Hotels',
+        icon: Building2,
+        steps: [
+            {
+                title: 'Manage Tenants',
+                content: 'View all registered hotels, their active subscription plans, and verification status.'
+            },
+            {
+                title: 'Access Control',
+                content: 'Suspend or unsuspend hotel accounts to revoke their system access instantly when needed.'
+            }
+        ]
+    },
+    '/admin/super/bookings': {
+        title: 'Platform Bookings',
+        icon: CalendarDays,
+        steps: [
+            {
+                title: 'Global Overview',
+                content: 'Monitor all bookings made across every hotel on the entire BookingKub platform.'
+            }
+        ]
+    },
+    '/admin/super/packages': {
+        title: 'Platform Packages',
+        icon: Package,
+        steps: [
+            {
+                title: 'Pricing Tiers',
+                content: 'Create and modify the SaaS subscription plans available to hotel owners.'
+            },
+            {
+                title: 'Feature Limits',
+                content: 'Enforce limits on Max Rooms, Max Staff, and toggle premium feature access per plan.'
+            }
+        ]
+    },
+    '/admin/super/cms': {
+        title: 'Landing Page CMS',
+        icon: Globe,
+        steps: [
+            {
+                title: 'Content Management',
+                content: 'Update the hero text, features, and marketing copy for the main platform landing page.'
+            }
+        ]
+    },
+    '/admin/super/billing': {
+        title: 'Platform Billing',
+        icon: CreditCard,
+        steps: [
+            {
+                title: 'API Settings',
+                content: 'Configure the master payment gateway keys (e.g. Omise/Stripe) to collect platform fees.'
+            },
+            {
+                title: 'Transaction Logs',
+                content: 'View a detailed history of all subscription payments made by hotel owners.'
             }
         ]
     }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Search, Users } from 'lucide-react';
+import { Search, Users, Calendar } from 'lucide-react';
 import DatePicker from './DatePicker';
 
 export default function SearchBar({ query = {} }) {
@@ -13,7 +13,6 @@ export default function SearchBar({ query = {} }) {
     adults: parseInt(query.adults) || 2,
     children: parseInt(query.children) || 0
   });
-  const [open, setOpen] = useState(false);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -28,117 +27,85 @@ export default function SearchBar({ query = {} }) {
     if (dates.checkOut) params.append('checkOut', toLocalISO(dates.checkOut));
     params.append('adults', guests.adults);
     params.append('children', guests.children);
+    if (query.hotelId) params.append('hotelId', query.hotelId);
 
     router.push(`/search?${params.toString()}`);
   };
 
+  const InputWrapper = ({ label, icon, children, className = "" }) => (
+    <div className={`relative flex-1 bg-slate-50 hover:bg-white focus-within:bg-white transition-all duration-200 border border-transparent hover:border-slate-200 focus-within:!border-emerald-500 rounded-full group ${className}`}>
+      <label className="absolute top-3 left-12 text-[10px] font-bold text-slate-400 uppercase tracking-wider pointer-events-none group-focus-within:text-emerald-600 transition-colors">
+        {label}
+      </label>
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors pointer-events-none">
+        {icon}
+      </div>
+      {children}
+    </div>
+  );
+
   return (
     <form
       onSubmit={handleSearch}
-      className="glass p-2 rounded-2xl flex flex-col md:flex-row gap-2 max-w-5xl mx-auto shadow-2xl shadow-emerald-500/10"
+      className="bg-white/80 backdrop-blur-xl p-2 rounded-[2.5rem] flex flex-col md:flex-row gap-2 shadow-2xl shadow-slate-200/50 border border-white/50 w-full max-w-6xl mx-auto"
     >
-      <div className="flex gap-2 w-full md:w-auto flex-1">
-        <div className="flex-1">
-          <DatePicker
-            placeholder="Check-in"
-            value={dates.checkIn}
-            onChange={([date]) => setDates(prev => ({ ...prev, checkIn: date }))}
-            options={{ minDate: "today" }}
-          />
-        </div>
+      {/* Check-in */}
+      <InputWrapper label="Check-in" icon={<Calendar size={18} />}>
+        <DatePicker
+          placeholder="Add date"
+          value={dates.checkIn}
+          onChange={([date]) => setDates(prev => ({ ...prev, checkIn: date }))}
+          options={{ minDate: "today", dateFormat: "D, M j" }}
+          className="w-full h-16 bg-transparent border-none focus:ring-0 pt-7 pb-2 pl-12 text-sm font-semibold text-slate-700 placeholder:text-slate-300 cursor-pointer"
+          wrapperClassName="h-full !static" // !static to override relative
+        />
+        {/* Hide DatePicker's internal icon since we provide our own in wrapper for consistency */}
+        <style jsx global>{`
+           .h-16 .flatpickr-mobile { height: 100%; }
+        `}</style>
+      </InputWrapper>
 
-        <div className="flex-1">
-          <DatePicker
-            placeholder="Check-out"
-            value={dates.checkOut}
-            onChange={([date]) => setDates(prev => ({ ...prev, checkOut: date }))}
-            options={{
-              minDate: dates.checkIn ? new Date(dates.checkIn.getTime() + 86400000) : "today"
-            }}
-          />
-        </div>
-      </div>
+      {/* Check-out */}
+      <InputWrapper label="Check-out" icon={<Calendar size={18} />}>
+        <DatePicker
+          placeholder="Add date"
+          value={dates.checkOut}
+          onChange={([date]) => setDates(prev => ({ ...prev, checkOut: date }))}
+          options={{
+            minDate: dates.checkIn ? new Date(new Date(dates.checkIn).getTime() + 86400000) : "today",
+            dateFormat: "D, M j"
+          }}
+          className="w-full h-16 bg-transparent border-none focus:ring-0 pt-7 pb-2 pl-12 text-sm font-semibold text-slate-700 placeholder:text-slate-300 cursor-pointer"
+          wrapperClassName="h-full !static"
+        />
+      </InputWrapper>
 
-      <div className="relative group md:w-48 z-50">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10">
-          <Users size={20} />
-        </div>
+      {/* Adults */}
+      <InputWrapper label="Adults" icon={<Users size={18} />} className="flex-[0.8]">
+        <input
+          type="number"
+          min="1"
+          value={guests.adults}
+          onChange={(e) => setGuests(prev => ({ ...prev, adults: Math.max(1, parseInt(e.target.value) || 0) }))}
+          className="w-full h-16 bg-transparent border-none focus:ring-0 pt-7 pb-2 pl-12 text-sm font-semibold text-slate-700 placeholder:text-slate-300"
+        />
+      </InputWrapper>
 
-        {/* Trigger Button */}
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="w-full bg-white/50 hover:bg-white focus:bg-white text-left rounded-xl py-4 pl-12 pr-4 text-slate-900 focus:ring-2 focus:ring-primary-200 transition-all outline-none h-full flex items-center"
-        >
-          <span className="truncate">
-            {guests.adults} Adult{guests.adults > 1 && 's'}, {guests.children} Child{guests.children !== 1 && 'ren'}
-          </span>
-        </button>
+      {/* Children */}
+      <InputWrapper label="Children" icon={<Users size={18} />} className="flex-[0.8]">
+        <input
+          type="number"
+          min="0"
+          value={guests.children}
+          onChange={(e) => setGuests(prev => ({ ...prev, children: Math.max(0, parseInt(e.target.value) || 0) }))}
+          className="w-full h-16 bg-transparent border-none focus:ring-0 pt-7 pb-2 pl-12 text-sm font-semibold text-slate-700 placeholder:text-slate-300"
+        />
+      </InputWrapper>
 
-        {/* Dropdown */}
-        {open && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-            <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-20 space-y-4">
-              {/* Adults */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-900">Adults</div>
-                  <div className="text-xs text-slate-500">Ages 13+</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setGuests(prev => ({ ...prev, adults: Math.max(1, prev.adults - 1) }))}
-                    className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-600"
-                    disabled={guests.adults <= 1}
-                  >
-                    -
-                  </button>
-                  <span className="w-4 text-center font-medium">{guests.adults}</span>
-                  <button
-                    type="button"
-                    onClick={() => setGuests(prev => ({ ...prev, adults: prev.adults + 1 }))}
-                    className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-600"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Children */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-900">Children</div>
-                  <div className="text-xs text-slate-500">Ages 0-12</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setGuests(prev => ({ ...prev, children: Math.max(0, prev.children - 1) }))}
-                    className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-600"
-                    disabled={guests.children <= 0}
-                  >
-                    -
-                  </button>
-                  <span className="w-4 text-center font-medium">{guests.children}</span>
-                  <button
-                    type="button"
-                    onClick={() => setGuests(prev => ({ ...prev, children: prev.children + 1 }))}
-                    className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-600"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      <button type="submit" className="btn-primary flex items-center justify-center gap-2 px-8 py-4 rounded-xl md:w-auto">
-        <Search size={20} />
-        <span>Search</span>
+      {/* Submit Button */}
+      <button type="submit" className="w-full md:w-auto px-8 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold rounded-full shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group whitespace-nowrap">
+        <Search size={20} className="group-hover:-translate-y-0.5 transition-transform" />
+        <span className="text-lg">Search</span>
       </button>
     </form>
   )
