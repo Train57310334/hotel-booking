@@ -1,10 +1,10 @@
-// ✅ pages/booking/guest-info.js
+// ✅ pages/booking/checkout.js (Guest Info - No API Call for Booking)
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { User, Mail, Phone, Calendar, ArrowRight, ArrowLeft, BedDouble, Info, CheckCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { apiFetch } from '@/lib/api';
+import { User, Mail, Phone, Calendar, ArrowRight, ArrowLeft, BedDouble, Info, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function GuestInfoPage() {
   const router = useRouter();
@@ -23,6 +23,8 @@ export default function GuestInfoPage() {
 
   const [loading, setLoading] = useState(false);
 
+  // handleContinue: Saves draft to backend, uses URL ref as primary session key.
+  // This prevents booking data loss if localStorage is cleared (e.g. iOS Safari, private mode).
   const handleContinue = async () => {
     if (!guest.name || !guest.email || !guest.phone) {
       setShowError(true);
@@ -31,43 +33,26 @@ export default function GuestInfoPage() {
     setLoading(true);
 
     try {
-      const payload = {
-        hotelId: bookingInfo.hotelId,
-        guestId: null, // Will be created/matched by backend
-        guestDetails: guest,
-        checkInDate: new Date(bookingInfo.checkIn).toISOString(),
-        checkOutDate: new Date(bookingInfo.checkOut).toISOString(),
-        adults: bookingInfo.adults,
-        children: bookingInfo.children,
-        totalPrice: bookingInfo.subtotal,
-        rooms: bookingInfo.selections.map(opt => ({
-          roomTypeId: opt.roomTypeId,
-          ratePlanId: opt.ratePlanId,
-          quantity: opt.quantity,
-          priceAtBooking: opt.totalPrice / opt.quantity // per room
-        }))
-      };
+      const payload = { ...bookingInfo, guestDetails: guest };
 
-      // Ensure your backend URL is correct
-      const API_URL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
-      const res = await fetch(`${API_URL}/bookings/public`, {
+      // 1. Save draft to server — returns a draftId (15-min TTL)
+      const { draftId } = await apiFetch('/bookings/draft', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Failed to create booking');
-      }
+      // 2. Keep a fast-access copy in sessionStorage (survives refresh within same tab)
+      sessionStorage.setItem('bookingDraftId', draftId);
+      sessionStorage.setItem('bookingPayload', JSON.stringify(payload));
 
-      const createdBooking = await res.json();
-      localStorage.removeItem('bookingCart');
-      // Redirect to confirmation page (we'll need to create this)
-      router.push(`/booking/confirmation?id=${createdBooking.id}`);
+      // 3. Redirect with draftId in URL — this is the resilient session key
+      router.push(`/booking/payment?ref=${draftId}`);
     } catch (e) {
-      console.error(e);
-      toast.error(e.message);
+      console.error('Failed to save booking draft:', e);
+      // Fallback: store locally and proceed anyway
+      const payload = { ...bookingInfo, guestDetails: guest };
+      sessionStorage.setItem('bookingPayload', JSON.stringify(payload));
+      router.push('/booking/payment');
     } finally {
       setLoading(false);
     }
@@ -162,7 +147,11 @@ export default function GuestInfoPage() {
                   onClick={handleContinue}
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : 'Confirm & Book (Pay at Hotel)'} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  {loading ? (
+                    <><Loader2 size={20} className="animate-spin" /> Saving...</>
+                  ) : (
+                    <>Continue to Payment <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
+                  )}
                 </button>
               </div>
             </div>

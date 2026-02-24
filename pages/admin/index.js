@@ -47,7 +47,7 @@ import {
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth()
-  const { searchQuery } = useAdmin() || {}
+  const { searchQuery, currentHotel } = useAdmin() || {}  // ✅ Always call hooks at component top level
   const router = useRouter()
 
   const [stats, setStats] = useState({
@@ -102,14 +102,14 @@ export default function AdminDashboard() {
   useEffect(() => {
     const timer = setTimeout(() => fetchData(searchQuery), 500)
     return () => clearTimeout(timer)
-  }, [searchQuery, useAdmin()?.currentHotel?.id])
+  }, [searchQuery, currentHotel?.id])
 
   const fetchData = async (search = '', isBackground = false) => {
     try {
       // Only show spinner on initial load (not background refresh or search typing)
       if (!isBackground && !bookings.length && !search) setLoading(true)
 
-      const { currentHotel } = useAdmin() || {};
+      // ✅ Use currentHotel from component scope — do NOT call useAdmin() inside a function
       const hotelId = currentHotel?.id;
 
       if (!hotelId) {
@@ -123,8 +123,11 @@ export default function AdminDashboard() {
       const bookingsData = await apiFetch(`/bookings/admin/all${query}`)
 
       // preventing re-renders if data is same (Deep Compare simple approach)
+      // API returns { data: [...], meta: {...} } — unwrap the array
+      const bookingsList = Array.isArray(bookingsData) ? bookingsData : (bookingsData?.data || [])
       setStats(prev => (statsData && JSON.stringify(prev) !== JSON.stringify(statsData)) ? statsData : prev)
-      setBookings(prev => JSON.stringify(prev) !== JSON.stringify(bookingsData) ? bookingsData : prev)
+      setBookings(prev => JSON.stringify(prev) !== JSON.stringify(bookingsList) ? bookingsList : prev)
+
 
     } catch (error) {
       console.error('Failed to fetch admin data:', error)

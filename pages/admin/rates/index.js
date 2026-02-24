@@ -149,7 +149,8 @@ function RatePlansView({ plans, roomTypes, refresh }) {
             name: formData.get('name'),
             cancellationRule: formData.get('cancellationRule'),
             adultPricePolicy: formData.get('adultPricePolicy'),
-            includesBreakfast: formData.get('includesBreakfast') === 'on'
+            includesBreakfast: formData.get('includesBreakfast') === 'on',
+            breakfastPrice: Number(formData.get('breakfastPrice') || 0),
         }
 
         try {
@@ -208,7 +209,11 @@ function RatePlansView({ plans, roomTypes, refresh }) {
                             </p>
                             <div className="flex gap-2 text-xs text-slate-500 mt-1">
                                 <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">{plan.cancellationRule || 'No Policy'}</span>
-                                {plan.includesBreakfast && <span className="text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded border border-amber-100 dark:border-amber-900/30">Breakfast Included</span>}
+                                {plan.includesBreakfast && (
+                                    <span className="text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded border border-amber-100 dark:border-amber-900/30">
+                                        Breakfast +{plan.breakfastPrice > 0 ? `฿${plan.breakfastPrice?.toLocaleString()}/night` : 'Included'}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="flex gap-2">
@@ -253,8 +258,36 @@ function RatePlansView({ plans, roomTypes, refresh }) {
                                     </select>
                                 </div>
                                 <div className="flex items-center gap-2 pt-2">
-                                    <input name="includesBreakfast" type="checkbox" defaultChecked={editingPlan?.includesBreakfast} className="w-5 h-5 rounded text-emerald-500" />
+                                    <input
+                                        id="includesBreakfastCheck"
+                                        name="includesBreakfast"
+                                        type="checkbox"
+                                        defaultChecked={editingPlan?.includesBreakfast}
+                                        className="w-5 h-5 rounded text-emerald-500"
+                                        onChange={e => {
+                                            // Show/hide breakfast price input
+                                            const bfInput = document.getElementById('breakfastPriceGroup')
+                                            if (bfInput) bfInput.style.display = e.target.checked ? 'block' : 'none'
+                                        }}
+                                    />
                                     <label className="font-bold text-slate-700 dark:text-slate-300">Includes Breakfast</label>
+                                </div>
+                                <div
+                                    id="breakfastPriceGroup"
+                                    style={{ display: editingPlan?.includesBreakfast ? 'block' : 'none' }}
+                                >
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                        Breakfast Surcharge per Night (THB)
+                                    </label>
+                                    <input
+                                        name="breakfastPrice"
+                                        type="number"
+                                        min="0"
+                                        defaultValue={editingPlan?.breakfastPrice ?? 0}
+                                        placeholder="e.g. 350"
+                                        className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    />
+                                    <p className="text-xs text-slate-400 mt-1">This amount is added to the room's nightly rate for each night.</p>
                                 </div>
 
                                 <div className="flex gap-2 pt-4">

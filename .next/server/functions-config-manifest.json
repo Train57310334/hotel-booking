@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/auth/login":{},"/auth/register":{},"/":{}}}
+{"version":1,"functions":{"/auth/login":{},"/":{},"/auth/register":{}}}
