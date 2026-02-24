@@ -6,6 +6,11 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import { CreditCard, QrCode, Building, Lock, CheckCircle, Tag, X, Copy, Globe } from 'lucide-react';
 import Script from 'next/script';
 import toast from 'react-hot-toast';
+import dynamic from 'next/dynamic';
+
+// Dynamic import — avoids SSR issues with browser-only canvas/qrcode APIs
+const PromptPayQR = dynamic(() => import('@/components/PromptPayQR'), { ssr: false });
+
 
 // Stripe Imports
 import { loadStripe } from '@stripe/stripe-js';
@@ -139,8 +144,9 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
 export default function PaymentPage() {
   const router = useRouter();
   const [bookingData, setBookingData] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('credit_card'); // credit_card | omise | promptpay | bank_transfer
+  const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   // Config State
   const [msg, setMsg] = useState('Loading Secure Gateway...');
@@ -162,35 +168,58 @@ export default function PaymentPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    // 1. Fetch Config
+    // 1. Fetch Payment Config
     apiFetch('/public-settings').then(config => {
-      if (config.stripePublicKey) {
-        setStripePromiseState(loadStripe(config.stripePublicKey));
-      }
-      if (config.omisePublicKey) {
-        setOmiseKey(config.omisePublicKey);
-      }
-      setMsg(''); // Clear loading message once config is fetched
+      if (config.stripePublicKey) setStripePromiseState(loadStripe(config.stripePublicKey));
+      if (config.omisePublicKey) setOmiseKey(config.omisePublicKey);
+      setMsg('');
     }).catch(err => {
-      console.error("Failed to load payment config", err);
+      console.error('Failed to load payment config', err);
       setMsg('Failed to load payment configuration.');
     });
 
-    // 2. Load Booking Data
-    const data = localStorage.getItem('bookingPayload');
-    if (data) {
-      const parsed = JSON.parse(data);
-      setBookingData(parsed);
-
-      if (parsed.hotelId) {
-        apiFetch(`/hotels/${parsed.hotelId}`)
-          .then(data => setHotelDetails(data))
-          .catch(err => console.error('Failed to load hotel details', err));
+    // 2. Load Booking Payload — 3-tier resilience strategy:
+    //    Tier 1: sessionStorage (fast, same-tab, survives F5)
+    //    Tier 2: Server draft via URL ?ref= (survives tab close, 15-min TTL)
+    //    Tier 3: Show "Session Expired" UI (never silently redirect to home)
+    const loadBookingData = async () => {
+      // Tier 1: sessionStorage
+      const stored = sessionStorage.getItem('bookingPayload');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setBookingData(parsed);
+        if (parsed.hotelId) {
+          apiFetch(`/hotels/${parsed.hotelId}`).then(r => setHotelDetails(r)).catch(() => { });
+        }
+        return;
       }
-    } else {
-      router.push('/');
-    }
-  }, [router]);
+
+      // Tier 2: Server draft via URL ref param
+      const refId = router.query.ref;
+      if (refId) {
+        try {
+          const draft = await apiFetch(`/bookings/draft/${refId}`);
+          if (draft) {
+            setBookingData(draft);
+            // Restore sessionStorage from server
+            sessionStorage.setItem('bookingPayload', JSON.stringify(draft));
+            if (draft.hotelId) {
+              apiFetch(`/hotels/${draft.hotelId}`).then(r => setHotelDetails(r)).catch(() => { });
+            }
+            return;
+          }
+        } catch (e) {
+          // Draft expired or not found — fall through to expired UI
+          console.warn('Booking draft not found or expired:', e.message);
+        }
+      }
+
+      // Tier 3: Session expired
+      setSessionExpired(true);
+    };
+
+    if (router.isReady) loadBookingData();
+  }, [router.isReady, router.query.ref]);
 
   const calculateFinalPrice = () => {
     if (!bookingData) return 0;
@@ -288,47 +317,57 @@ export default function PaymentPage() {
     }
   }
 
-  // Standard Booking Submission
+  // ✅ Single point of booking creation — called AFTER payment succeeds
+  // Uses /bookings/public which supports multi-room, atomic transactions, and inventory deduction
   const completeBooking = async (method, status) => {
     setIsProcessing(true);
+
+    const guestDetails = bookingData.guestDetails || {};
+    const selections = bookingData.selections || [];
+
+    // Build multi-room payload for /bookings/public
     const payload = {
       hotelId: bookingData.hotelId,
-      roomTypeId: bookingData.roomTypeId,
-      ratePlanId: bookingData.ratePlanId,
-      roomId: bookingData.roomId,
-      checkIn: new Date(bookingData.checkIn).toISOString(),
-      checkOut: new Date(bookingData.checkOut).toISOString(),
-      guests: {
-        adult: bookingData.guestsAdult || 2,
-        child: bookingData.guestsChild || 0
-      },
-      leadGuest: {
-        name: bookingData.guest.name,
-        email: bookingData.guest.email,
-        phone: bookingData.guest.phone || ''
+      checkInDate: new Date(bookingData.checkIn).toISOString(),
+      checkOutDate: new Date(bookingData.checkOut).toISOString(),
+      adults: bookingData.adults ?? 2,
+      children: bookingData.children ?? 0,
+      totalPrice: finalPrice,
+      rooms: selections.map(sel => ({
+        roomTypeId: sel.roomTypeId,
+        ratePlanId: sel.ratePlanId,
+        quantity: sel.quantity,
+      })),
+      guestDetails: {
+        name: guestDetails.name || '',
+        email: guestDetails.email || '',
+        phone: guestDetails.phone || '',
+        requests: guestDetails.requests || '',
       },
       paymentMethod: method,
       paymentStatus: status,
-      totalAmount: finalPrice,
-      promotionCode: appliedPromo ? appliedPromo.code : undefined
+      promotionCode: appliedPromo ? appliedPromo.code : undefined,
     };
 
     try {
-      const result = await apiFetch('/bookings', {
+      const result = await apiFetch('/bookings/public', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
 
       if (result?.id) {
-        localStorage.removeItem('bookingSelection');
+        // Clean up all session storage after successful booking
+        localStorage.removeItem('bookingCart');
         localStorage.removeItem('bookingPayload');
+        sessionStorage.removeItem('bookingPayload');
+        sessionStorage.removeItem('bookingDraftId');
         router.push(`/booking/confirmation?id=${result.id}`);
       } else {
         throw new Error('Booking could not be created');
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage(err.message || 'Booking Creation Failed');
+      setErrorMessage(err.message || 'Booking creation failed. Please try again.');
       setShowError(true);
       setIsProcessing(false);
     }
@@ -338,9 +377,32 @@ export default function PaymentPage() {
     completeBooking(paymentMethod === 'promptpay' ? 'PromptPay' : 'Bank Transfer', 'pending');
   };
 
+  if (sessionExpired) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-6 border-2 border-amber-200">
+            <Lock size={36} className="text-amber-500" />
+          </div>
+          <h1 className="text-3xl font-display font-bold text-slate-900 mb-3">Booking Session Expired</h1>
+          <p className="text-slate-500 max-w-md mb-8">
+            Your booking session has expired or could not be found. This usually happens after 15 minutes of inactivity or if you opened a new browser window.
+          </p>
+          <button
+            onClick={() => router.push('/search')}
+            className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors"
+          >
+            Start New Booking
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
   if (!bookingData) return null;
 
-  const { hotelName, hotelImage, hotelCity, roomTypeName, ratePlanName, checkIn, checkOut, guest } = bookingData;
+  const { hotelName, hotelImage, hotelCity, roomTypeName, ratePlanName, checkIn, checkOut } = bookingData;
+  const guest = bookingData.guestDetails || {};
   const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
 
   return (
@@ -444,22 +506,29 @@ export default function PaymentPage() {
 
                   {paymentMethod === 'promptpay' && (
                     <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <div className="bg-white p-4 inline-block rounded-2xl shadow-sm border border-slate-200">
-                        <div className="w-48 h-48 bg-slate-900 mx-auto rounded-lg flex items-center justify-center text-white/20">
-                          <QrCode size={64} />
+                      {/* ✅ Real PromptPay QR Code — generated from hotel's promptPayId */}
+                      {hotelDetails?.promptPayId ? (
+                        <PromptPayQR
+                          promptPayId={hotelDetails.promptPayId}
+                          amount={finalPrice}
+                          hotelName={hotelDetails.name}
+                        />
+                      ) : (
+                        <div className="w-60 h-60 mx-auto flex flex-col items-center justify-center bg-amber-50 rounded-2xl border-2 border-dashed border-amber-200 text-amber-600 text-center p-4">
+                          <span className="text-4xl mb-3">⚙️</span>
+                          <p className="font-bold">PromptPay Not Configured</p>
+                          <p className="text-xs mt-1 text-amber-500">Hotel admin needs to set a PromptPay ID in Settings</p>
                         </div>
-                        <p className="mt-2 font-bold text-slate-900">{hotelDetails?.name || 'Hotel Name'}</p>
-                        <p className="text-sm text-slate-500">PromptPay ID: {hotelDetails?.promptPayId || 'Not Configured'}</p>
-                      </div>
+                      )}
                       <p className="text-sm text-slate-600 max-w-sm mx-auto">
-                        Scan with your banking app.
+                        Scan this QR code with any banking app that supports PromptPay.
                       </p>
                       <button
                         onClick={handleManualPayment}
                         disabled={isProcessing}
-                        className="w-full px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition"
+                        className="w-full px-8 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition disabled:opacity-50"
                       >
-                        {isProcessing ? 'Processing' : 'I have paid'}
+                        {isProcessing ? 'Processing...' : 'I have paid ✓'}
                       </button>
                     </div>
                   )}
