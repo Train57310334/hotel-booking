@@ -46,7 +46,7 @@ export default function LoginPage({ branding }) {
         console.log('Fetching user profile to determine role...');
         const userRes = await apiFetch('/auth/me');
 
-        if (userRes.roles?.includes('hotel_admin') || userRes.roles?.includes('platform_admin')) {
+        if (userRes.roles?.includes('hotel_admin') || userRes.roles?.includes('platform_admin') || userRes.roleAssignments?.length > 0) {
           router.push('/admin');
         } else {
           router.push('/');
