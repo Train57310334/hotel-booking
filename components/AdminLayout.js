@@ -70,15 +70,15 @@ export default function AdminLayout({ children }) {
             return;
         }
 
-        // 🔒 RBAC Guard: Only Admins allowed
+        // 🔒 RBAC Guard: Admins or Staff allowed
         const isAdmin = user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin');
-
-        // 🏨 Onboarding Check: If Admin has no Hotel, redirect to Setup
-        const hasHotel = user.roleAssignments?.length > 0;
         const isPlatformAdmin = user.roles?.includes('platform_admin');
+        const hasHotel = user.roleAssignments?.length > 0;
+        const isStaffOrAdmin = isAdmin || hasHotel;
         const isSetupPage = router.pathname === '/admin/setup';
 
-        if (!isAdmin && !hasHotel) {
+        // 🏨 Onboarding Check: If Admin has no Hotel, redirect to Setup
+        if (!isStaffOrAdmin) {
             router.push('/'); // Guests go home
             return;
         }
@@ -97,7 +97,7 @@ export default function AdminLayout({ children }) {
 
         if (isAdmin && !isPlatformAdmin && hasHotel && isSetupPage) {
             // If try to access setup but already have hotel, go dashboard
-            router.push('/admin/dashboard');
+            router.push('/admin');
             return;
         }
 

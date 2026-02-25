@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"components\\\\AdminLayout.js -> @/lib/api\":{\"id\":\"components\\\\AdminLayout.js -> @/lib/api\",\"files\":[]}}"
