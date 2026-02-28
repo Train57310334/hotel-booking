@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import DatePicker from '@/components/DatePicker'
 
 import { useAdmin } from '@/contexts/AdminContext'
+import { Info } from 'lucide-react'
 
 export default function Promotions() {
     const { currentHotel } = useAdmin() || {}
@@ -116,15 +117,32 @@ export default function Promotions() {
                     </h1>
                     <p className="text-slate-500 text-sm">Manage discount codes and campaigns</p>
                 </div>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
-                >
-                    <Plus size={16} /> New Code
-                </button>
+                {currentHotel?.hasPromotions && (
+                    <button
+                        onClick={openCreateModal}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
+                    >
+                        <Plus size={16} /> New Code
+                    </button>
+                )}
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-200 dark:border-slate-700 p-6">
+            {!currentHotel?.hasPromotions && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/20 p-6 rounded-2xl mb-8 flex items-start gap-4">
+                    <Info className="text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                        <h3 className="font-bold text-amber-800 dark:text-amber-400 mb-1">Feature Not Available</h3>
+                        <p className="text-amber-700 dark:text-amber-300 text-sm mb-4">
+                            Your current subscription tier (<b>{currentHotel?.package}</b>) does not include the Custom Promotions feature. Upgrade your plan to start offering discount codes.
+                        </p>
+                        <a href="/admin/settings/subscription" className="inline-block bg-amber-500 text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-amber-600 transition-colors">
+                            View Upgrade Options
+                        </a>
+                    </div>
+                </div>
+            )}
+
+            <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-200 dark:border-slate-700 p-6 ${!currentHotel?.hasPromotions ? 'opacity-50 pointer-events-none grayscale-[50%]' : ''}`}>
                 <div className="grid gap-4">
                     {/* ... empty state ... */}
                     {promotions.length === 0 && (

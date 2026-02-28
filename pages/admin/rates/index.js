@@ -2,8 +2,9 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import toast from 'react-hot-toast'
-import { Calendar as CalendarIcon, Save, Plus, Trash2, Edit } from 'lucide-react'
+import { Calendar as CalendarIcon, Save, Plus, Trash2, Edit, AlertCircle } from 'lucide-react'
 import { useAdmin } from '@/contexts/AdminContext'
+import { useRoleAccess } from '@/hooks/useRoleAccess'
 
 export default function RatesAvailability() {
     // const { success, error } = useToast() // Removed
@@ -12,6 +13,7 @@ export default function RatesAvailability() {
     const [roomTypes, setRoomTypes] = useState([])
     const [ratePlans, setRatePlans] = useState([])
     const [selectedType, setSelectedType] = useState('')
+    const { isReception } = useRoleAccess()
 
     // Calendar State
     const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -99,7 +101,7 @@ export default function RatesAvailability() {
 
                 <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden p-6">
                     {activeTab === 'plans' ? (
-                        <RatePlansView plans={ratePlans} roomTypes={roomTypes} refresh={() => fetchPlans(currentHotel?.id)} />
+                        <RatePlansView plans={ratePlans} roomTypes={roomTypes} refresh={() => fetchPlans(currentHotel?.id)} isReception={isReception} />
                     ) : (
                         <CalendarView
                             month={currentMonth}
@@ -121,7 +123,7 @@ export default function RatesAvailability() {
 
 import ConfirmationModal from '@/components/ConfirmationModal'
 
-function RatePlansView({ plans, roomTypes, refresh }) {
+function RatePlansView({ plans, roomTypes, refresh, isReception }) {
     // const { success, error } = useToast()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingPlan, setEditingPlan] = useState(null)
@@ -183,12 +185,14 @@ function RatePlansView({ plans, roomTypes, refresh }) {
         <div className="h-full flex flex-col">
             <div className="flex justify-between mb-4 shrink-0">
                 <h3 className="font-bold text-lg dark:text-white">Active Rate Plans</h3>
-                <button
-                    onClick={openNew}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600"
-                >
-                    <Plus size={16} /> New Plan
-                </button>
+                {!isReception && (
+                    <button
+                        onClick={openNew}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600"
+                    >
+                        <Plus size={16} /> New Plan
+                    </button>
+                )}
             </div>
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
                 {plans.length === 0 && <p className="text-slate-500 text-center py-10">No Rate Plans found.</p>}
@@ -216,10 +220,12 @@ function RatePlansView({ plans, roomTypes, refresh }) {
                                 )}
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button onClick={() => openEdit(plan)} className="p-2 text-slate-400 hover:text-emerald-500"><Edit size={16} /></button>
-                            <button onClick={() => handleDeleteClick(plan.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={16} /></button>
-                        </div>
+                        {!isReception && (
+                            <div className="flex gap-2">
+                                <button onClick={() => openEdit(plan)} className="p-2 text-slate-400 hover:text-emerald-500"><Edit size={16} /></button>
+                                <button onClick={() => handleDeleteClick(plan.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={16} /></button>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -307,6 +313,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
     // const { success, error } = useToast()
     const [editModal, setEditModal] = useState({ isOpen: false, data: null })
     const [bulkModal, setBulkModal] = useState({ isOpen: false })
+    const { isReception } = useRoleAccess()
 
     // Bulk Form State
     const [bulkData, setBulkData] = useState({
@@ -329,6 +336,11 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
     }
 
     const handleCellClick = (day) => {
+        if (isReception) {
+            toast('Reception cannot edit rates/inventory.', { icon: '🔒' });
+            return;
+        }
+
         // Find existing data
         const dateStr = day.toISOString() // simplified matching
         const inv = inventory.find(i => new Date(i.date).toDateString() === day.toDateString())
@@ -459,12 +471,14 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                     <span className="px-4 py-1 text-sm font-bold dark:text-white min-w-[140px] text-center">{month.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</span>
                     <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="px-3 py-1 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white">Next</button>
                 </div>
-                <button
-                    onClick={() => setBulkModal({ isOpen: true })}
-                    className="ml-4 px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
-                >
-                    <Edit size={16} /> Bulk Update
-                </button>
+                {!isReception && (
+                    <button
+                        onClick={() => setBulkModal({ isOpen: true })}
+                        className="ml-4 px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                    >
+                        <Edit size={16} /> Bulk Update
+                    </button>
+                )}
             </div>
 
             {/* Grid Container */}

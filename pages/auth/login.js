@@ -4,11 +4,13 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import { Mail, Lock, ArrowRight, Loader2, ArrowLeft, Check } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { apiFetch } from '@/lib/api'
 
 export default function LoginPage({ branding }) {
   const router = useRouter()
   const { login } = useAuth()
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -121,8 +123,8 @@ export default function LoginPage({ branding }) {
           <div className="flex-1 flex flex-col justify-center px-8 md:px-24 xl:px-32">
             <div className="max-w-md w-full mx-auto space-y-8">
               <div className="space-y-2">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900">Welcome Back</h1>
-                <p className="text-slate-500 text-lg">Enter your details to access your account.</p>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900">{t('auth.loginTitle')}</h1>
+                <p className="text-slate-500 text-lg">{t('auth.enterDetails')}</p>
               </div>
 
               {error && (
@@ -134,7 +136,7 @@ export default function LoginPage({ branding }) {
 
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
+                  <label className="text-sm font-bold text-slate-700 ml-1">{t('auth.emailLabel')}</label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
                     <input
@@ -150,8 +152,8 @@ export default function LoginPage({ branding }) {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center ml-1">
-                    <label className="text-sm font-bold text-slate-700">Password</label>
-                    <a href="#" className="text-sm font-bold text-primary-600 hover:text-primary-700 hover:underline">Forgot password?</a>
+                    <label className="text-sm font-bold text-slate-700">{t('auth.passwordLabel')}</label>
+                    <a href="#" className="text-sm font-bold text-primary-600 hover:text-primary-700 hover:underline">{t('auth.forgotPassword')}</a>
                   </div>
                   <div className="relative group">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors" size={20} />
@@ -174,7 +176,7 @@ export default function LoginPage({ branding }) {
                   >
                     {rememberMe && <Check size={14} className="text-white" />}
                   </button>
-                  <label onClick={() => setRememberMe(!rememberMe)} className="text-sm font-medium text-slate-600 cursor-pointer select-none">Remember for 30 days</label>
+                  <label onClick={() => setRememberMe(!rememberMe)} className="text-sm font-medium text-slate-600 cursor-pointer select-none">{t('auth.rememberMe')}</label>
                 </div>
 
                 <button
@@ -186,17 +188,23 @@ export default function LoginPage({ branding }) {
                     <Loader2 className="animate-spin" />
                   ) : (
                     <>
-                      Sign In <ArrowRight size={20} />
+                      {t('auth.loginBtn')} <ArrowRight size={20} />
                     </>
                   )}
                 </button>
               </form>
 
-              <div className="pt-4 text-center">
-                <p className="text-slate-500 font-medium">
-                  Don't have an account?{' '}
-                  <Link href="/auth/register" className="text-primary-600 font-bold hover:underline">
-                    Register your hotel
+              <div className="pt-4 text-center pb-2">
+                <p className="text-slate-500 font-medium pb-2 border-b border-slate-100">
+                  {t('auth.registerPrompt')}{' '}
+                  <Link href="/auth/register-guest" className="text-primary-600 font-bold hover:underline">
+                    {t('auth.createGuest')}
+                  </Link>
+                </p>
+                <p className="text-slate-500 font-medium text-sm pt-4">
+                  {t('auth.areYouOwner')}{' '}
+                  <Link href="/auth/register" className="text-slate-700 font-bold hover:underline">
+                    {t('auth.registerHotel')}
                   </Link>
                 </p>
               </div>

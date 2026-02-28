@@ -1,378 +1,286 @@
-import AdminLayout from '@/components/AdminLayout'
-import { useState, useEffect } from 'react'
-import { apiFetch } from '@/lib/api'
-import {
-    BedDouble,
-    CheckCircle,
-    AlertCircle,
-    Clock,
-    Search,
-    Filter,
-    RefreshCcw,
-    MoreVertical,
-    SprayCan,
-    Eye,
-    Wrench,
-    Loader
-} from 'lucide-react'
-import { useAdmin } from '@/contexts/AdminContext'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import AdminLayout from '@/components/AdminLayout';
+import { useAdmin } from '@/contexts/AdminContext';
+import { apiFetch } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { Sparkles, Trash2, CheckCircle2, AlertCircle, ChevronRight, User, SprayCan, MoreVertical, Ban } from 'lucide-react';
 
-export default function Housekeeping() {
-    const { currentHotel } = useAdmin() || {}
-    const [rooms, setRooms] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [filter, setFilter] = useState('ALL') // ALL, DIRTY, CLEANING, CLEAN, INSPECTED, OOO
-    const [searchTerm, setSearchTerm] = useState('')
+export default function HousekeepingDashboard() {
+    const { currentHotel } = useAdmin() || {};
+    const [loading, setLoading] = useState(true);
+    const [roomTypes, setRoomTypes] = useState([]);
+    const [openMenuId, setOpenMenuId] = useState(null); // Track which room's menu is open
 
+    // Auto-refresh interval
     useEffect(() => {
-        if (currentHotel) fetchRooms()
-    }, [currentHotel])
+        if (!currentHotel?.id) return;
+        fetchData();
+        const interval = setInterval(fetchData, 30000); // Poll every 30s
+        return () => clearInterval(interval);
+    }, [currentHotel?.id]);
 
-    const fetchRooms = async () => {
-        setLoading(true)
+    const fetchData = async () => {
         try {
-            const data = await apiFetch(`/rooms?hotelId=${currentHotel?.id}`)
-            setRooms(data)
+            const data = await apiFetch(`/housekeeping/${currentHotel.id}`);
+            setRoomTypes(data);
         } catch (error) {
-            console.error(error)
-            toast.error('Failed to load rooms')
+            console.error(error);
+            toast.error('Failed to load housekeeping data');
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
-    const updateStatus = async (roomId, newStatus) => {
+    const handleStatusUpdate = async (roomId, newStatus, currentStatus) => {
+        if (newStatus === currentStatus) return;
+
+        // Optimistic UI Update
+        const updatedRoomTypes = roomTypes.map(rt => ({
+            ...rt,
+            rooms: rt.rooms.map(r => r.id === roomId ? {
+                ...r,
+                status: newStatus,
+                lastStatusUpdate: {
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: 'You',
+                    note: null
+                }
+            } : r)
+        }));
+        setRoomTypes(updatedRoomTypes);
+
+        const tid = toast.loading(`Updating room to ${newStatus}...`);
+
         try {
-            await apiFetch(`/rooms/${roomId}/status`, {
+            await apiFetch(`/housekeeping/rooms/${roomId}/status`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: newStatus })
-            })
-
-            // Optimistic update
-            setRooms(prev => prev.map(r =>
-                r.id === roomId ? { ...r, status: newStatus } : r
-            ))
-
-            toast.success(`Room marked as ${newStatus}`)
+                body: JSON.stringify({ status: newStatus, note: '' })
+            });
+            toast.success('Room status updated', { id: tid });
+            // Let the polling handle the true state, optimistic UI covers us until then
         } catch (error) {
-            toast.error('Failed to update status')
+            console.error(error);
+            toast.error('Failed to update status', { id: tid });
+            fetchData(); // Revert on failure
         }
-    }
+    };
 
-    // Calculate Stats
+    const getStatusDetails = (status) => {
+        switch (status) {
+            case 'CLEAN': return { color: 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400', icon: Sparkles, label: 'Clean' };
+            case 'DIRTY': return { color: 'text-red-600 bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400', icon: Trash2, label: 'Dirty' };
+            case 'CLEANING': return { color: 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400', icon: Sparkles, label: 'Cleaning' };
+            case 'INSPECTED': return { color: 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400', icon: CheckCircle2, label: 'Inspected' };
+            case 'OOO': return { color: 'text-slate-600 bg-slate-100 border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400', icon: AlertCircle, label: 'Out of Order' };
+            default: return { color: 'text-slate-600 bg-slate-50 border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400', icon: CheckCircle2, label: 'Unknown' };
+        }
+    };
+
+    const timeAgo = (date) => {
+        if (!date) return 'Never';
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+        let interval = Math.floor(seconds / 3600);
+        if (interval >= 1) return interval + "h ago";
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) return interval + "m ago";
+        return "Just now";
+    };
+
+    // Close open menus when clicking anywhere else
+    useEffect(() => {
+        const handleClickOutside = () => setOpenMenuId(null);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
+    const toggleMenu = (e, roomId) => {
+        e.stopPropagation();
+        setOpenMenuId(openMenuId === roomId ? null : roomId);
+    };
+
+    if (loading) return <AdminLayout>Loading Housekeeping Dashboard...</AdminLayout>;
+
+    // Calculate Summary Stats
+    const allRooms = roomTypes.flatMap(rt => rt.rooms);
     const stats = {
-        total: rooms.length,
-        dirty: rooms.filter(r => r.status === 'DIRTY').length,
-        cleaning: rooms.filter(r => r.status === 'CLEANING').length,
-        clean: rooms.filter(r => r.status === 'CLEAN').length,
-        inspected: rooms.filter(r => r.status === 'INSPECTED').length,
-        ooo: rooms.filter(r => r.status === 'OOO').length
-    }
-
-    const filteredRooms = rooms.filter(room => {
-        const matchesFilter = filter === 'ALL' || room.status === filter
-        const matchesSearch = room.roomNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            room.roomType?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-        return matchesFilter && matchesSearch
-    })
-
-    // Helper for Status UI
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'DIRTY': return 'bg-red-100 text-red-700 border-red-200'
-            case 'CLEANING': return 'bg-amber-100 text-amber-700 border-amber-200'
-            case 'CLEAN': return 'bg-blue-100 text-blue-700 border-blue-200'
-            case 'INSPECTED': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
-            case 'OOO': return 'bg-gray-100 text-gray-700 border-gray-200'
-            default: return 'bg-slate-100 text-slate-700'
-        }
-    }
-
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'DIRTY': return <AlertCircle size={16} />
-            case 'CLEANING': return <Loader size={16} className="animate-spin" />
-            case 'CLEAN': return <SprayCan size={16} />
-            case 'INSPECTED': return <CheckCircle size={16} />
-            case 'OOO': return <Wrench size={16} />
-            default: return <Clock size={16} />
-        }
-    }
-
-    const formatDuration = (date) => {
-        const now = new Date()
-        const diff = now - date
-        const minutes = Math.floor(diff / 60000)
-        const hours = Math.floor(minutes / 60)
-        const checkDays = Math.floor(hours / 24)
-
-        if (checkDays > 0) return `${checkDays}d`
-        if (hours > 0) return `${hours}h ${minutes % 60}m`
-        return `${minutes}m`
-    }
+        total: allRooms.length,
+        dirty: allRooms.filter(r => r.status === 'DIRTY').length,
+        cleaning: allRooms.filter(r => r.status === 'CLEANING').length,
+        clean: allRooms.filter(r => r.status === 'CLEAN' || r.status === 'INSPECTED').length,
+        ooo: allRooms.filter(r => r.status === 'OOO').length,
+        occupied: allRooms.filter(r => r.isOccupied).length
+    };
 
     return (
         <AdminLayout>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Housekeeping</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Manage room cleaning status and inspections</p>
+            <div className="max-w-6xl mx-auto pb-12">
+                <div className="flex justify-between items-end mb-6">
+                    <div>
+                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Housekeeping</h1>
+                        <p className="text-slate-500 dark:text-slate-400">Manage room status and daily cleaning tasks.</p>
+                    </div>
                 </div>
-                <button
-                    onClick={fetchRooms}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
-                >
-                    <RefreshCcw size={20} />
-                </button>
-            </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                <StatsCard
-                    label="Dirty Rooms"
-                    value={stats.dirty}
-                    color="bg-red-500"
-                    icon={AlertCircle}
-                    active={filter === 'DIRTY'}
-                    onClick={() => setFilter(filter === 'DIRTY' ? 'ALL' : 'DIRTY')}
-                />
-                <StatsCard
-                    label="Cleaning"
-                    value={stats.cleaning}
-                    color="bg-amber-500"
-                    icon={Loader}
-                    active={filter === 'CLEANING'}
-                    onClick={() => setFilter(filter === 'CLEANING' ? 'ALL' : 'CLEANING')}
-                />
-                <StatsCard
-                    label="Clean Rooms"
-                    value={stats.clean}
-                    color="bg-blue-500"
-                    icon={SprayCan}
-                    active={filter === 'CLEAN'}
-                    onClick={() => setFilter(filter === 'CLEAN' ? 'ALL' : 'CLEAN')}
-                />
-                <StatsCard
-                    label="Inspected"
-                    value={stats.inspected}
-                    color="bg-emerald-500"
-                    icon={CheckCircle}
-                    active={filter === 'INSPECTED'}
-                    onClick={() => setFilter(filter === 'INSPECTED' ? 'ALL' : 'INSPECTED')}
-                />
-                <StatsCard
-                    label="Out of Order"
-                    value={stats.ooo}
-                    color="bg-gray-500"
-                    icon={Wrench}
-                    active={filter === 'OOO'}
-                    onClick={() => setFilter(filter === 'OOO' ? 'ALL' : 'OOO')}
-                />
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search by room number..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
+                {/* KPI Cards - Sticky for Mobile/Tablet */}
+                <div className="sticky top-0 z-20 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md pt-2 pb-4 mb-4 border-b border-slate-200 dark:border-slate-800 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                        <div className="bg-white dark:bg-slate-800 p-3 lg:p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-center items-center lg:items-start">
+                            <div className="text-[10px] lg:text-xs font-bold text-slate-500 uppercase mb-0.5">Total</div>
+                            <div className="text-xl lg:text-3xl font-bold dark:text-white leading-none">{stats.total}</div>
+                        </div>
+                        <div className="bg-red-50 dark:bg-red-900/20 p-3 lg:p-4 rounded-2xl border border-red-100 dark:border-red-500/20 shadow-sm flex flex-col justify-center items-center lg:items-start">
+                            <div className="text-[10px] lg:text-xs font-bold text-red-600 dark:text-red-400 uppercase mb-0.5 flex items-center gap-1"><Trash2 size={12} className="hidden lg:block" /> Dirty</div>
+                            <div className="text-xl lg:text-3xl font-bold text-red-700 dark:text-red-300 leading-none">{stats.dirty}</div>
+                        </div>
+                        <div className="bg-amber-50 dark:bg-amber-900/20 p-3 lg:p-4 rounded-2xl border border-amber-100 dark:border-amber-500/20 shadow-sm flex flex-col justify-center items-center lg:items-start">
+                            <div className="text-[10px] lg:text-xs font-bold text-amber-600 dark:text-amber-400 uppercase mb-0.5 flex items-center gap-1"><Sparkles size={12} className="hidden lg:block" /> Cleaning</div>
+                            <div className="text-xl lg:text-3xl font-bold text-amber-700 dark:text-amber-300 leading-none">{stats.cleaning}</div>
+                        </div>
+                        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 lg:p-4 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm flex flex-col justify-center items-center lg:items-start">
+                            <div className="text-[10px] lg:text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-0.5 flex items-center gap-1"><CheckCircle2 size={12} className="hidden lg:block" /> Clean</div>
+                            <div className="text-xl lg:text-3xl font-bold text-emerald-700 dark:text-emerald-300 leading-none">{stats.clean}</div>
+                        </div>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 lg:p-4 rounded-2xl border border-blue-100 dark:border-blue-500/20 shadow-sm flex flex-col justify-center items-center lg:items-start hidden sm:flex">
+                            <div className="text-[10px] lg:text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-0.5 flex items-center gap-1"><User size={12} className="hidden lg:block" /> Occupied</div>
+                            <div className="text-xl lg:text-3xl font-bold text-blue-700 dark:text-blue-300 leading-none">{stats.occupied}</div>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-                    {['ALL', 'DIRTY', 'CLEANING', 'CLEAN', 'INSPECTED', 'OOO'].map(s => (
-                        <button
-                            key={s}
-                            onClick={() => setFilter(s)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${filter === s
-                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                                : 'bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                                }`}
-                        >
-                            {s}
-                        </button>
-                    ))}
-                </div>
-            </div>
 
-            {/* Room Grid */}
-            {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-pulse">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
-                    ))}
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredRooms.map((room) => (
-                        <div key={room.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
-                            {/* Header */}
-                            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start">
-                                <div>
-                                    <div className="text-2xl font-display font-bold text-slate-900 dark:text-white">{room.roomNumber}</div>
-                                    <div className="text-xs text-slate-500 font-medium truncate max-w-[150px]">{room.roomType?.name}</div>
-                                </div>
-                                <div className={`px-2.5 py-1 rounded-lg text-xs font-bold border flex items-center gap-1.5 ${getStatusColor(room.status)}`}>
-                                    {getStatusIcon(room.status)}
-                                    {room.status}
-                                </div>
-                            </div>
+                {/* Rooms List by Type */}
+                <div className="space-y-8">
+                    {roomTypes.map(rt => {
+                        if (rt.rooms.length === 0) return null;
+                        return (
+                            <div key={rt.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex justify-between items-center border-b dark:border-slate-700 pb-3">
+                                    {rt.name}
+                                    <span className="text-sm font-normal text-slate-500">{rt.bedConfig} Allotment</span>
+                                </h3>
 
-                            {/* Content */}
-                            <div className="p-4 flex-1">
-                                {/* Occupancy / Priority Status */}
-                                {(() => {
-                                    const now = new Date();
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {rt.rooms.map(room => {
+                                        const statusObj = getStatusDetails(room.status);
+                                        const StatusIcon = statusObj.icon;
 
-                                    const isSameDay = (d1, d2) => {
-                                        const date1 = new Date(d1);
-                                        const date2 = new Date(d2);
-                                        return date1.getDate() === date2.getDate() &&
-                                            date1.getMonth() === date2.getMonth() &&
-                                            date1.getFullYear() === date2.getFullYear();
-                                    };
-
-                                    const activeBooking = room.bookings?.find(b => new Date(b.checkIn) <= now && new Date(b.checkOut) > now);
-                                    const arrivalToday = room.bookings?.find(b => isSameDay(b.checkIn, today));
-                                    const departureToday = activeBooking && isSameDay(activeBooking.checkOut, today);
-
-                                    if (activeBooking) {
                                         return (
-                                            <div className={`mb-3 p-2 rounded-lg border ${departureToday ? 'bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-500/20' : 'bg-indigo-50 border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-500/20'}`}>
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <div className={`text-xs font-bold uppercase tracking-wide ${departureToday ? 'text-orange-600 dark:text-orange-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                                                        {departureToday ? 'Due Out Today' : 'Occupied'}
+                                            <div key={room.id} className={`p-4 lg:p-5 rounded-2xl border-2 transition-all ${statusObj.color} flex flex-col relative`}>
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-xl bg-white/50 backdrop-blur-sm shadow-sm flex items-center justify-center font-display font-bold text-xl dark:bg-slate-900/50">
+                                                            {room.roomNumber}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-lg flex items-center gap-1.5 leading-tight">
+                                                                <StatusIcon size={16} />
+                                                                {statusObj.label}
+                                                            </div>
+                                                            <div className="text-[11px] uppercase tracking-wider font-bold opacity-70 mt-0.5">
+                                                                {room.lastStatusUpdate ? timeAgo(room.lastStatusUpdate.updatedAt) : 'No updates'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Context Menu (More Options) */}
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={(e) => toggleMenu(e, room.id)}
+                                                            className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                                        >
+                                                            <MoreVertical size={20} className="opacity-70" />
+                                                        </button>
+
+                                                        {openMenuId === room.id && (
+                                                            <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden z-30 py-1">
+                                                                {['DIRTY', 'CLEANING', 'CLEAN', 'INSPECTED', 'OOO'].map(st => (
+                                                                    <button
+                                                                        key={st}
+                                                                        onClick={() => {
+                                                                            handleStatusUpdate(room.id, st, room.status);
+                                                                            setOpenMenuId(null);
+                                                                        }}
+                                                                        className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 ${room.status === st ? 'text-primary-600 bg-primary-50 dark:bg-primary-500/10' : 'text-slate-700 dark:text-slate-300'}`}
+                                                                    >
+                                                                        {room.status === st && <CheckCircle2 size={14} className="text-primary-600" />}
+                                                                        Set to {st.charAt(0) + st.slice(1).toLowerCase()}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                                                    {activeBooking.leadName || 'Guest'}
-                                                </div>
-                                                <div className="text-xs text-slate-500">
-                                                    Out: {new Date(activeBooking.checkOut).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                        );
-                                    } else if (arrivalToday) {
-                                        return (
-                                            <div className="mb-3 p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
-                                                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1">
-                                                    Arrival Today
-                                                </div>
-                                                <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                                                    {arrivalToday.leadName}
-                                                </div>
-                                                <div className="text-xs text-slate-500">
-                                                    In: {new Date(arrivalToday.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            </div>
-                                        );
-                                    } else {
-                                        return (
-                                            <div className="mb-3 p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-700">
-                                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                                                    Vacant
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                })()}
 
-                                {/* Last Updated Log */}
-                                {room.statusLogs && room.statusLogs[0] ? (
-                                    <div className="mt-auto">
-                                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                                            <Clock size={10} />
-                                            <span>Since {new Date(room.statusLogs[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </div>
-                                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 ml-3.5">
-                                            {formatDuration(new Date(room.statusLogs[0].createdAt))} ago
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-[10px] text-slate-400 mt-auto">No recent status log</div>
-                                )}
+                                                {/* Occupancy Info */}
+                                                <div className="flex-1 mb-5 text-sm font-semibold opacity-80 flex items-center gap-1.5">
+                                                    {room.isOccupied ? (
+                                                        <div className="flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2.5 py-1 rounded-md">
+                                                            <User size={14} />
+                                                            In-House: {room.currentGuest}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="opacity-60 bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-md">Vacant</span>
+                                                    )}
+                                                </div>
+
+                                                {/* 1-Tap Workflow UI */}
+                                                <div className="pt-2">
+                                                    {room.status === 'DIRTY' && (
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(room.id, 'CLEANING', room.status)}
+                                                            className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                                                        >
+                                                            <Sparkles size={18} /> Start Cleaning
+                                                        </button>
+                                                    )}
+
+                                                    {room.status === 'CLEANING' && (
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(room.id, 'CLEAN', room.status)}
+                                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                                                        >
+                                                            <CheckCircle2 size={18} /> Mark as Clean
+                                                        </button>
+                                                    )}
+
+                                                    {room.status === 'CLEAN' && (
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(room.id, 'INSPECTED', room.status)}
+                                                            className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                                                        >
+                                                            <CheckCircle2 size={18} /> Inspect Room
+                                                        </button>
+                                                    )}
+
+                                                    {(room.status === 'INSPECTED' || room.status === 'OOO') && (
+                                                        <div className="w-full py-4 bg-black/5 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-bold rounded-xl flex items-center justify-center gap-2 text-lg cursor-not-allowed border border-dashed border-black/10 dark:border-white/10">
+                                                            {room.status === 'OOO' ? <Ban size={18} /> : <CheckCircle2 size={18} />}
+                                                            {room.status === 'OOO' ? 'Out of Order' : 'Ready for Guest'}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {room.lastStatusUpdate && (
+                                                    <div className="absolute bottom-3 right-4 text-[10px] opacity-50 font-medium">
+                                                        by {room.lastStatusUpdate.updatedBy}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
+                        );
+                    })}
 
-                            {/* Actions */}
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 grid grid-cols-2 gap-2">
-                                {/* Dirty Button */}
-                                <button
-                                    onClick={() => updateStatus(room.id, 'DIRTY')}
-                                    disabled={room.status === 'DIRTY'}
-                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-red-200"
-                                >
-                                    <AlertCircle size={14} className="mr-1.5" />
-                                    Dirty
-                                </button>
-
-                                {/* Cleaning Button */}
-                                <button
-                                    onClick={() => updateStatus(room.id, 'CLEANING')}
-                                    disabled={room.status === 'CLEANING'}
-                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-amber-200"
-                                >
-                                    <Loader size={14} className="mr-1.5" />
-                                    Cleaning
-                                </button>
-
-                                {/* Clean Button */}
-                                <button
-                                    onClick={() => updateStatus(room.id, 'CLEAN')}
-                                    disabled={room.status === 'CLEAN'}
-                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-blue-200"
-                                >
-                                    <SprayCan size={14} className="mr-1.5" />
-                                    Clean
-                                </button>
-
-                                {/* Inspect Button */}
-                                <button
-                                    onClick={() => updateStatus(room.id, 'INSPECTED')}
-                                    disabled={room.status === 'INSPECTED'}
-                                    className="flex items-center justify-center p-2 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 disabled:opacity-30 disabled:hover:bg-transparent border border-transparent hover:border-emerald-200"
-                                >
-                                    <CheckCircle size={14} className="mr-1.5" />
-                                    Inspect
-                                </button>
-                            </div>
+                    {roomTypes.length === 0 && (
+                        <div className="text-center p-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                            <SprayCan className="mx-auto text-slate-300 mb-4" size={48} />
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Rooms Configured</h3>
+                            <p className="text-slate-500 mt-2">Add physical rooms in the Room Management settings to see them here.</p>
                         </div>
-                    ))}
-                </div>
-            )}
-        </AdminLayout>
-    )
-}
-
-function StatsCard({ label, value, color, icon: Icon, active, onClick }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden group ${active
-                ? 'bg-white dark:bg-slate-800 ring-2 ring-emerald-500 shadow-lg'
-                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-emerald-200'
-                }`}
-        >
-            <div className={`absolute top-0 right-0 w-16 h-16 transform translate-x-4 -translate-y-4 rounded-full opacity-10 ${color}`}></div>
-            <div className="relative z-10">
-                <div className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center text-white shadow-lg ${color}`}>
-                    <Icon size={20} />
-                </div>
-                <div className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">
-                    {value}
-                </div>
-                <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {label}
+                    )}
                 </div>
             </div>
-        </button>
-    )
+        </AdminLayout>
+    );
 }
