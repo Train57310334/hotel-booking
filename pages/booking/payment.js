@@ -15,11 +15,13 @@ const PromptPayQR = dynamic(() => import('@/components/PromptPayQR'), { ssr: fal
 // Stripe Imports
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Init Stripe (Move key to env in production)
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51P');
 
 const OmisePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) => {
+  const { t } = useLanguage();
   const [card, setCard] = useState({ name: '', number: '', expiration_month: '', expiration_year: '', security_code: '' });
 
   const handleChange = (e) => setCard({ ...card, [e.target.name]: e.target.value });
@@ -48,30 +50,30 @@ const OmisePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) =
   return (
     <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="space-y-2">
-        <label className="text-sm font-bold text-slate-700">Cardholder Name</label>
+        <label className="text-sm font-bold text-slate-700">{t('payment.cardholderName')}</label>
         <input name="name" onChange={handleChange} placeholder="John Doe" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100" required />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-bold text-slate-700">Card Number</label>
+        <label className="text-sm font-bold text-slate-700">{t('payment.cardNumber')}</label>
         <input name="number" onChange={handleChange} maxLength={16} placeholder="4242424242424242" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 font-mono" required />
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700">Exp Month</label>
+          <label className="text-sm font-bold text-slate-700">{t('payment.expMonth')}</label>
           <input name="expiration_month" onChange={handleChange} maxLength={2} placeholder="MM" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700">Exp Year</label>
+          <label className="text-sm font-bold text-slate-700">{t('payment.expYear')}</label>
           <input name="expiration_year" onChange={handleChange} maxLength={4} placeholder="YYYY" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700">CVC</label>
+          <label className="text-sm font-bold text-slate-700">{t('payment.cvc')}</label>
           <input name="security_code" onChange={handleChange} maxLength={4} placeholder="123" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
         </div>
       </div>
 
       <button type="submit" disabled={isProcessing} className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl mt-4 hover:bg-blue-700 transition-colors">
-        {isProcessing ? 'Processing Omise...' : `Pay ฿${total?.toLocaleString()}`}
+        {isProcessing ? t('payment.processing') : `${t('payment.payBtn')} ฿${total?.toLocaleString()}`}
       </button>
     </form>
   );
@@ -82,6 +84,7 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState('');
+  const { t } = useLanguage();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -127,14 +130,14 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
 
       <div className="flex items-center justify-between gap-4 mt-6 p-6 bg-slate-50 border-t border-slate-200 rounded-b-2xl -mx-8 -mb-8">
         <div className="text-sm text-slate-500">
-          Total to pay: <span className="font-bold text-slate-900 text-lg ml-1">฿{total?.toLocaleString()}</span>
+          {t('checkout.totalPrice')}: <span className="font-bold text-slate-900 text-lg ml-1">฿{total?.toLocaleString()}</span>
         </div>
         <button
           type="submit"
           disabled={!stripe || isProcessing}
           className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
         >
-          {isProcessing ? 'Processing...' : <>Pay Now <CheckCircle size={18} /></>}
+          {isProcessing ? t('payment.processing') : <>{t('payment.payNow')} <CheckCircle size={18} /></>}
         </button>
       </div>
     </form>
@@ -143,6 +146,7 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
 
 export default function PaymentPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [bookingData, setBookingData] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -338,6 +342,7 @@ export default function PaymentPage() {
         ratePlanId: sel.ratePlanId,
         quantity: sel.quantity,
       })),
+      promotionCode: appliedPromo?.code || null,
       guestDetails: {
         name: guestDetails.name || '',
         email: guestDetails.email || '',
@@ -384,15 +389,15 @@ export default function PaymentPage() {
           <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-6 border-2 border-amber-200">
             <Lock size={36} className="text-amber-500" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 mb-3">Booking Session Expired</h1>
+          <h1 className="text-3xl font-display font-bold text-slate-900 mb-3">{t('payment.sessionExpiredTitle')}</h1>
           <p className="text-slate-500 max-w-md mb-8">
-            Your booking session has expired or could not be found. This usually happens after 15 minutes of inactivity or if you opened a new browser window.
+            {t('payment.sessionExpiredDesc')}
           </p>
           <button
             onClick={() => router.push('/search')}
             className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors"
           >
-            Start New Booking
+            {t('payment.startNewBooking')}
           </button>
         </div>
       </Layout>
@@ -422,18 +427,18 @@ export default function PaymentPage() {
         <div className="max-w-5xl mx-auto">
           {/* Progress Steps */}
           <div className="flex items-center gap-4 text-sm font-medium mb-8 text-slate-400">
-            <span className="text-primary-600">1. Selection</span>
+            <span className="text-primary-600">{t('checkout.step1')}</span>
             <span className="text-slate-300">/</span>
-            <span className="text-primary-600">2. Guest Info</span>
+            <span className="text-primary-600">{t('checkout.step2')}</span>
             <span className="text-slate-300">/</span>
-            <span className="text-slate-900 font-bold">3. Payment</span>
+            <span className="text-slate-900 font-bold">{t('checkout.step3')}</span>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             {/* Main Content: Payment Methods */}
             <div className="flex-1 order-2 lg:order-1">
-              <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Secure Payment</h1>
-              <p className="text-slate-500 mb-8">All transactions are secure and encrypted.</p>
+              <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">{t('payment.securePayment')}</h1>
+              <p className="text-slate-500 mb-8">{t('payment.secureSubtitle')}</p>
 
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                 {/* Tabs */}
@@ -442,25 +447,25 @@ export default function PaymentPage() {
                     onClick={() => setPaymentMethod('credit_card')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'credit_card' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <CreditCard size={18} /> Stripe
+                    <CreditCard size={18} /> {t('payment.stripe')}
                   </button>
                   <button
                     onClick={() => setPaymentMethod('omise')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'omise' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <Globe size={18} /> Omise
+                    <Globe size={18} /> {t('payment.omise')}
                   </button>
                   <button
                     onClick={() => setPaymentMethod('promptpay')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'promptpay' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <QrCode size={18} /> PromptPay
+                    <QrCode size={18} /> {t('payment.promptPay')}
                   </button>
                   <button
                     onClick={() => setPaymentMethod('bank_transfer')}
                     className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'bank_transfer' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
-                    <Building size={18} /> Transfer
+                    <Building size={18} /> {t('payment.transfer')}
                   </button>
                 </div>
 
@@ -565,7 +570,7 @@ export default function PaymentPage() {
             {/* Sidebar Summary */}
             <div className="w-full lg:w-96 shrink-0 order-1 lg:order-2">
               <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 sticky top-24">
-                <h3 className="font-display font-bold text-xl text-slate-900 mb-4">Booking Summary</h3>
+                <h3 className="font-display font-bold text-xl text-slate-900 mb-4">{t('payment.bookingSummary')}</h3>
 
                 {/* Hotel Info */}
                 <div className="flex gap-4 mb-6">
@@ -582,19 +587,19 @@ export default function PaymentPage() {
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Check-in</span>
+                    <span className="text-slate-500">{t('search.checkIn')}</span>
                     <span className="font-bold text-slate-900">{new Date(checkIn).toLocaleDateString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Check-out</span>
+                    <span className="text-slate-500">{t('search.checkOut')}</span>
                     <span className="font-bold text-slate-900">{new Date(checkOut).toLocaleDateString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Duration</span>
-                    <span className="font-bold text-slate-900">{nights} Nights</span>
+                    <span className="text-slate-500">{t('checkout.duration')}</span>
+                    <span className="font-bold text-slate-900">{nights} {t('search.nights')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Guest</span>
+                    <span className="text-slate-500">{t('payment.guest')}</span>
                     <span className="font-bold text-slate-900">{guest?.name}</span>
                   </div>
                 </div>
@@ -610,13 +615,13 @@ export default function PaymentPage() {
 
                 {/* Promo Code Section */}
                 <div className="mb-6">
-                  <p className="text-sm font-bold text-slate-700 mb-2">Promotion Code</p>
+                  <p className="text-sm font-bold text-slate-700 mb-2">{t('payment.promoCode')}</p>
                   {!appliedPromo ? (
                     <div className="flex gap-2">
                       <input
                         type="text"
                         className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-100 outline-none"
-                        placeholder="Enter code"
+                        placeholder={t('payment.enterCode')}
                         value={promoCode}
                         onChange={e => setPromoCode(e.target.value.toUpperCase())}
                       />
@@ -625,7 +630,7 @@ export default function PaymentPage() {
                         disabled={promoLoading || !promoCode}
                         className="px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-slate-900 disabled:opacity-50 transition-colors"
                       >
-                        {promoLoading ? '...' : 'Apply'}
+                        {promoLoading ? '...' : t('payment.apply')}
                       </button>
                     </div>
                   ) : (
@@ -642,19 +647,19 @@ export default function PaymentPage() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Subtotal</span>
+                    <span className="text-slate-500">{t('payment.subtotal')}</span>
                     <span className="font-bold text-slate-900">฿{bookingData?.totalPrice?.toLocaleString()}</span>
                   </div>
                   {appliedPromo && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span>Discount ({appliedPromo.code})</span>
+                      <span>{t('payment.discount')} ({appliedPromo.code})</span>
                       <span className="font-bold">- ฿{appliedPromo.discountAmount?.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="flex justify-between items-end mt-4 pt-4 border-t border-slate-100">
-                  <span className="text-slate-500 font-medium">Total Price</span>
+                  <span className="text-slate-500 font-medium">{t('checkout.totalPrice')}</span>
                   <span className="text-2xl font-bold text-primary-600 font-display">฿{finalPrice?.toLocaleString()}</span>
                 </div>
               </div>

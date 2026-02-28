@@ -1,4 +1,4 @@
-import { User, Mail, Phone, Calendar, CreditCard, XCircle, Receipt, LayoutDashboard } from 'lucide-react'
+import { User, Mail, Phone, Calendar, CreditCard, XCircle, Receipt, LayoutDashboard, Printer } from 'lucide-react'
 
 import GuestManager from './GuestManager'
 import FolioTab from './FolioTab' // Import
@@ -90,7 +90,17 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                         </h3>
                         <p className="text-sm text-slate-500">ID: #{booking.id}</p>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><XCircle size={24} /></button>
+                    <div className="flex items-center gap-4">
+                        <a
+                            href={`/invoice/${booking.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-sm dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600 transition-colors"
+                        >
+                            <Printer size={16} /> Print Invoice
+                        </a>
+                        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors"><XCircle size={24} /></button>
+                    </div>
                 </div>
 
                 {/* Tabs */}

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { apiFetch } from '@/lib/api'
-import { X, CreditCard, Lock, Banknote, Building, Loader2 } from 'lucide-react'
+import { X, CreditCard, Lock, Banknote, Building, Loader2, QrCode } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 function CheckoutForm({ amount, onSuccess, onError }) {
@@ -71,6 +71,12 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
     const [manualLoading, setManualLoading] = useState(false)
     const [reference, setReference] = useState('')
 
+    // PromptPay states
+    const [qrCodeUrl, setQrCodeUrl] = useState(null)
+    const [promptPayLoading, setPromptPayLoading] = useState(false)
+    const [paymentStatus, setPaymentStatus] = useState('pending')
+    const pollingInterval = useRef(null)
+
     // 1. Fetch Key & Init Stripe
     useEffect(() => {
         if (isOpen && activeTab === 'card') {
@@ -108,6 +114,56 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                 })
         }
     }, [isOpen, booking, stripePromise, activeTab])
+
+    // 3. Generate PromptPay QR Code
+    useEffect(() => {
+        if (isOpen && activeTab === 'promptpay' && !qrCodeUrl) {
+            setPromptPayLoading(true);
+            apiFetch('/payments/omise/promptpay', {
+                method: 'POST',
+                body: JSON.stringify({
+                    amount: booking.totalAmount,
+                    bookingId: booking.id,
+                    description: `Booking #${booking.id}`
+                })
+            })
+                .then(res => {
+                    setQrCodeUrl(res.qrCodeUrl);
+                    startPolling();
+                })
+                .catch(err => {
+                    console.error(err);
+                    setError('Failed to generate PromptPay QR code.');
+                })
+                .finally(() => setPromptPayLoading(false));
+        }
+
+        // Cleanup polling on tab change or close
+        return () => {
+            if (pollingInterval.current) clearInterval(pollingInterval.current);
+        }
+    }, [isOpen, activeTab, booking]);
+
+    const startPolling = () => {
+        if (pollingInterval.current) clearInterval(pollingInterval.current);
+
+        pollingInterval.current = setInterval(async () => {
+            try {
+                const res = await apiFetch(`/bookings/${booking.id}`);
+                if (res.status === 'confirmed' || res.status === 'checked_in') {
+                    setPaymentStatus('success');
+                    toast.success('Payment Received successfully!');
+                    clearInterval(pollingInterval.current);
+                    setTimeout(() => {
+                        onSuccess && onSuccess();
+                        onClose();
+                    }, 2000);
+                }
+            } catch (e) {
+                console.error("Polling error", e);
+            }
+        }, 5000); // Check every 5 seconds
+    };
 
     const handleManualPayment = async (method) => {
         setManualLoading(true)
@@ -163,6 +219,18 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                             }`}
                     >
                         <Banknote size={16} /> Cash
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('promptpay')}
+                        className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'promptpay'
+                            ? 'bg-[url("/promptpay-bg.svg")] bg-cover bg-center text-[#113566] shadow-sm border border-[#113566]/20 relative overflow-hidden'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        {activeTab === 'promptpay' && <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px]"></div>}
+                        <span className="relative z-10 flex items-center gap-2">
+                            <QrCode size={16} /> PromptPay
+                        </span>
                     </button>
                     <button
                         onClick={() => setActiveTab('transfer')}
@@ -257,6 +325,47 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                             >
                                 {manualLoading ? <Loader2 className="animate-spin" /> : 'Confirm Transfer'}
                             </button>
+                        </div>
+                    )}
+
+                    {activeTab === 'promptpay' && (
+                        <div className="flex flex-col items-center pb-6">
+                            {paymentStatus === 'success' ? (
+                                <div className="flex flex-col items-center text-center space-y-4 py-8">
+                                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center animate-bounce">
+                                        <Lock size={40} />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-slate-800 dark:text-white">Payment Secure</h3>
+                                    <p className="text-slate-500">Your PromptPay transaction was instantly verified.</p>
+                                </div>
+                            ) : promptPayLoading ? (
+                                <div className="flex flex-col items-center justify-center py-16 gap-4 text-slate-400">
+                                    <Loader2 className="w-8 h-8 animate-spin text-[#113566]" />
+                                    <span className="text-sm font-bold">Generating unique Thai QR...</span>
+                                </div>
+                            ) : error && !qrCodeUrl ? (
+                                <div className="text-center text-rose-500 font-bold p-4 bg-rose-50 rounded-xl w-full">
+                                    {error}
+                                </div>
+                            ) : qrCodeUrl ? (
+                                <div className="text-center w-full max-w-sm mx-auto">
+                                    <div className="bg-[#113566] text-white p-3 rounded-t-2xl flex items-center justify-center gap-2">
+                                        <span className="font-bold text-lg tracking-widest">Thai QR Payment</span>
+                                    </div>
+                                    <div className="bg-white p-8 rounded-b-2xl border-x border-b border-slate-200 shadow-xl relative overflow-hidden">
+                                        <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-red-500 via-blue-500 to-[#113566]"></div>
+                                        <img src={qrCodeUrl} alt="PromptPay QR Code" className="w-full h-auto object-contain mx-auto" style={{ mixBlendMode: 'multiply' }} />
+
+                                        <div className="mt-6 pt-6 border-t border-slate-100">
+                                            <p className="text-sm font-bold text-slate-800">Scan with any Thai banking app</p>
+                                            <div className="flex items-center justify-center gap-2 mt-3 text-xs text-slate-500 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                Awaiting payment confirmation...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </div>

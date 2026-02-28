@@ -36,6 +36,9 @@ import { guideData, defaultGuide } from '@/data/guides'
 import GlobalSearch from './GlobalSearch'
 import UpgradeModal from './UpgradeModal'
 import NotificationMenu from './NotificationMenu'
+import { useSocket } from '@/hooks/useSocket'
+import { useRoleAccess } from '@/hooks/useRoleAccess'
+import { toast } from 'react-hot-toast'
 
 export default function AdminLayout({ children }) {
     const router = useRouter()
@@ -61,6 +64,52 @@ export default function AdminLayout({ children }) {
         if (setSearchQuery) setSearchQuery('')
     }, [router.pathname, setSearchQuery])
 
+    const { role, hasAccess, isAdmin, isPlatformAdmin } = useRoleAccess()
+
+    // WebSocket Integration
+    const { socket, isConnected } = useSocket()
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewBooking = (booking) => {
+            toast.success(`New Booking Received!\n${booking.leadName || 'Guest'} just booked.`, {
+                duration: 5000,
+                position: 'top-right',
+            });
+            // Auto reload notifications if needed, or simply append
+            if (typeof setNotifications === 'function') {
+                import('@/lib/api').then(({ apiFetch }) => {
+                    apiFetch('/notifications').then(data => setNotifications(data || [])).catch(() => { });
+                });
+            }
+        };
+
+        const handleRoomStatusChanged = (data) => {
+            toast(`Room ${data.roomNumber} marked as ${data.status}`, {
+                icon: '🧹',
+                position: 'top-right',
+            });
+        };
+
+        const handleBookingUpdated = (data) => {
+            let msg = `Booking #${data.bookingId} status updated to ${data.status}`;
+            if (data.status === 'confirmed') toast.success(msg);
+            else if (data.status === 'cancelled') toast.error(msg);
+            else toast(msg, { icon: 'ℹ️' });
+        };
+
+        socket.on('newBooking', handleNewBooking);
+        socket.on('roomStatusChanged', handleRoomStatusChanged);
+        socket.on('bookingUpdated', handleBookingUpdated);
+
+        return () => {
+            socket.off('newBooking', handleNewBooking);
+            socket.off('roomStatusChanged', handleRoomStatusChanged);
+            socket.off('bookingUpdated', handleBookingUpdated);
+        };
+    }, [socket]);
+
     // Fetch Notifications (Poll every 30s)
     useEffect(() => {
         if (loading) return
@@ -71,10 +120,8 @@ export default function AdminLayout({ children }) {
         }
 
         // 🔒 RBAC Guard: Admins or Staff allowed
-        const isAdmin = user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin');
-        const isPlatformAdmin = user.roles?.includes('platform_admin');
         const hasHotel = user.roleAssignments?.length > 0;
-        const isStaffOrAdmin = isAdmin || hasHotel;
+        const isStaffOrAdmin = isAdmin || hasHotel || isPlatformAdmin;
         const isSetupPage = router.pathname === '/admin/setup';
 
         // 🏨 Onboarding Check: If Admin has no Hotel, redirect to Setup
@@ -89,9 +136,17 @@ export default function AdminLayout({ children }) {
         }
 
         // 🧹 Housekeeper Redirect
-        const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role;
         if (role === 'housekeeper' && router.pathname === '/admin') {
             router.push('/admin/housekeeping');
+            return;
+        }
+
+        // 🛡️ Page Level Guards based on role
+        const pathSegments = router.pathname.split('/').filter(Boolean);
+        const feature = pathSegments[1] || 'dashboard'; // /admin/bookings -> bookings
+
+        if (!isPlatformAdmin && router.pathname !== '/admin/setup' && !hasAccess(feature.toLowerCase())) {
+            router.push(role === 'housekeeper' ? '/admin/housekeeping' : '/admin');
             return;
         }
 
@@ -239,22 +294,24 @@ export default function AdminLayout({ children }) {
 
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-2">
                     {/* Primary Navigation */}
-                    {!user?.roles?.includes('platform_admin') && menuItems.filter(i => !i.section).filter(item => {
-                        // 🔒 RBAC Logic
-                        const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role || '';
-
-                        // 🧹 Housekeeper Mode: Only see Housekeeping
-                        if (role === 'housekeeper') {
-                            return item.name === 'Housekeeping';
-                        }
-
-                        const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
-
-                        // Restricted items for non-admins (Reception/Manager)
-                        const restricted = ['Reports', 'Payments', 'Staff Management', 'Settings'];
-                        if (!isOwnerOrAdmin && restricted.includes(item.name)) return false;
-
-                        return true;
+                    {!isPlatformAdmin && menuItems.filter(i => !i.section).filter(item => {
+                        // Use hasAccess hook mapped to menu item names
+                        const featureMap = {
+                            'Dashboard': 'dashboard',
+                            'Calendar': 'calendar',
+                            'Booking': 'bookings',
+                            'Housekeeping': 'housekeeping',
+                            'Guest': 'guests',
+                            'Room': 'rooms',
+                            'Rates & Avail.': 'rates',
+                            'Promotions': 'promotions',
+                            'Reviews': 'reviews',
+                            'Reports': 'reports',
+                            'Payments': 'payments',
+                            'Staff Management': 'staff',
+                            'Message': 'messages'
+                        };
+                        return hasAccess(featureMap[item.name]);
                     }).map((item) => {
                         const isActive = router.pathname.startsWith(item.href) &&
                             (item.href !== '/admin' || router.pathname === '/admin');
@@ -365,19 +422,17 @@ export default function AdminLayout({ children }) {
 
                     {/* Settings Section */}
                     <div>
-                        {!user?.roles?.includes('platform_admin') && (
+                        {!isPlatformAdmin && hasAccess('settings') && (
                             <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">Settings</div>
                         )}
-                        {!user?.roles?.includes('platform_admin') && menuItems.filter(i => i.section === 'bottom').filter(item => {
-                            // 🔒 RBAC Logic for Bottom Section
-                            const role = user?.roleAssignments?.find(r => r.hotelId === currentHotel?.id)?.role || '';
-
-                            if (role === 'housekeeper' && item.name !== 'My Account') return false;
-
-                            const isOwnerOrAdmin = ['owner', 'admin', 'hotel_admin'].includes(role);
-
-                            if (!isOwnerOrAdmin && item.name === 'Settings') return false;
-                            return true;
+                        {!isPlatformAdmin && menuItems.filter(i => i.section === 'bottom').filter(item => {
+                            const featureMap = {
+                                'My Account': 'dashboard', // Everyone can see their account
+                                'Subscription': 'subscription',
+                                'Widget Gen.': 'widget',
+                                'Settings': 'settings'
+                            };
+                            return hasAccess(featureMap[item.name]);
                         }).map((item) => {
                             const isActive = router.pathname === item.href
                             return (
@@ -395,7 +450,7 @@ export default function AdminLayout({ children }) {
                             )
                         })}
 
-                        {user?.roles?.includes('platform_admin') && (
+                        {isPlatformAdmin && (
                             <Link
                                 href="/admin/account"
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${router.pathname.startsWith('/admin/account')

@@ -1,15 +1,18 @@
 // ✅ pages/search.js (Single Hotel Layout)
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Layout from '@/components/Layout'
 import RoomCard from '@/components/RoomCard'
 import { Users, Calendar, MapPin, Star, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SearchBar from '@/components/SearchBar'
+import SearchFilters from '@/components/SearchFilters'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function SearchPage() {
   const router = useRouter();
-  const { hotelId: qHotelId, checkIn: qCheckIn, checkOut: qCheckOut, adults: qAdults, children: qChildren } = router.query;
+  const { t } = useLanguage();
+  const { hotelId: qHotelId, checkIn: qCheckIn, checkOut: qCheckOut, adults: qAdults, children: qChildren, minPrice: qMinPrice, maxPrice: qMaxPrice, amenities: qAmenities, sort: qSort } = router.query;
 
   // Default to Today/Tomorrow
   const today = new Date();
@@ -44,6 +47,8 @@ export default function SearchPage() {
         params.append('adults', adults);
         params.append('children', children);
         params.append('guests', adults + children);
+
+        // We no longer send minPrice, maxPrice, or amenities to backend. We do it client-side.
 
         let url = `${backend}/api/hotels?${params.toString()}`;
         if (qHotelId) {
@@ -102,6 +107,28 @@ export default function SearchPage() {
     });
   };
 
+  const handleFilterChange = (filters) => {
+    // Merge new filters with existing query
+    const newQuery = { ...router.query };
+
+    if (filters.minPrice !== null) newQuery.minPrice = filters.minPrice;
+    else delete newQuery.minPrice;
+
+    if (filters.maxPrice !== null) newQuery.maxPrice = filters.maxPrice;
+    else delete newQuery.maxPrice;
+
+    if (filters.amenities?.length > 0) newQuery.amenities = filters.amenities.join(',');
+    else delete newQuery.amenities;
+
+    if (filters.sort && filters.sort !== 'recommended') newQuery.sort = filters.sort;
+    else delete newQuery.sort;
+
+    router.push({
+      pathname: '/search',
+      query: newQuery
+    }, undefined, { shallow: true });
+  };
+
   const handleCheckout = () => {
     const d1 = new Date(checkIn);
     const d2 = new Date(checkOut);
@@ -144,6 +171,41 @@ export default function SearchPage() {
   const totalRooms = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = Object.values(cart).reduce((sum, item) => sum + (item.ratePlan.pricePerNight * item.quantity * nights), 0);
 
+  // --- CLIENT-SIDE FILTERING & SORTING ---
+  const filteredAndSortedRooms = useMemo(() => {
+    let result = [...rooms];
+
+    // Filter by Price
+    if (qMinPrice) {
+      const min = parseInt(qMinPrice);
+      result = result.filter(r => r.basePrice >= min);
+    }
+    if (qMaxPrice) {
+      const max = parseInt(qMaxPrice);
+      result = result.filter(r => r.basePrice <= max);
+    }
+
+    // Filter by Amenities
+    if (qAmenities) {
+      const requiredAmenities = Array.isArray(qAmenities) ? qAmenities : qAmenities.split(',');
+      result = result.filter(r => {
+        if (!r.amenities || r.amenities.length === 0) return false;
+        // Check if room has EVERY required amenity
+        return requiredAmenities.every(reqAmn => r.amenities.includes(reqAmn));
+      });
+    }
+
+    // Sort
+    if (qSort === 'price_asc') {
+      result.sort((a, b) => (a.basePrice || 0) - (b.basePrice || 0));
+    } else if (qSort === 'price_desc') {
+      result.sort((a, b) => (b.basePrice || 0) - (a.basePrice || 0));
+    }
+
+    return result;
+  }, [rooms, qMinPrice, qMaxPrice, qAmenities, qSort]);
+  // ---------------------------------------
+
   return (
     <Layout>
       <div className="container mx-auto px-4 min-h-screen pb-20 pt-8 max-w-7xl">
@@ -175,16 +237,32 @@ export default function SearchPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Left Column: Rooms List (8 cols) */}
-              <div className="lg:col-span-8 space-y-8">
-                <div id="rooms-section">
+              <div className="lg:col-span-8 flex flex-col md:flex-row gap-8">
+                {/* Search Filters Column */}
+                <div className="w-full md:w-80 flex-shrink-0">
+                  <div className="sticky top-28">
+                    <SearchFilters
+                      initialFilters={{
+                        minPrice: qMinPrice || '',
+                        maxPrice: qMaxPrice || '',
+                        amenities: qAmenities ? (Array.isArray(qAmenities) ? qAmenities : qAmenities.split(',')) : [],
+                        sort: qSort || 'recommended'
+                      }}
+                      onFilterChange={handleFilterChange}
+                    />
+                  </div>
+                </div>
+
+                {/* Rooms List */}
+                <div id="rooms-section" className="flex-1 space-y-8">
                   <h3 className="text-2xl font-display font-bold text-slate-900 mb-6 flex items-center gap-3">
-                    Available Rooms
-                    <span className="text-sm font-sans font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">{rooms.length} found</span>
+                    {t('search.availableRooms')}
+                    <span className="text-sm font-sans font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">{filteredAndSortedRooms.length} {t('search.found')}</span>
                   </h3>
 
-                  {rooms.length > 0 ? (
+                  {filteredAndSortedRooms.length > 0 ? (
                     <div className="flex flex-col gap-8">
-                      {rooms.map((room, index) => (
+                      {filteredAndSortedRooms.map((room, index) => (
                         <motion.div
                           key={room.id}
                           initial={{ opacity: 0, y: 20 }}
@@ -207,8 +285,8 @@ export default function SearchPage() {
                   ) : (
                     <div className="bg-slate-50 rounded-3xl p-16 text-center border-2 border-dashed border-slate-300">
                       <Calendar className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                      <h4 className="text-xl font-display font-bold text-slate-900 mb-2">No rooms available</h4>
-                      <p className="text-slate-500 max-w-md mx-auto">We couldn't find any available rooms for your selected dates. Please try adjusting your search criteria.</p>
+                      <h4 className="text-xl font-display font-bold text-slate-900 mb-2">{t('search.noRoomsTitle')}</h4>
+                      <p className="text-slate-500 max-w-md mx-auto">{t('search.noRoomsDesc')}</p>
                     </div>
                   )}
                 </div>
@@ -225,18 +303,18 @@ export default function SearchPage() {
                       <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm border border-white/5">
                         <Calendar size={24} className="text-emerald-400" />
                       </div>
-                      Your Trip
+                      {t('search.yourTrip')}
                     </h3>
 
                     <div className="space-y-6 relative z-10">
                       <div className="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
                         <div className="flex-1">
-                          <div className="text-[11px] uppercase tracking-widest text-emerald-400 font-bold mb-1.5">Check-in</div>
+                          <div className="text-[11px] uppercase tracking-widest text-emerald-400 font-bold mb-1.5">{t('search.checkIn')}</div>
                           <div className="font-medium text-xl">{checkIn}</div>
                         </div>
                         <div className="w-px h-12 bg-white/10 self-center" />
                         <div className="flex-1 pl-2">
-                          <div className="text-[11px] uppercase tracking-widest text-emerald-400 font-bold mb-1.5">Check-out</div>
+                          <div className="text-[11px] uppercase tracking-widest text-emerald-400 font-bold mb-1.5">{t('search.checkOut')}</div>
                           <div className="font-medium text-xl">{checkOut}</div>
                         </div>
                       </div>
@@ -244,11 +322,11 @@ export default function SearchPage() {
                       <div className="flex items-center gap-5 p-5 bg-white/5 rounded-2xl border border-white/10">
                         <div className="px-4 py-3 bg-emerald-500/20 rounded-xl text-emerald-400 flex flex-col items-center justify-center min-w-[4rem]">
                           <span className="font-display font-bold text-2xl leading-none">{nights}</span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider mt-1">Nights</span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider mt-1">{t('search.nights')}</span>
                         </div>
                         <div>
-                          <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-1">Guests</div>
-                          <div className="font-medium text-lg leading-snug">{adults} Adults<br />{children} Children</div>
+                          <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-1">{t('search.guests')}</div>
+                          <div className="font-medium text-lg leading-snug">{adults} {t('search.adults')}<br />{children} {t('search.children')}</div>
                         </div>
                       </div>
                     </div>
@@ -258,15 +336,15 @@ export default function SearchPage() {
                   <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
                     <h3 className="font-display font-bold text-xl text-slate-900 mb-6 flex items-center gap-2">
                       <CheckCircle size={22} className="text-emerald-500" />
-                      Good to know
+                      {t('search.goodToKnow')}
                     </h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <span className="text-slate-600 font-medium">Check-in</span>
+                        <span className="text-slate-600 font-medium">{t('search.checkIn')}</span>
                         <span className="font-bold text-slate-900 text-lg">14:00</span>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <span className="text-slate-600 font-medium">Check-out</span>
+                        <span className="text-slate-600 font-medium">{t('search.checkOut')}</span>
                         <span className="font-bold text-slate-900 text-lg">12:00</span>
                       </div>
                     </div>
@@ -278,7 +356,7 @@ export default function SearchPage() {
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
             <div className="w-16 h-16 border-4 border-slate-100 border-t-emerald-500 rounded-full animate-spin"></div>
-            <p className="text-slate-500 font-medium text-lg animate-pulse">Searching for the best available rooms...</p>
+            <p className="text-slate-500 font-medium text-lg animate-pulse">{t('search.searching')}</p>
           </div>
         )}
       </div>
@@ -294,10 +372,10 @@ export default function SearchPage() {
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center sm:text-left">
               <div className="bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 border border-emerald-100">
                 <CheckCircle size={16} />
-                {totalRooms} {totalRooms === 1 ? 'Room' : 'Rooms'} Selected
+                {totalRooms} {totalRooms === 1 ? t('search.roomSelected') : t('search.roomsSelected')}
               </div>
               <div>
-                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Total for {nights} nights</div>
+                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">{t('search.totalFor')} {nights} {t('search.nights')}</div>
                 <div className="text-2xl font-black font-display text-slate-900 leading-none">฿{subtotal.toLocaleString()}</div>
               </div>
             </div>
@@ -306,7 +384,7 @@ export default function SearchPage() {
               onClick={handleCheckout}
               className="w-full sm:w-auto px-10 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-white font-bold text-lg rounded-xl shadow-lg shadow-emerald-500/30 whitespace-nowrap"
             >
-              Continue to Checkout
+              {t('search.continueCheckout')}
             </button>
           </div>
         </motion.div>

@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { Menu, X, User, LogOut, Home, Search, CalendarDays } from 'lucide-react'
+import { Menu, X, User, LogOut, Home, Search, CalendarDays, Globe } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function NavBar(props) {
   const router = useRouter()
   const { user, logout } = useAuth()
+  const { language, setLanguage, t } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -54,17 +56,33 @@ export default function NavBar(props) {
               </>
             ) : (
               <>
-                <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Home</Link>
-                <Link href="/contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Contact</Link>
-                <Link href="/account/bookings" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>My Bookings</Link>
+                <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.home')}</Link>
+                <Link href="/contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.contact')}</Link>
+                {user ? (
+                  <Link href="/account/dashboard" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.myBookings')}</Link>
+                ) : (
+                  <Link href="/find-booking" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.findBooking')}</Link>
+                )}
+
+                {/* Language Toggle Desktop */}
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
+                  className={`flex items-center gap-1.5 text-sm font-bold px-2 py-1 rounded-md transition-colors hover:bg-slate-100 ${showSolidNav ? 'text-slate-600' : 'text-white/90 hover:bg-white/10'}`}
+                >
+                  <Globe size={16} />
+                  {language.toUpperCase()}
+                </button>
               </>
             )}
 
             <div className={`pl-4 border-l transition-colors ${showSolidNav ? 'border-slate-200' : 'border-white/20'}`}>
               {user ? (
                 <div className="flex items-center gap-4">
-                  {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin')) && (
+                  {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) && (
                     <Link href="/admin" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Admin</Link>
+                  )}
+                  {!(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) && (
+                    <Link href="/account/dashboard" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Dashboard</Link>
                   )}
                   <span className={`text-sm font-medium flex items-center gap-2 ${showSolidNav ? 'text-slate-700' : 'text-white'}`}>
                     <User size={16} className="text-primary-500" />
@@ -76,9 +94,9 @@ export default function NavBar(props) {
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <Link href="/auth/login" className={`text-sm font-medium px-3 py-2 transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Login</Link>
+                  <Link href="/auth/login" className={`text-sm font-medium px-3 py-2 transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.login')}</Link>
                   <Link href="/auth/register" className="btn-primary flex items-center gap-2 text-sm shadow-lg shadow-primary-900/20">
-                    {props.mode === 'saas' ? 'Start Free' : 'Register'}
+                    {props.mode === 'saas' ? 'Start Free' : t('auth.registerBtn')}
                   </Link>
                 </div>
               )}
@@ -117,15 +135,33 @@ export default function NavBar(props) {
               <>
                 <Link href="/" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Home size={20} className="text-slate-400" />
-                  Home
+                  {t('nav.home')}
                 </Link>
-                <Link href="/account/bookings" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  <CalendarDays size={20} className="text-slate-400" />
-                  My Bookings
-                </Link>
+                {user ? (
+                  <Link href="/account/dashboard" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    <CalendarDays size={20} className="text-slate-400" />
+                    {t('nav.myBookings')}
+                  </Link>
+                ) : (
+                  <Link href="/find-booking" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    <Search size={20} className="text-slate-400" />
+                    {t('nav.findBooking')}
+                  </Link>
+                )}
                 <Link href="/contact" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Contact
+                  {t('nav.contact')}
                 </Link>
+
+                {/* Language Toggle Mobile */}
+                <button
+                  onClick={() => {
+                    setLanguage(language === 'en' ? 'th' : 'en');
+                  }}
+                  className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left"
+                >
+                  <Globe size={20} className="text-slate-400" />
+                  Switch to {language === 'en' ? 'Thai (TH)' : 'English (EN)'}
+                </button>
               </>
             )}
 
@@ -143,9 +179,13 @@ export default function NavBar(props) {
                     <p className="text-xs text-slate-500">{user.email}</p>
                   </div>
                 </div>
-                {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin')) && (
+                {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) ? (
                   <Link href="/admin" className="block text-center w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
                     Go to Admin Dashboard
+                  </Link>
+                ) : (
+                  <Link href="/account/dashboard" className="block text-center w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                    Go to My Dashboard
                   </Link>
                 )}
                 <button onClick={() => { logout(); setMobileMenuOpen(false) }} className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-2">

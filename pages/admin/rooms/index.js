@@ -1,10 +1,11 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
-import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon, ChevronDown, ChevronRight } from 'lucide-react'
+import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon, ChevronDown, ChevronRight, Globe } from 'lucide-react'
 import { InfoTooltip } from '@/components/Tooltip'
 import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
+import { useRoleAccess } from '@/hooks/useRoleAccess'
 
 export default function RoomManagement() {
   const { searchQuery, currentHotel, openUpgradeModal } = useAdmin() || { searchQuery: '' }
@@ -13,6 +14,7 @@ export default function RoomManagement() {
   const [roomTypes, setRoomTypes] = useState([])
   const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
+  const { isReception } = useRoleAccess()
 
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false)
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false)
@@ -46,7 +48,8 @@ export default function RoomManagement() {
     maxAdults: 2,
     maxChildren: 0,
     isFeatured: false,
-    amenities: [] // Array of strings
+    amenities: [], // Array of strings
+    icalUrl: '' // External calendar import
   })
 
   // Upload State
@@ -286,7 +289,8 @@ export default function RoomManagement() {
         maxChildren: parseInt(typeFormData.maxChildren) || 0,
         isFeatured: typeFormData.isFeatured,
         hotelId: currentHotelId,
-        images: typeFormData.images // Explicitly include images
+        images: typeFormData.images, // Explicitly include images
+        icalUrl: typeFormData.icalUrl || null
       }
 
       console.log('Submitting Room Type:', payload); // DEBUG
@@ -324,7 +328,8 @@ export default function RoomManagement() {
         maxAdults: type.maxAdults || 2,
         maxChildren: type.maxChildren || 0,
         isFeatured: type.isFeatured || false,
-        amenities: type.amenities || []
+        amenities: type.amenities || [],
+        icalUrl: type.icalUrl || ''
       })
     } else {
       setTypeFormData({
@@ -338,7 +343,8 @@ export default function RoomManagement() {
         maxAdults: 2,
         maxChildren: 0,
         isFeatured: false,
-        amenities: []
+        amenities: [],
+        icalUrl: ''
       })
     }
     setIsTypeModalOpen(true)
@@ -416,11 +422,13 @@ export default function RoomManagement() {
       {/* --- INVENTORY TAB --- */}
       {activeTab === 'inventory' && (
         <>
-          <div className="flex justify-end mb-4">
-            <button onClick={() => openRoomModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20">
-              <Plus size={18} /> Add Physical Room
-            </button>
-          </div>
+          {!isReception && (
+            <div className="flex justify-end mb-4">
+              <button onClick={() => openRoomModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20">
+                <Plus size={18} /> Add Physical Room
+              </button>
+            </div>
+          )}
 
           <div className="space-y-6">
             {filteredRoomTypes.map(type => {
@@ -451,12 +459,14 @@ export default function RoomManagement() {
                         {typeRooms.length} Rooms
                       </span>
                       <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openRoomModal({ roomTypeId: type.id }); }}
-                        className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20"
-                      >
-                        + Add Room
-                      </button>
+                      {!isReception && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openRoomModal({ roomTypeId: type.id }); }}
+                          className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20"
+                        >
+                          + Add Room
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -472,10 +482,12 @@ export default function RoomManagement() {
                                 </div>
                                 <div onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="cursor-pointer">
                                   <div className="font-bold text-sm text-slate-900 dark:text-white hover:text-emerald-500 transition-colors">Room {r.roomNumber}</div>
-                                  <div className="flex gap-1">
-                                    <button onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="p-1 text-slate-300 hover:text-blue-500"><Edit size={12} /></button>
-                                    <button onClick={(e) => handleDeleteClick(e, r.id, 'room', r.roomNumber)} className="p-1 text-slate-300 hover:text-red-500"><Trash2 size={12} /></button>
-                                  </div>
+                                  {!isReception && (
+                                    <div className="flex gap-1">
+                                      <button onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="p-1 text-slate-300 hover:text-blue-500"><Edit size={12} /></button>
+                                      <button onClick={(e) => handleDeleteClick(e, r.id, 'room', r.roomNumber)} className="p-1 text-slate-300 hover:text-red-500"><Trash2 size={12} /></button>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -551,11 +563,13 @@ export default function RoomManagement() {
       {/* --- ROOM TYPES TAB --- */}
       {activeTab === 'types' && (
         <>
-          <div className="flex justify-end mb-4">
-            <button onClick={() => openTypeModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">
-              <Plus size={18} /> Add Room Type
-            </button>
-          </div>
+          {!isReception && (
+            <div className="flex justify-end mb-4">
+              <button onClick={() => openTypeModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">
+                <Plus size={18} /> Add Room Type
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRoomTypes.map(type => (
               <div key={type.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
@@ -602,18 +616,22 @@ export default function RoomManagement() {
                   </div>
 
                   <div className="flex gap-2 mt-auto">
-                    <button
-                      onClick={() => openTypeModal(type)}
-                      className="flex-1 py-2.5 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-emerald-500/25"
-                    >
-                      Edit Details
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteClick(e, type.id, 'type', type.name)}
-                      className="px-4 py-2.5 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl font-bold hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-red-500/25"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {!isReception && (
+                      <button
+                        onClick={() => openTypeModal(type)}
+                        className="flex-1 py-2.5 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-emerald-500/25"
+                      >
+                        Edit Details
+                      </button>
+                    )}
+                    {!isReception && (
+                      <button
+                        onClick={(e) => handleDeleteClick(e, type.id, 'type', type.name)}
+                        className="px-4 py-2.5 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl font-bold hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-red-500/25"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -777,6 +795,44 @@ export default function RoomManagement() {
                     className="w-full px-4 py-2 rounded-xl border dark:border-slate-600 dark:bg-slate-700 dark:text-white h-24"
                     placeholder="Describe the room experience..."
                   />
+                </div>
+
+                {/* iCal Channel Manager */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-500/30">
+                  <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">
+                    <Globe size={16} /> Channel Manager Sync (iCal)
+                  </h4>
+                  <p className="text-xs text-blue-700 dark:text-blue-400 mb-4">
+                    Sync availability with Agoda, Booking.com, Airbnb, etc. to prevent overbookings.
+                  </p>
+
+                  {editType && (
+                    <div className="mb-4">
+                      <label className="block text-xs font-bold mb-1 text-blue-800 dark:text-blue-300">Export Calendar (Paste this INTO Agoda)</label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/api/ical/export/${currentHotel?.id}.ics` : ''}
+                        className="w-full px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-700 bg-white/50 dark:bg-slate-800 text-xs font-mono text-slate-500 cursor-copy"
+                        onClick={(e) => {
+                          e.target.select();
+                          navigator.clipboard.writeText(e.target.value);
+                          toast.success('Copied Export URL!');
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-blue-800 dark:text-blue-300">Import Calendar URL (Paste FROM Agoda)</label>
+                    <input
+                      type="url"
+                      value={typeFormData.icalUrl}
+                      onChange={e => setTypeFormData({ ...typeFormData, icalUrl: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800 text-sm"
+                      placeholder="https://www.agoda.com/ical/..."
+                    />
+                  </div>
                 </div>
 
                 <button onClick={handleSubmitType} className="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">Save Changes</button>

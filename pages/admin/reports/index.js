@@ -2,7 +2,7 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
-import { DollarSign, Plus, Trash2, Calendar, FileText, TrendingUp, TrendingDown, Moon, Activity, BedDouble } from 'lucide-react'
+import { DollarSign, Plus, Trash2, Calendar, FileText, TrendingUp, TrendingDown, Moon, Activity, BedDouble, Download, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import {
@@ -111,23 +111,66 @@ function GeneralReports({ hotelId }) {
     }
 
 
-    const exportCSV = () => {
-        const headers = ['Date', 'Title', 'Category', 'Amount']
-        const rows = expenses.map(e => [toLocalISO(new Date(e.date)), e.title, e.category, e.amount])
-        const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n")
-        const link = document.createElement("a")
-        link.setAttribute("href", encodeURI(csvContent))
-        link.setAttribute("download", `expenses.csv`)
-        document.body.appendChild(link)
-        link.click()
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
+
+    const handleExport = async (format) => {
+        setIsExportMenuOpen(false)
+        const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
+        try {
+            const token = localStorage.getItem('token')
+            const query = `?hotelId=${hotelId}&from=${dateRange.from}&to=${dateRange.to}`
+
+            // Hit the backend export endpoint
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/reports/export/${format}${query}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            if (!res.ok) throw new Error('Export failed')
+
+            // Trigger browser download
+            const blob = await res.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `financial_report_${dateRange.from}_to_${dateRange.to}.${format === 'excel' ? 'xlsx' : 'csv'}`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+
+            toast.success('Report downloaded!', { id: toastId })
+        } catch (e) {
+            console.error(e)
+            toast.error('Failed to download report', { id: toastId })
+        }
     }
 
     return (
         <div className="space-y-6">
             {/* Filter Bar */}
             <div className="flex justify-end gap-2">
-                <button onClick={exportCSV} className="flex items-center gap-2 bg-slate-900 text-white px-3 py-2 rounded-lg font-bold text-xs">Export CSV</button>
-                <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-lg border dark:border-slate-700 items-center gap-2">
+                <div className="relative">
+                    <button
+                        onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                        className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs transition-colors h-full"
+                    >
+                        <Download size={14} /> Download Report <ChevronDown size={14} className={`transition-transform ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isExportMenuOpen && (
+                        <>
+                            <div className="fixed inset-0 z-30" onClick={() => setIsExportMenuOpen(false)} />
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden z-40 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <button onClick={() => handleExport('excel')} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors">
+                                    <FileText size={16} className="text-emerald-500" /> Excel (.xlsx)
+                                </button>
+                                <button onClick={() => handleExport('csv')} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors border-t border-slate-100 dark:border-slate-700">
+                                    <FileText size={16} className="text-indigo-500" /> CSV Summary
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+                <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 items-center gap-2">
                     <input type="date" value={dateRange.from} onChange={e => setDateRange({ ...dateRange, from: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
                     <span className="text-slate-400">-</span>
                     <input type="date" value={dateRange.to} onChange={e => setDateRange({ ...dateRange, to: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />

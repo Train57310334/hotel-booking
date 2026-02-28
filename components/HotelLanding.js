@@ -4,12 +4,14 @@ import Hero from '@/components/Hero';
 import SearchBar from '@/components/SearchBar';
 import ComingSoon from '@/components/ComingSoon';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowRight, Star, MapPin, CheckCircle, Wifi, Tv, Coffee } from 'lucide-react';
 import RoomCard from '@/components/RoomCard';
 import { motion } from 'framer-motion';
 
 export default function HotelLanding({ hotel }) {
     const { user } = useAuth();
+    const { t } = useLanguage();
 
     // Use dynamic content or fallbacks
     const heroTitle = hotel.heroTitle || `Welcome to ${hotel.name}`;
@@ -50,10 +52,10 @@ export default function HotelLanding({ hotel }) {
                     <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                         <div className="space-y-2">
                             <div className="text-emerald-600 font-bold tracking-[0.2em] uppercase text-xs animate-fade-in-up">Accommodations</div>
-                            <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight">Find Your Sanctuary</h2>
+                            <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight">{t('landing.findSanctuary')}</h2>
                         </div>
                         <Link href={`/search?${defaultParams}`} className="group flex items-center gap-2 text-slate-600 hover:text-emerald-600 font-medium transition-colors pb-2">
-                            View All Rooms <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                            {t('landing.viewRooms')} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
 
@@ -85,12 +87,12 @@ export default function HotelLanding({ hotel }) {
                         {/* Text Content */}
                         <div className="flex-1 order-2 lg:order-1 space-y-8 animate-fade-in-left">
                             <div className="space-y-4">
-                                <span className="text-emerald-600 font-bold tracking-[0.2em] uppercase text-xs">Our Amenities</span>
+                                <span className="text-emerald-600 font-bold tracking-[0.2em] uppercase text-xs">{t('landing.ourAmenities')}</span>
                                 <h2 className="text-4xl md:text-5xl font-display font-bold text-slate-900 leading-tight">
-                                    Designed for your <br /><span className="text-slate-400">ultimate comfort.</span>
+                                    {t('landing.comfortTitle')} <br /><span className="text-slate-400">{t('landing.comfortSubtitle')}</span>
                                 </h2>
                                 <p className="text-slate-500 text-lg leading-relaxed max-w-xl">
-                                    We go above and beyond to ensure your stay is memorable. From our world-class amenities to our personalized service, every detail is curated for you.
+                                    {t('landing.comfortDesc')}
                                 </p>
                             </div>
 
@@ -150,12 +152,12 @@ export default function HotelLanding({ hotel }) {
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-4xl md:text-6xl font-display font-bold mb-8">Ready for an unforgettable stay?</h2>
+                        <h2 className="text-4xl md:text-6xl font-display font-bold mb-8">{t('landing.readyStay')}</h2>
                         <p className="text-slate-300 text-xl max-w-2xl mx-auto mb-10">
-                            Book directly with us for the best rates and exclusive amenities.
+                            {t('landing.bookDirectly')}
                         </p>
                         <Link href={`/search?${defaultParams}`} className="inline-flex items-center gap-3 bg-white text-emerald-900 font-bold text-lg px-10 py-5 rounded-full shadow-2xl hover:scale-105 hover:bg-emerald-50 transition-all duration-300">
-                            Book Your Stay Now <ArrowRight size={20} />
+                            {t('landing.bookStay')} <ArrowRight size={20} />
                         </Link>
                     </motion.div>
                 </div>

@@ -28,7 +28,10 @@ export default function GuestManagement() {
       if (currentHotel.id) queryParams.append('hotelId', currentHotel.id);
 
       const data = await apiFetch(`/users?${queryParams.toString()}`)
-      setGuests(data)
+
+      // Ensure guests is always an array safely
+      const guestList = Array.isArray(data) ? data : (data?.data || [])
+      setGuests(guestList)
     } catch (error) {
       console.error(error)
     } finally {

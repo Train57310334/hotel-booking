@@ -4,13 +4,17 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { User, Mail, Phone, Calendar, ArrowRight, ArrowLeft, BedDouble, Info, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function GuestInfoPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [bookingInfo, setBookingInfo] = useState(null);
   const [showError, setShowError] = useState(false);
   const [guest, setGuest] = useState({ name: '', email: '', phone: '', requests: '' });
+  const { user } = useAuth();
 
   useEffect(() => {
     const stored = localStorage.getItem('bookingCart');
@@ -20,6 +24,18 @@ export default function GuestInfoPage() {
       router.push('/');
     }
   }, [router]);
+
+  // Auto-fill form if user is logged in
+  useEffect(() => {
+    if (user && !guest.name) {
+      setGuest(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone
+      }));
+    }
+  }, [user]);
 
   const [loading, setLoading] = useState(false);
 
@@ -66,22 +82,22 @@ export default function GuestInfoPage() {
         <div className="max-w-5xl mx-auto">
           {/* Progress Steps (Optional) */}
           <div className="flex items-center gap-4 text-sm font-medium mb-8 text-slate-400">
-            <span className="text-primary-600">1. Selection</span>
+            <span className="text-primary-600">{t('checkout.step1')}</span>
             <span className="text-slate-300">/</span>
-            <span className="text-slate-900">2. Guest Info</span>
+            <span className="text-slate-900">{t('checkout.step2')}</span>
             <span className="text-slate-300">/</span>
-            <span>3. Payment</span>
+            <span>{t('checkout.step3')}</span>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
             {/* Form Section */}
             <div className="flex-1 order-2 lg:order-1">
-              <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Who's checking in?</h1>
-              <p className="text-slate-500 mb-8">Please tell us who will be staying at the hotel.</p>
+              <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">{t('checkout.title')}</h1>
+              <p className="text-slate-500 mb-8">{t('checkout.subtitle')}</p>
 
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Full Name</label>
+                  <label className="text-sm font-bold text-slate-700">{t('auth.fullName')}</label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     <input
@@ -96,7 +112,7 @@ export default function GuestInfoPage() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Email Address</label>
+                    <label className="text-sm font-bold text-slate-700">{t('auth.emailLabel')}</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                       <input
@@ -109,7 +125,7 @@ export default function GuestInfoPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Phone Number</label>
+                    <label className="text-sm font-bold text-slate-700">{t('booking.phone')}</label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                       <input
@@ -124,10 +140,10 @@ export default function GuestInfoPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Special Requests <span className="text-slate-400 font-normal">(Optional)</span></label>
+                  <label className="text-sm font-bold text-slate-700">{t('checkout.specialRequests')} <span className="text-slate-400 font-normal">{t('checkout.optional')}</span></label>
                   <textarea
                     rows="4"
-                    placeholder="Any special preferences provided..."
+                    placeholder={t('checkout.specialRequestsPlaceholder')}
                     className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-400 outline-none transition-all resize-none"
                     value={guest.requests}
                     onChange={(e) => setGuest({ ...guest, requests: e.target.value })}
@@ -140,7 +156,7 @@ export default function GuestInfoPage() {
                   onClick={() => router.back()}
                   className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors flex items-center gap-2"
                 >
-                  <ArrowLeft size={20} /> Back
+                  <ArrowLeft size={20} /> {t('checkout.back')}
                 </button>
                 <button
                   className="flex-1 btn-primary py-3 flex items-center justify-center gap-2 group"
@@ -148,9 +164,9 @@ export default function GuestInfoPage() {
                   disabled={loading}
                 >
                   {loading ? (
-                    <><Loader2 size={20} className="animate-spin" /> Saving...</>
+                    <><Loader2 size={20} className="animate-spin" /> {t('checkout.saving')}</>
                   ) : (
-                    <>Continue to Payment <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
+                    <>{t('checkout.continuePayment')} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
                   )}
                 </button>
               </div>
@@ -160,8 +176,8 @@ export default function GuestInfoPage() {
               isOpen={showError}
               onClose={() => setShowError(false)}
               onConfirm={() => setShowError(false)}
-              title="Missing Information"
-              message="Please fill in all required fields (Name, Email, and Phone) to proceed."
+              title={t('checkout.missingInfoTitle')}
+              message={t('checkout.missingInfoMessage')}
               type="warning"
               singleButton={true}
               confirmText="OK"
@@ -170,7 +186,7 @@ export default function GuestInfoPage() {
             {/* Summary Sidebar */}
             <div className="w-full lg:w-96 shrink-0 order-1 lg:order-2">
               <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 sticky top-24">
-                <h3 className="font-display font-bold text-xl text-slate-900 mb-4">Your Booking</h3>
+                <h3 className="font-display font-bold text-xl text-slate-900 mb-4">{t('checkout.yourBooking')}</h3>
 
                 {/* Hotel Info */}
                 <div className="flex gap-4 mb-6">
@@ -187,16 +203,16 @@ export default function GuestInfoPage() {
 
                 <div className="space-y-4 text-sm font-medium">
                   <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="flex items-center gap-2 text-slate-500"><Calendar size={16} /> Check-in</span>
+                    <span className="flex items-center gap-2 text-slate-500"><Calendar size={16} /> {t('search.checkIn')}</span>
                     <span className="text-slate-900">{new Date(bookingInfo.checkIn).toLocaleDateString()}</span>
                   </div>
                   <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="flex items-center gap-2 text-slate-500"><Calendar size={16} /> Check-out</span>
+                    <span className="flex items-center gap-2 text-slate-500"><Calendar size={16} /> {t('search.checkOut')}</span>
                     <span className="text-slate-900">{new Date(bookingInfo.checkOut).toLocaleDateString()}</span>
                   </div>
                   <div className="flex justify-between items-center px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-800">
-                    <span className="flex items-center gap-2"><Info size={16} /> Duration</span>
-                    <span className="font-bold">{Math.ceil((new Date(bookingInfo.checkOut) - new Date(bookingInfo.checkIn)) / (1000 * 60 * 60 * 24))} Nights</span>
+                    <span className="flex items-center gap-2"><Info size={16} /> {t('checkout.duration')}</span>
+                    <span className="font-bold">{Math.ceil((new Date(bookingInfo.checkOut) - new Date(bookingInfo.checkIn)) / (1000 * 60 * 60 * 24))} {t('search.nights')}</span>
                   </div>
                 </div>
 
@@ -222,7 +238,7 @@ export default function GuestInfoPage() {
                 </div>
 
                 <div className="flex justify-between items-end bg-emerald-50 p-4 rounded-xl border border-emerald-100 mt-6">
-                  <span className="text-emerald-800 font-bold uppercase tracking-wider text-sm">Total Price</span>
+                  <span className="text-emerald-800 font-bold uppercase tracking-wider text-sm">{t('checkout.totalPrice')}</span>
                   <span className="text-3xl font-black text-emerald-600 font-display">฿{bookingInfo.subtotal?.toLocaleString()}</span>
                 </div>
               </div>

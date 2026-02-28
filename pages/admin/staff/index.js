@@ -6,9 +6,11 @@ import toast from 'react-hot-toast'
 
 import { useAdmin } from '@/contexts/AdminContext'
 import ConfirmationModal from '@/components/ConfirmationModal'
+import { useRoleAccess } from '@/hooks/useRoleAccess'
 
 export default function StaffManagement() {
   const { currentHotel } = useAdmin() || {};
+  const { isAdmin, isOwner, role } = useRoleAccess();
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -104,6 +106,10 @@ export default function StaffManagement() {
     setIsModalOpen(true)
   }
 
+  // Only Owner and Admins can mutate staff. Manager can maybe view but backend handles it.
+  // We'll restrict Add/Edit/Delete buttons.
+  const canEditStaff = isOwner || isAdmin;
+
   return (
     <AdminLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -111,13 +117,15 @@ export default function StaffManagement() {
           <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Staff Management</h1>
           <p className="text-slate-500 dark:text-slate-400">Manage hotel staff and their permissions</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
-        >
-          <Plus size={20} />
-          Add Staff
-        </button>
+        {canEditStaff && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+          >
+            <Plus size={20} />
+            Add Staff
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -144,7 +152,7 @@ export default function StaffManagement() {
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Contact</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>
+                {canEditStaff && <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
@@ -198,22 +206,29 @@ export default function StaffManagement() {
                         <CheckCircle size={14} /> Active
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => openEditModal(user)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {canEditStaff && (
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {/* Protect owner from being edited by non-owners */}
+                          {!(user.role === 'owner' && !isOwner) && (
+                            <>
+                              <button
+                                onClick={() => openEditModal(user)}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(user.id)}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -279,7 +294,7 @@ export default function StaffManagement() {
                     <option value="reception">Reception (Front Desk)</option>
                     <option value="housekeeper">Housekeeper</option>
                     <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
+                    {isOwner && <option value="admin">Admin</option>}
                   </select>
                 </div>
                 <p className="text-xs text-slate-500 mt-1 ml-1">
