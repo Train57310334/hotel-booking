@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
-import { Search, Plus, CreditCard, Eye, User } from 'lucide-react'
+import { Search, Plus, CreditCard, Eye, User, MessageSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import BookingDetailModal from '@/components/BookingDetailModal'
@@ -275,7 +275,7 @@ export default function BookingManagement() {
                               </div>
                             )}
                           </div>
-                          {booking.specialRequests && <span className="text-[10px] text-amber-600 mt-1 truncate max-w-[150px]">★ {booking.specialRequests}</span>}
+                          {booking.specialRequests && <span className="flex items-center gap-1 text-[10px] text-amber-600 mt-1 truncate max-w-[150px]"><MessageSquare size={10} /> {booking.specialRequests}</span>}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">

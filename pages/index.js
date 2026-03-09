@@ -23,16 +23,16 @@ export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
 
   // --- SaaS Landing Page ---
   return (
-    <Layout navbarProps={{ brandName: saasSettings?.siteName || 'BookingKub', mode: 'saas' }} hideFooter>
+    <Layout navbarProps={{ brandName: saasSettings?.siteName || 'BookingKub', logo: saasSettings?.logoUrl, mode: 'saas' }} hideFooter>
       <Hero
         title={saasSettings?.landingHeroTitle}
         description={saasSettings?.landingHeroDescription}
         ctaText={saasSettings?.landingCTA}
       />
-      <Features />
-      <Pricing />
+      <Features saasSettings={saasSettings} />
+      <Pricing saasSettings={saasSettings} />
       <ContactSection />
-      <Footer />
+      <Footer saasSettings={saasSettings} />
     </Layout>
   );
 }

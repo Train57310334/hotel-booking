@@ -3,6 +3,7 @@
 // promptPayId: phone number (0812345678) or tax ID (0123456789012)
 // amount: number in THB (optional — QR WITHOUT amount is always preferred for hotels)
 import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 const generatePromptPayPayload = (promptPayId, amount) => {
     try {
@@ -115,7 +116,7 @@ export default function PromptPayQR({ promptPayId, amount, hotelName }) {
     if (error) {
         return (
             <div className="w-60 h-60 mx-auto flex flex-col items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 text-center p-4">
-                <span className="text-3xl mb-2">⚠️</span>
+                <AlertTriangle size={36} className="text-amber-400 mb-2" />
                 <p className="text-sm font-medium">{error}</p>
                 {!promptPayId && (
                     <p className="text-xs mt-1 text-slate-400">Please configure PromptPay ID in hotel settings</p>

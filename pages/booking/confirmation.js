@@ -79,19 +79,24 @@ export default function ConfirmationPage() {
   const isPaid = booking.status === 'confirmed' || booking.status === 'checked_in' || booking.status === 'checked_out';
 
   return (
-    <Layout>
-      <div className="bg-slate-900 pb-32 pt-12 print:hidden">
-        <div className="container mx-auto px-4 text-center">
-          <div className={`inline-flex items-center justify-center p-4 ${isPaid ? 'bg-green-500/20' : 'bg-yellow-500/20'} backdrop-blur-sm rounded-full mb-6`}>
-            {isPaid ? <CheckCircle size={48} className="text-green-400" /> : <Lock size={48} className="text-yellow-400" />}
+    <Layout navbarProps={{ brandName: booking?.hotel?.name, logo: booking?.hotel?.logoUrl, facebookUrl: booking?.hotel?.facebookUrl, instagramUrl: booking?.hotel?.instagramUrl, twitterUrl: booking?.hotel?.twitterUrl, footerDescription: booking?.hotel?.footerDescription }}>
+      <div className="relative bg-slate-900 pb-32 pt-16 md:pt-24 print:hidden overflow-hidden">
+        <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-emerald-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-primary-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="inline-block relative">
+            <div className={`absolute inset-0 rounded-full blur-xl ${isPaid ? 'bg-emerald-500/30 animate-pulse' : 'bg-amber-500/30 animate-pulse'}`} />
+            <div className={`relative inline-flex items-center justify-center p-5 ${isPaid ? 'bg-gradient-to-b from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30' : 'bg-gradient-to-b from-amber-500/20 to-amber-500/10 border border-amber-500/30'} backdrop-blur-xl rounded-full mb-8 shadow-2xl`}>
+              {isPaid ? <CheckCircle size={56} className="text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" /> : <Lock size={56} className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />}
+            </div>
           </div>
-          <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
+          <h1 className="text-4xl md:text-6xl font-display font-black text-white mb-6 tracking-tight drop-shadow-md">
             {isPaid ? t('confirmation.titlePaid') : t('confirmation.titlePending')}
           </h1>
-          <p className="text-slate-300 text-lg max-w-xl mx-auto">
+          <p className="text-slate-300 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
             {isPaid
-              ? <span>{t('confirmation.thankYouName')}<span className="text-white font-bold">{booking.leadName}</span>. {t('confirmation.descPaid')}</span>
-              : <span>{t('confirmation.helloName')}<span className="text-white font-bold">{booking.leadName}</span>. {t('confirmation.descPending')}</span>
+              ? <span>{t('confirmation.thankYouName')} <span className="text-white font-bold border-b border-white/20 pb-0.5">{booking.leadName}</span>. {t('confirmation.descPaid')}</span>
+              : <span>{t('confirmation.helloName')} <span className="text-white font-bold border-b border-white/20 pb-0.5">{booking.leadName}</span>. {t('confirmation.descPending')}</span>
             }
           </p>
         </div>
@@ -113,21 +118,21 @@ export default function ConfirmationPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 -mt-20 pb-20 relative z-10 print:mt-0 print:pb-0 print:px-0">
-        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 print:shadow-none print:border-none print:max-w-none print:rounded-none">
+      <div className="container mx-auto px-4 -mt-24 pb-24 relative z-20 print:mt-0 print:pb-0 print:px-0">
+        <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-2xl shadow-slate-900/10 overflow-hidden border border-slate-200/60 print:shadow-none print:border-none print:max-w-none print:rounded-none">
           <div className="flex flex-col md:flex-row border-b border-slate-100">
-            <div className="p-8 md:p-12 flex-1 border-b md:border-b-0 md:border-r border-slate-100">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">{t('confirmation.bookingReference')}</p>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-mono font-bold text-slate-900 text-wrap break-all">{booking.id}</h2>
-                    <button onClick={() => { navigator.clipboard.writeText(booking.id); toast.success('Copied') }} className="text-slate-400 hover:text-primary-600 transition-colors print:hidden" title="Copy ID">
+            <div className="p-8 md:p-12 flex-1 border-b md:border-b-0 md:border-r border-slate-100 min-w-0">
+              <div className="flex justify-between items-start mb-10 pb-8 border-b border-slate-100 flex-wrap gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mb-2">{t('confirmation.bookingReference')}</p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="text-2xl md:text-3xl font-mono font-bold text-slate-900 tracking-tight break-all">{booking.id.split('-')[0] || booking.id}</h2>
+                    <button onClick={() => { navigator.clipboard.writeText(booking.id); toast.success('Copied') }} className="p-2 shrink-0 bg-slate-50 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all print:hidden" title="Copy ID">
                       <Copy size={18} />
                     </button>
                   </div>
                 </div>
-                <span className={`px-3 py-1 text-sm font-bold rounded-lg border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
+                <span className={`shrink-0 px-4 py-2 text-sm font-bold rounded-xl border ${isPaid ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm'}`}>
                   {isPaid ? t('confirmation.statusConfirmed') : t('confirmation.statusPending')}
                 </span>
               </div>
@@ -200,13 +205,14 @@ export default function ConfirmationPage() {
                 </p>
               </div>
 
-              <div className="space-y-3 print:hidden">
+              <div className="space-y-4 print:hidden mt-10">
                 {!isPaid && (
                   <button
                     onClick={() => setShowPayment(true)}
-                    className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 animate-pulse"
+                    className="w-full py-4 bg-[#1C58EA] text-white rounded-xl font-bold hover:bg-[#1642b3] shadow-[0_8px_20px_-6px_rgba(28,88,234,0.6)] hover:shadow-[0_12px_25px_-6px_rgba(28,88,234,0.7)] flex items-center justify-center gap-2 animate-pulse relative overflow-hidden group transition-all"
                   >
-                    <CreditCard size={18} /> {t('payment.payNow')}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-shine" />
+                    <CreditCard size={20} /> {t('payment.payNow')}
                   </button>
                 )}
 

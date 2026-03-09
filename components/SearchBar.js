@@ -16,6 +16,18 @@ export default function SearchBar({ query = {} }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
+
+    // ✅ BUG FIX: Validate that both dates are selected before searching
+    if (!dates.checkIn || !dates.checkOut) {
+      alert('Please select both check-in and check-out dates');
+      return;
+    }
+    // ✅ Ensure checkOut is strictly after checkIn
+    if (dates.checkOut <= dates.checkIn) {
+      alert('Check-out must be after check-in');
+      return;
+    }
+
     const params = new URLSearchParams();
     const toLocalISO = (date) => {
       const offset = date.getTimezoneOffset()
@@ -23,8 +35,8 @@ export default function SearchBar({ query = {} }) {
       return local.toISOString().split('T')[0]
     }
 
-    if (dates.checkIn) params.append('checkIn', toLocalISO(dates.checkIn));
-    if (dates.checkOut) params.append('checkOut', toLocalISO(dates.checkOut));
+    params.append('checkIn', toLocalISO(dates.checkIn));
+    params.append('checkOut', toLocalISO(dates.checkOut));
     params.append('adults', guests.adults);
     params.append('children', guests.children);
     if (query.hotelId) params.append('hotelId', query.hotelId);

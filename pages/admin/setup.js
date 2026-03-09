@@ -73,7 +73,7 @@ export default function SetupHotel() {
                     <div>
                         <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
                             Property Name
-                            <InfoTooltip content="The official name of your hotel as it will appear to guests." />
+                            <InfoTooltip content="The official display name of your property as guests will see it on the booking page, emails, and invoices. Use the full brand name (e.g. The Seaside Resort & Spa, not just 'Seaside')." />
                         </label>
                         <input
                             name="name"
@@ -88,7 +88,7 @@ export default function SetupHotel() {
                         <div>
                             <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
                                 City
-                                <InfoTooltip content="The city where your property is located." />
+                                <InfoTooltip content="The main city or district where your property is located (e.g. Bangkok, Chiang Mai, Phuket). This is used for search and display purposes on the booking page." />
                             </label>
                             <input
                                 name="city"
@@ -101,7 +101,7 @@ export default function SetupHotel() {
                         <div>
                             <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
                                 Country
-                                <InfoTooltip content="The country where your property is located." />
+                                <InfoTooltip content="The country of your property (defaults to Thailand). This helps position your property correctly in search results and on maps." />
                             </label>
                             <input
                                 name="country"
@@ -116,7 +116,7 @@ export default function SetupHotel() {
                     <div>
                         <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
                             Full Address
-                            <InfoTooltip content="Detailed address including street, zip code for Google Maps." />
+                            <InfoTooltip content="Your full street address including building number, street name, district, province, and postal code. This address is shown on invoices and may be used by guests to locate you on Google Maps." />
                         </label>
                         <textarea
                             name="address"

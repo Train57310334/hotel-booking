@@ -1,10 +1,12 @@
-export default function BookingTable({ items = [], onSeeAll }){
+import { Clock, Trash2 } from 'lucide-react'
+
+export default function BookingTable({ items = [], onSeeAll }) {
   const Row = ({ b }) => (
     <tr className="border-b last:border-0">
       <td className="py-3 px-3 text-sm text-gray-600">#{b.id}</td>
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
-          <img src={b.avatar} className="w-8 h-8 rounded-full" alt={b.guest}/>
+          <img src={b.avatar} className="w-8 h-8 rounded-full" alt={b.guest} />
           <div className="text-sm">{b.guest}</div>
         </div>
       </td>
@@ -14,14 +16,14 @@ export default function BookingTable({ items = [], onSeeAll }){
       <td className="py-3 px-3 text-sm">{b.type}</td>
       <td className="py-3 px-3">
         <span className={
-          'px-2 py-1 rounded-full text-xs ' + 
-          (b.status==='Complete' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')
+          'px-2 py-1 rounded-full text-xs ' +
+          (b.status === 'Complete' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')
         }>{b.status}</span>
       </td>
       <td className="py-3 px-3">
         <div className="flex gap-2">
-          <button className="w-8 h-8 rounded-lg border hover:bg-gray-50" title="Reschedule">⏲</button>
-          <button className="w-8 h-8 rounded-lg border hover:bg-gray-50" title="Delete">🗑</button>
+          <button className="w-8 h-8 rounded-lg border hover:bg-gray-50 flex items-center justify-center text-slate-500" title="Reschedule"><Clock size={15} /></button>
+          <button className="w-8 h-8 rounded-lg border hover:bg-gray-50 flex items-center justify-center text-rose-500" title="Delete"><Trash2 size={15} /></button>
         </div>
       </td>
     </tr>

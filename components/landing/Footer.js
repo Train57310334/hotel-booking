@@ -1,18 +1,26 @@
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer({ saasSettings }) {
+    const siteName = saasSettings?.siteName || 'BookingKub';
+    const logoUrl = saasSettings?.logoUrl;
     return (
-        <footer className="bg-slate-900 text-slate-400 pt-20 pb-10">
+        <footer className="bg-[#0A0F1C] border-t border-white/5 text-slate-400 pt-16 pb-10 relative z-20">
             <div className="container mx-auto px-4">
                 <div className="grid md:grid-cols-4 gap-12 mb-16">
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-2">
                         <Link href="/" className="inline-flex items-center gap-2 mb-6 text-white group">
-                            <div className="bg-primary-600 p-2 rounded-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            </div>
-                            <span className="text-2xl font-display font-bold">BookingKub</span>
+                            {logoUrl ? (
+                                <div className="h-10 w-10 relative bg-white/10 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-300">
+                                    <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                                </div>
+                            ) : (
+                                <div className="bg-primary-600 p-2 rounded-xl group-hover:scale-105 transition-transform duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                </div>
+                            )}
+                            <span className="text-2xl font-display font-bold">{siteName}</span>
                         </Link>
                         <p className="max-w-md leading-relaxed mb-8">
                             The all-in-one hotel management platform designed to help you grow your business and delight your guests.
@@ -59,7 +67,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-                    <p>&copy; {new Date().getFullYear()} BookingKub. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
                     <div className="flex gap-8">
                         <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useState, useEffect, useMemo } from 'react'
 import Layout from '@/components/Layout'
 import RoomCard from '@/components/RoomCard'
-import { Users, Calendar, MapPin, Star, CheckCircle } from 'lucide-react'
+import { Users, Calendar, MapPin, Star, CheckCircle, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SearchBar from '@/components/SearchBar'
 import SearchFilters from '@/components/SearchFilters'
@@ -142,12 +142,19 @@ export default function SearchPage() {
       ratePlanId: item.ratePlan.id,
       ratePlanName: item.ratePlan.name,
       quantity: item.quantity,
-      basePrice: item.ratePlan.pricePerNight,
-      totalPrice: item.ratePlan.pricePerNight * diff * item.quantity
+      basePrice: item.ratePlan.pricePerNight ?? item.ratePlan.baseRate ?? item.roomType.basePrice ?? 0,
+      totalPrice: (item.ratePlan.pricePerNight ?? item.ratePlan.baseRate ?? item.roomType.basePrice ?? 0) * diff * item.quantity
     }));
 
     const orderSummary = {
       hotelId: hotel.id,
+      hotelName: hotel.name,
+      hotelCity: hotel.city,
+      hotelImage: hotel.images?.[0] || hotel.imageUrl || '',
+      facebookUrl: hotel.facebookUrl || '',
+      instagramUrl: hotel.instagramUrl || '',
+      twitterUrl: hotel.twitterUrl || '',
+      footerDescription: hotel.footerDescription || '',
       checkIn,
       checkOut,
       adults,
@@ -169,20 +176,28 @@ export default function SearchPage() {
 
   // Calculate Cart Totals
   const totalRooms = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = Object.values(cart).reduce((sum, item) => sum + (item.ratePlan.pricePerNight * item.quantity * nights), 0);
+  // ✅ BUG FIX: use effectivePrice (rate plan price) with safe fallback to roomType basePrice; avoids NaN if pricePerNight is undefined
+  const subtotal = Object.values(cart).reduce((sum, item) => {
+    const pricePerNight = item.ratePlan.pricePerNight ?? item.ratePlan.baseRate ?? item.roomType.basePrice ?? 0;
+    return sum + (pricePerNight * item.quantity * nights);
+  }, 0);
 
   // --- CLIENT-SIDE FILTERING & SORTING ---
   const filteredAndSortedRooms = useMemo(() => {
     let result = [...rooms];
 
     // Filter by Price
-    if (qMinPrice) {
+    if (qMinPrice !== undefined && qMinPrice !== '') {
       const min = parseInt(qMinPrice);
-      result = result.filter(r => r.basePrice >= min);
+      if (!isNaN(min) && min >= 0) {
+        result = result.filter(r => r.basePrice >= min);
+      }
     }
-    if (qMaxPrice) {
+    if (qMaxPrice !== undefined && qMaxPrice !== '') {
       const max = parseInt(qMaxPrice);
-      result = result.filter(r => r.basePrice <= max);
+      if (!isNaN(max) && max > 0) {
+        result = result.filter(r => r.basePrice <= max);
+      }
     }
 
     // Filter by Amenities
@@ -207,8 +222,8 @@ export default function SearchPage() {
   // ---------------------------------------
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 min-h-screen pb-20 pt-8 max-w-7xl">
+    <Layout navbarProps={{ brandName: hotel?.name, logo: hotel?.logoUrl, facebookUrl: hotel?.facebookUrl, instagramUrl: hotel?.instagramUrl, twitterUrl: hotel?.twitterUrl, footerDescription: hotel?.footerDescription }}>
+      <div className="container mx-auto px-4 min-h-screen pb-20 pt-28 max-w-7xl">
         {!loading && hotel ? (
           <>
             {/* 1. Header with SearchBar */}
@@ -296,33 +311,34 @@ export default function SearchPage() {
               <div className="lg:col-span-4 relative mt-14 lg:mt-0">
                 <div className="sticky top-28 space-y-6">
                   {/* Your Trip Summary */}
-                  <div className="bg-slate-900 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/30 transition-colors" />
+                  <div className="bg-slate-900 text-white rounded-3xl p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] relative overflow-hidden group border border-slate-800">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-500/30 transition-colors pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
                     <h3 className="font-display font-bold text-2xl mb-8 flex items-center gap-3 relative z-10">
-                      <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm border border-white/5">
-                        <Calendar size={24} className="text-emerald-400" />
+                      <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 shadow-inner">
+                        <Calendar size={24} className="text-primary-400" />
                       </div>
                       {t('search.yourTrip')}
                     </h3>
 
                     <div className="space-y-6 relative z-10">
-                      <div className="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                      <div className="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
                         <div className="flex-1">
-                          <div className="text-[11px] uppercase tracking-widest text-emerald-400 font-bold mb-1.5">{t('search.checkIn')}</div>
+                          <div className="text-[11px] uppercase tracking-widest text-primary-400 font-bold mb-1.5">{t('search.checkIn')}</div>
                           <div className="font-medium text-xl">{checkIn}</div>
                         </div>
                         <div className="w-px h-12 bg-white/10 self-center" />
                         <div className="flex-1 pl-2">
-                          <div className="text-[11px] uppercase tracking-widest text-emerald-400 font-bold mb-1.5">{t('search.checkOut')}</div>
+                          <div className="text-[11px] uppercase tracking-widest text-primary-400 font-bold mb-1.5">{t('search.checkOut')}</div>
                           <div className="font-medium text-xl">{checkOut}</div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-5 p-5 bg-white/5 rounded-2xl border border-white/10">
-                        <div className="px-4 py-3 bg-emerald-500/20 rounded-xl text-emerald-400 flex flex-col items-center justify-center min-w-[4rem]">
+                      <div className="flex items-center gap-5 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                        <div className="px-4 py-3 bg-gradient-to-br from-primary-500/20 to-emerald-500/20 border border-white/5 rounded-xl text-primary-300 flex flex-col items-center justify-center min-w-[4rem] shadow-inner">
                           <span className="font-display font-bold text-2xl leading-none">{nights}</span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider mt-1">{t('search.nights')}</span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider mt-1 text-primary-400">{t('search.nights')}</span>
                         </div>
                         <div>
                           <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-1">{t('search.guests')}</div>
@@ -341,11 +357,11 @@ export default function SearchPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span className="text-slate-600 font-medium">{t('search.checkIn')}</span>
-                        <span className="font-bold text-slate-900 text-lg">14:00</span>
+                        <span className="font-bold text-slate-900 text-lg">{hotel.checkInTime || '14:00'}</span>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span className="text-slate-600 font-medium">{t('search.checkOut')}</span>
-                        <span className="font-bold text-slate-900 text-lg">12:00</span>
+                        <span className="font-bold text-slate-900 text-lg">{hotel.checkOutTime || '12:00'}</span>
                       </div>
                     </div>
                   </div>
@@ -366,25 +382,26 @@ export default function SearchPage() {
         <motion.div
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-4 px-6 md:px-10"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white/85 backdrop-blur-xl border-t border-white/50 shadow-[0_-20px_40px_-20px_rgba(0,0,0,0.15)] p-4 px-6 md:px-10"
         >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center sm:text-left">
-              <div className="bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 border border-emerald-100">
+              <div className="bg-primary-50 text-primary-700 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 border border-primary-100 shadow-sm">
                 <CheckCircle size={16} />
                 {totalRooms} {totalRooms === 1 ? t('search.roomSelected') : t('search.roomsSelected')}
               </div>
               <div>
                 <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">{t('search.totalFor')} {nights} {t('search.nights')}</div>
-                <div className="text-2xl font-black font-display text-slate-900 leading-none">฿{subtotal.toLocaleString()}</div>
+                <div className="text-2xl font-black font-display text-slate-900 leading-none drop-shadow-sm">฿{subtotal.toLocaleString()}</div>
               </div>
             </div>
 
             <button
               onClick={handleCheckout}
-              className="w-full sm:w-auto px-10 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-white font-bold text-lg rounded-xl shadow-lg shadow-emerald-500/30 whitespace-nowrap"
+              className="w-full md:w-auto py-3.5 px-8 bg-primary-600 hover:bg-primary-500 active:bg-primary-700 text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_-6px_rgba(59,130,246,0.6)] hover:shadow-[0_12px_25px_-6px_rgba(59,130,246,0.7)] transition-all flex items-center justify-center gap-2 group relative overflow-hidden whitespace-nowrap"
             >
-              {t('search.continueCheckout')}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-shine" />
+              {t('search.continueCheckout')} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </motion.div>

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { apiFetch } from '@/lib/api';
 import Layout from '@/components/Layout';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { CreditCard, QrCode, Building, Lock, CheckCircle, Tag, X, Copy, Globe } from 'lucide-react';
+import { CreditCard, QrCode, Building, Lock, CheckCircle, Tag, X, Copy, Globe, Info, Loader2 } from 'lucide-react';
 import Script from 'next/script';
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
@@ -48,33 +48,45 @@ const OmisePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) =
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="space-y-2">
         <label className="text-sm font-bold text-slate-700">{t('payment.cardholderName')}</label>
-        <input name="name" onChange={handleChange} placeholder="John Doe" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100" required />
+        <input name="name" onChange={handleChange} placeholder="John Doe" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 shadow-sm transition-all font-medium placeholder:text-slate-400" required />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-bold text-slate-700">{t('payment.cardNumber')}</label>
-        <input name="number" onChange={handleChange} maxLength={16} placeholder="4242424242424242" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 font-mono" required />
+        <div className="relative group">
+          <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={20} />
+          <input name="number" onChange={handleChange} maxLength={16} placeholder="4242 4242 4242 4242" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 shadow-sm transition-all font-mono font-medium placeholder:text-slate-400 tracking-wide" required />
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-700">{t('payment.expMonth')}</label>
-          <input name="expiration_month" onChange={handleChange} maxLength={2} placeholder="MM" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
+          <input name="expiration_month" onChange={handleChange} maxLength={2} placeholder="MM" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 shadow-sm transition-all text-center font-mono font-medium placeholder:text-slate-400" required />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-700">{t('payment.expYear')}</label>
-          <input name="expiration_year" onChange={handleChange} maxLength={4} placeholder="YYYY" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
+          <input name="expiration_year" onChange={handleChange} maxLength={4} placeholder="YY" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 shadow-sm transition-all text-center font-mono font-medium placeholder:text-slate-400" required />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-700">{t('payment.cvc')}</label>
-          <input name="security_code" onChange={handleChange} maxLength={4} placeholder="123" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-100 text-center font-mono" required />
+          <div className="relative group">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={16} />
+            <input name="security_code" onChange={handleChange} maxLength={4} placeholder="123" className="w-full pl-9 pr-3 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 shadow-sm transition-all text-center font-mono font-medium placeholder:text-slate-400" required />
+          </div>
         </div>
       </div>
 
-      <button type="submit" disabled={isProcessing} className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl mt-4 hover:bg-blue-700 transition-colors">
-        {isProcessing ? t('payment.processing') : `${t('payment.payBtn')} ฿${total?.toLocaleString()}`}
-      </button>
+      <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
+        <div className="text-sm text-slate-500">
+          {t('checkout.totalPrice')}: <span className="font-bold text-slate-900 text-lg ml-1">฿{total?.toLocaleString()}</span>
+        </div>
+        <button type="submit" disabled={isProcessing} className="px-8 py-3.5 bg-[#1C58EA] text-white font-bold rounded-xl shadow-lg shadow-[#1C58EA]/20 hover:bg-[#1642b3] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-shine" />
+          {isProcessing ? t('payment.processing') : <>{t('payment.payNow')} <CheckCircle size={18} /></>}
+        </button>
+      </div>
     </form>
   );
 };
@@ -128,15 +140,16 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-4 mt-6 p-6 bg-slate-50 border-t border-slate-200 rounded-b-2xl -mx-8 -mb-8">
+      <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
         <div className="text-sm text-slate-500">
           {t('checkout.totalPrice')}: <span className="font-bold text-slate-900 text-lg ml-1">฿{total?.toLocaleString()}</span>
         </div>
         <button
           type="submit"
           disabled={!stripe || isProcessing}
-          className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          className="px-8 py-3.5 bg-primary-600 text-white font-bold rounded-xl shadow-[0_8px_20px_-6px_rgba(59,130,246,0.6)] hover:shadow-[0_12px_25px_-6px_rgba(59,130,246,0.7)] hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 relative overflow-hidden group"
         >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-shine" />
           {isProcessing ? t('payment.processing') : <>{t('payment.payNow')} <CheckCircle size={18} /></>}
         </button>
       </div>
@@ -172,54 +185,63 @@ export default function PaymentPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    // 1. Fetch Payment Config
-    apiFetch('/public-settings').then(config => {
-      if (config.stripePublicKey) setStripePromiseState(loadStripe(config.stripePublicKey));
-      if (config.omisePublicKey) setOmiseKey(config.omisePublicKey);
-      setMsg('');
-    }).catch(err => {
-      console.error('Failed to load payment config', err);
-      setMsg('Failed to load payment configuration.');
-    });
-
-    // 2. Load Booking Payload — 3-tier resilience strategy:
-    //    Tier 1: sessionStorage (fast, same-tab, survives F5)
-    //    Tier 2: Server draft via URL ?ref= (survives tab close, 15-min TTL)
-    //    Tier 3: Show "Session Expired" UI (never silently redirect to home)
+    // 1. Load Booking Payload — 3-tier resilience strategy:
     const loadBookingData = async () => {
+      let currentBookingData = null;
+
       // Tier 1: sessionStorage
       const stored = sessionStorage.getItem('bookingPayload');
       if (stored) {
-        const parsed = JSON.parse(stored);
-        setBookingData(parsed);
-        if (parsed.hotelId) {
-          apiFetch(`/hotels/${parsed.hotelId}`).then(r => setHotelDetails(r)).catch(() => { });
+        currentBookingData = JSON.parse(stored);
+      } else {
+        // Tier 2: Server draft via URL ref param
+        const refId = router.query.ref;
+        if (refId) {
+          try {
+            const draft = await apiFetch(`/bookings/draft/${refId}`);
+            if (draft) {
+              currentBookingData = draft;
+              sessionStorage.setItem('bookingPayload', JSON.stringify(draft));
+            }
+          } catch (e) {
+            console.warn('Booking draft not found or expired:', e.message);
+          }
         }
+      }
+
+      if (!currentBookingData) {
+        // Tier 3: Session expired
+        setSessionExpired(true);
         return;
       }
 
-      // Tier 2: Server draft via URL ref param
-      const refId = router.query.ref;
-      if (refId) {
+      setBookingData(currentBookingData);
+
+      // 2. Fetch Hotel Details for Public Keys
+      let hotelPubKeys = {};
+      if (currentBookingData.hotelId) {
         try {
-          const draft = await apiFetch(`/bookings/draft/${refId}`);
-          if (draft) {
-            setBookingData(draft);
-            // Restore sessionStorage from server
-            sessionStorage.setItem('bookingPayload', JSON.stringify(draft));
-            if (draft.hotelId) {
-              apiFetch(`/hotels/${draft.hotelId}`).then(r => setHotelDetails(r)).catch(() => { });
-            }
-            return;
-          }
-        } catch (e) {
-          // Draft expired or not found — fall through to expired UI
-          console.warn('Booking draft not found or expired:', e.message);
-        }
+          const res = await apiFetch(`/hotels/${currentBookingData.hotelId}`);
+          setHotelDetails(res);
+          hotelPubKeys = {
+            stripePublicKey: res.stripePublicKey,
+            omisePublicKey: res.omisePublicKey
+          };
+        } catch (e) { }
       }
 
-      // Tier 3: Session expired
-      setSessionExpired(true);
+      // 3. Fetch Global Settings Fallback and Init Gateways
+      apiFetch('/public-settings').then(config => {
+        const finalStripeKey = hotelPubKeys.stripePublicKey || config.stripePublicKey;
+        const finalOmiseKey = hotelPubKeys.omisePublicKey || config.omisePublicKey;
+
+        if (finalStripeKey) setStripePromiseState(loadStripe(finalStripeKey));
+        if (finalOmiseKey) setOmiseKey(finalOmiseKey);
+        setMsg('');
+      }).catch(err => {
+        console.error('Failed to load payment config', err);
+        setMsg('Failed to load payment configuration.');
+      });
     };
 
     if (router.isReady) loadBookingData();
@@ -227,7 +249,7 @@ export default function PaymentPage() {
 
   const calculateFinalPrice = () => {
     if (!bookingData) return 0;
-    let total = bookingData.totalPrice;
+    let total = bookingData.subtotal || bookingData.totalPrice || 0;
     if (appliedPromo) {
       total = total - appliedPromo.discountAmount;
     }
@@ -250,7 +272,8 @@ export default function PaymentPage() {
         body: JSON.stringify({
           amount: finalPrice,
           currency: 'thb', // Backend will lowercase
-          description: `Booking for ${bookingData?.guest?.name}`
+          description: `Booking for ${bookingData?.guest?.name}`,
+          bookingId: bookingData.id
         })
       })
         .then(res => {
@@ -342,7 +365,8 @@ export default function PaymentPage() {
         ratePlanId: sel.ratePlanId,
         quantity: sel.quantity,
       })),
-      promotionCode: appliedPromo?.code || null,
+      // ✅ BUG #7 FIX: Removed duplicate promotionCode key (was declared twice, second undefined overwrote first)
+      promotionCode: appliedPromo ? appliedPromo.code : null,
       guestDetails: {
         name: guestDetails.name || '',
         email: guestDetails.email || '',
@@ -351,7 +375,6 @@ export default function PaymentPage() {
       },
       paymentMethod: method,
       paymentStatus: status,
-      promotionCode: appliedPromo ? appliedPromo.code : undefined,
     };
 
     try {
@@ -411,7 +434,7 @@ export default function PaymentPage() {
   const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
 
   return (
-    <Layout>
+    <Layout navbarProps={{ brandName: hotelDetails?.name || hotelName, logo: hotelDetails?.logoUrl, facebookUrl: hotelDetails?.facebookUrl || bookingData?.facebookUrl, instagramUrl: hotelDetails?.instagramUrl || bookingData?.instagramUrl, twitterUrl: hotelDetails?.twitterUrl || bookingData?.twitterUrl, footerDescription: hotelDetails?.footerDescription || bookingData?.footerDescription }}>
       {omiseKey && (
         <Script
           id="omise-js"
@@ -445,27 +468,27 @@ export default function PaymentPage() {
                 <div className="flex border-b border-slate-200 bg-slate-50">
                   <button
                     onClick={() => setPaymentMethod('credit_card')}
-                    className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'credit_card' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
+                    className={`flex-1 py-4 font-bold text-sm flex flex-col md:flex-row items-center justify-center gap-2 transition-all ${paymentMethod === 'credit_card' ? 'bg-white text-primary-600 border-t-2 border-primary-600 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] scale-100' : 'text-slate-500 hover:bg-slate-100/50 hover:text-slate-700 border-t-2 border-transparent hover:border-slate-200'}`}
                   >
-                    <CreditCard size={18} /> {t('payment.stripe')}
+                    <CreditCard size={18} className={paymentMethod === 'credit_card' ? 'text-primary-500' : 'text-slate-400'} /> <span className="hidden sm:inline">{t('payment.stripe')}</span><span className="sm:hidden">Stripe</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('omise')}
-                    className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'omise' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
+                    className={`flex-1 py-4 font-bold text-sm flex flex-col md:flex-row items-center justify-center gap-2 transition-all ${paymentMethod === 'omise' ? 'bg-white text-primary-600 border-t-2 border-primary-600 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] scale-100' : 'text-slate-500 hover:bg-slate-100/50 hover:text-slate-700 border-t-2 border-transparent hover:border-slate-200'}`}
                   >
-                    <Globe size={18} /> {t('payment.omise')}
+                    <Globe size={18} className={paymentMethod === 'omise' ? 'text-primary-500' : 'text-slate-400'} /> <span className="hidden sm:inline">{t('payment.omise')}</span><span className="sm:hidden">Omise</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('promptpay')}
-                    className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'promptpay' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
+                    className={`flex-1 py-4 font-bold text-sm flex flex-col md:flex-row items-center justify-center gap-2 transition-all ${paymentMethod === 'promptpay' ? 'bg-white text-primary-600 border-t-2 border-primary-600 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] scale-100' : 'text-slate-500 hover:bg-slate-100/50 hover:text-slate-700 border-t-2 border-transparent hover:border-slate-200'}`}
                   >
-                    <QrCode size={18} /> {t('payment.promptPay')}
+                    <QrCode size={18} className={paymentMethod === 'promptpay' ? 'text-primary-500' : 'text-slate-400'} /> <span className="hidden sm:inline">{t('payment.promptPay')}</span><span className="sm:hidden">QR</span>
                   </button>
                   <button
                     onClick={() => setPaymentMethod('bank_transfer')}
-                    className={`flex-1 py-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${paymentMethod === 'bank_transfer' ? 'bg-white text-primary-600 border-t-2 border-primary-600' : 'text-slate-500 hover:bg-slate-100'}`}
+                    className={`flex-1 py-4 font-bold text-sm flex flex-col md:flex-row items-center justify-center gap-2 transition-all ${paymentMethod === 'bank_transfer' ? 'bg-white text-primary-600 border-t-2 border-primary-600 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] scale-100' : 'text-slate-500 hover:bg-slate-100/50 hover:text-slate-700 border-t-2 border-transparent hover:border-slate-200'}`}
                   >
-                    <Building size={18} /> {t('payment.transfer')}
+                    <Building size={18} className={paymentMethod === 'bank_transfer' ? 'text-primary-500' : 'text-slate-400'} /> <span className="hidden sm:inline">{t('payment.transfer')}</span><span className="sm:hidden">Transfer</span>
                   </button>
                 </div>
 
@@ -485,7 +508,7 @@ export default function PaymentPage() {
                         </Elements>
                       ) : (
                         <div className="flex items-center justify-center h-48 text-slate-400">
-                          <div className="animate-spin mr-2">⏳</div> {msg || 'Loading Secure Gateway...'}
+                          <Loader2 className="animate-spin mr-2" size={20} /> {msg || 'Loading Secure Gateway...'}
                         </div>
                       )}
                     </div>
@@ -503,7 +526,7 @@ export default function PaymentPage() {
                         />
                       ) : (
                         <div className="flex items-center justify-center h-48 text-slate-400">
-                          <div className="animate-spin mr-2">⏳</div> Loading Omise...
+                          <Loader2 className="animate-spin mr-2" size={20} /> Loading Omise...
                         </div>
                       )}
                     </div>
@@ -569,58 +592,60 @@ export default function PaymentPage() {
 
             {/* Sidebar Summary */}
             <div className="w-full lg:w-96 shrink-0 order-1 lg:order-2">
-              <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 sticky top-24">
-                <h3 className="font-display font-bold text-xl text-slate-900 mb-4">{t('payment.bookingSummary')}</h3>
+              <div className="bg-white rounded-[2rem] p-8 shadow-2xl shadow-slate-200/50 border border-slate-100 sticky top-28 group">
+                {/* Decorative glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                <h3 className="font-display font-bold text-2xl text-slate-900 mb-6 relative z-10">{t('payment.bookingSummary')}</h3>
 
                 {/* Hotel Info */}
-                <div className="flex gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-slate-200 shrink-0 overflow-hidden">
-                    {hotelImage && <img src={hotelImage} className="w-full h-full object-cover" />}
+                <div className="flex gap-5 mb-8 relative z-10">
+                  <div className="w-20 h-20 rounded-2xl bg-slate-100 shrink-0 overflow-hidden shadow-inner flex items-center justify-center">
+                    <img src={hotelImage || '/images/hero-bg.png'} className="w-full h-full object-cover" />
                   </div>
-                  <div>
-                    <p className="font-bold text-slate-900 line-clamp-2">{hotelName}</p>
-                    <p className="text-xs text-slate-500 mt-1">{hotelCity}</p>
+                  <div className="flex flex-col justify-center">
+                    <p className="font-bold text-slate-900 leading-tight text-lg line-clamp-2">{hotelName}</p>
+                    <p className="text-sm font-medium text-slate-500 mt-1">{hotelCity}</p>
                   </div>
                 </div>
 
-                <hr className="border-slate-100 my-4" />
-
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
+                <div className="space-y-3 text-sm font-bold relative z-10">
+                  <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
                     <span className="text-slate-500">{t('search.checkIn')}</span>
-                    <span className="font-bold text-slate-900">{new Date(checkIn).toLocaleDateString()}</span>
+                    <span className="text-slate-900">{new Date(checkIn).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
                     <span className="text-slate-500">{t('search.checkOut')}</span>
-                    <span className="font-bold text-slate-900">{new Date(checkOut).toLocaleDateString()}</span>
+                    <span className="text-slate-900">{new Date(checkOut).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">{t('checkout.duration')}</span>
-                    <span className="font-bold text-slate-900">{nights} {t('search.nights')}</span>
-                  </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-xl border border-slate-100">
                     <span className="text-slate-500">{t('payment.guest')}</span>
-                    <span className="font-bold text-slate-900">{guest?.name}</span>
+                    <span className="text-slate-900 truncate max-w-[120px]">{guest?.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center px-4 py-3 bg-primary-50/50 rounded-xl border border-primary-100 text-primary-800">
+                    <span className="flex items-center gap-2"><Info size={16} className="text-primary-500" /> {t('checkout.duration')}</span>
+                    <span className="font-black text-primary-900">{nights} {t('search.nights')}</span>
                   </div>
                 </div>
 
-                <hr className="border-slate-100 my-4" />
+                <hr className="border-slate-100 my-6 relative z-10" />
 
-                <div className="bg-slate-50 p-4 rounded-xl space-y-2 mb-4">
-                  <p className="font-bold text-slate-900">{roomTypeName}</p>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <span className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-600">{ratePlanName}</span>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2 mb-6 relative z-10 overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-200" />
+                  <p className="font-bold text-slate-900 ml-2">{roomTypeName}</p>
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500 ml-2">
+                    <CheckCircle size={14} className="text-primary-500" /> {ratePlanName}
                   </div>
                 </div>
 
                 {/* Promo Code Section */}
-                <div className="mb-6">
+                <div className="mb-6 relative z-10">
                   <p className="text-sm font-bold text-slate-700 mb-2">{t('payment.promoCode')}</p>
                   {!appliedPromo ? (
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-100 outline-none"
+                        className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 outline-none transition-all shadow-sm font-medium placeholder:text-slate-400"
                         placeholder={t('payment.enterCode')}
                         value={promoCode}
                         onChange={e => setPromoCode(e.target.value.toUpperCase())}
@@ -628,39 +653,39 @@ export default function PaymentPage() {
                       <button
                         onClick={handleApplyPromo}
                         disabled={promoLoading || !promoCode}
-                        className="px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-slate-900 disabled:opacity-50 transition-colors"
+                        className="px-5 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-800/20 hover:bg-slate-900 disabled:opacity-50 transition-colors active:scale-95"
                       >
                         {promoLoading ? '...' : t('payment.apply')}
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between bg-green-50 text-green-700 px-3 py-2 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between bg-green-50 text-green-700 px-4 py-3 rounded-xl border border-green-200 shadow-sm animate-in fade-in zoom-in-95 duration-200">
                       <div className="flex items-center gap-2 text-sm font-bold">
-                        <Tag size={14} />
+                        <Tag size={16} />
                         {appliedPromo.code}
                       </div>
-                      <button onClick={handleRemovePromo} className="text-green-700 hover:text-green-900"><X size={16} /></button>
+                      <button onClick={handleRemovePromo} className="text-green-700 hover:text-green-900 hover:scale-110 transition-transform"><X size={18} /></button>
                     </div>
                   )}
-                  {promoError && <p className="text-xs text-red-500 mt-1">{promoError}</p>}
+                  {promoError && <p className="text-xs text-red-500 mt-2 font-medium">{promoError}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="space-y-3 font-medium relative z-10">
+                  <div className="flex justify-between text-sm px-2">
                     <span className="text-slate-500">{t('payment.subtotal')}</span>
                     <span className="font-bold text-slate-900">฿{bookingData?.totalPrice?.toLocaleString()}</span>
                   </div>
                   {appliedPromo && (
-                    <div className="flex justify-between text-sm text-green-600">
+                    <div className="flex justify-between text-sm text-green-600 px-2 animate-in slide-in-from-right-2 fade-in">
                       <span>{t('payment.discount')} ({appliedPromo.code})</span>
                       <span className="font-bold">- ฿{appliedPromo.discountAmount?.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex justify-between items-end mt-4 pt-4 border-t border-slate-100">
-                  <span className="text-slate-500 font-medium">{t('checkout.totalPrice')}</span>
-                  <span className="text-2xl font-bold text-primary-600 font-display">฿{finalPrice?.toLocaleString()}</span>
+                <div className="flex justify-between items-end bg-gradient-to-br from-primary-50 to-emerald-50 p-5 rounded-2xl border border-primary-100/50 shadow-inner mt-6 relative z-10">
+                  <span className="text-primary-800 font-bold uppercase tracking-wider text-sm">{t('checkout.totalPrice')}</span>
+                  <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-600 font-display">฿{finalPrice?.toLocaleString()}</span>
                 </div>
               </div>
             </div>

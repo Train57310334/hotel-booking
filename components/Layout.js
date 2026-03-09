@@ -1,6 +1,6 @@
 import NavBar from '@/components/NavBar'
 import Link from 'next/link'
-import { Github, Twitter, Instagram } from 'lucide-react'
+import { Github, Twitter, Instagram, Heart } from 'lucide-react'
 
 export default function Layout({ children, navbarProps, hideFooter = false, hideNavbar = false }) {
     return (
@@ -15,21 +15,27 @@ export default function Layout({ children, navbarProps, hideFooter = false, hide
                     <div className="container mx-auto px-4">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                             <div className="col-span-1 md:col-span-1">
-                                <span className="text-xl font-display font-bold tracking-tight text-slate-900 mb-4 block">
-                                    BookingKub
-                                </span>
-                                <p className="text-slate-500 text-sm leading-relaxed">
-                                    Discover the world's best hotels and resorts. Book your perfect stay with confidence and ease.
+                                {navbarProps?.logo ? (
+                                    <div className="h-10 w-10 relative rounded-xl overflow-hidden shadow-lg mb-4">
+                                        <img src={navbarProps.logo} alt="Logo" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <span className="text-xl font-display font-bold tracking-tight text-slate-900 mb-4 block">
+                                        {navbarProps?.brandName || 'BookingKub'}
+                                    </span>
+                                )}
+                                <p className="text-slate-500 text-sm leading-relaxed whitespace-pre-wrap">
+                                    {navbarProps?.footerDescription || "Discover the world's best hotels and resorts. Book your perfect stay with confidence and ease."}
                                 </p>
                             </div>
 
                             <div>
                                 <h4 className="font-bold text-slate-900 mb-4">Company</h4>
                                 <ul className="space-y-2 text-sm text-slate-500">
-                                    <li><Link href="#" className="hover:text-primary-600 transition-colors">About Us</Link></li>
-                                    <li><Link href="#" className="hover:text-primary-600 transition-colors">Careers</Link></li>
+                                    <li><a href="#" className="hover:text-primary-600 transition-colors">About Us</a></li>
+                                    <li><a href="#" className="hover:text-primary-600 transition-colors">Careers</a></li>
                                     <li><Link href="/auth/register" className="hover:text-primary-600 transition-colors font-medium text-primary-600">List Your Property</Link></li>
-                                    <li><Link href="#" className="hover:text-primary-600 transition-colors">Blog</Link></li>
+                                    <li><a href="#" className="hover:text-primary-600 transition-colors">Blog</a></li>
                                 </ul>
                             </div>
 
@@ -43,18 +49,49 @@ export default function Layout({ children, navbarProps, hideFooter = false, hide
                             </div>
 
                             <div>
-                                <h4 className="font-bold text-slate-900 mb-4">Follow Us</h4>
-                                <div className="flex gap-4">
-                                    <a href="#" className="text-slate-400 hover:text-primary-600 transition-colors"><Twitter size={20} /></a>
-                                    <a href="#" className="text-slate-400 hover:text-primary-600 transition-colors"><Instagram size={20} /></a>
-                                    <a href="#" className="text-slate-400 hover:text-primary-600 transition-colors"><Github size={20} /></a>
-                                </div>
+                                {(navbarProps?.facebookUrl || navbarProps?.instagramUrl || navbarProps?.twitterUrl) ? (
+                                    <>
+                                        <h4 className="font-bold text-slate-900 mb-4">Follow Us</h4>
+                                        <div className="flex gap-4">
+                                            {navbarProps?.twitterUrl && (
+                                                <a href={navbarProps.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-primary-600 transition-colors">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                                                    </svg>
+                                                </a>
+                                            )}
+                                            {navbarProps?.instagramUrl && (
+                                                <a href={navbarProps.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-primary-600 transition-colors"><Instagram size={20} /></a>
+                                            )}
+                                            {navbarProps?.facebookUrl && (
+                                                <a href={navbarProps.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-primary-600 transition-colors">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+                                                </a>
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h4 className="font-bold text-slate-900 mb-4">Follow Us</h4>
+                                        <div className="flex gap-4">
+                                            <a href="#" className="text-slate-400 hover:text-primary-600 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+                                            </a>
+                                            <a href="#" className="text-slate-400 hover:text-primary-600 transition-colors"><Instagram size={20} /></a>
+                                            <a href="#" className="text-slate-400 hover:text-primary-600 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
                         <div className="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-                            <p>© 2024 BookingKub. All rights reserved.</p>
-                            <p>Made with ❤️ for travelers.</p>
+                            <p>© {new Date().getFullYear()} {navbarProps?.brandName || 'BookingKub'}. All rights reserved.</p>
+                            <p className="flex items-center gap-1">Made with <Heart size={14} className="text-rose-500 fill-rose-500" /> for travelers.</p>
                         </div>
                     </div>
                 </footer>

@@ -26,7 +26,11 @@ import {
     Crown,
     Zap,
     ShieldAlert,
-    Package
+    Package,
+    Lock,
+    Info,
+    Search,
+    BarChart2
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -87,7 +91,7 @@ export default function AdminLayout({ children }) {
 
         const handleRoomStatusChanged = (data) => {
             toast(`Room ${data.roomNumber} marked as ${data.status}`, {
-                icon: '🧹',
+                icon: <SprayCan size={16} className="text-emerald-500" />,
                 position: 'top-right',
             });
         };
@@ -96,7 +100,7 @@ export default function AdminLayout({ children }) {
             let msg = `Booking #${data.bookingId} status updated to ${data.status}`;
             if (data.status === 'confirmed') toast.success(msg);
             else if (data.status === 'cancelled') toast.error(msg);
-            else toast(msg, { icon: 'ℹ️' });
+            else toast(msg, { icon: <Info size={16} className="text-blue-500" /> });
         };
 
         socket.on('newBooking', handleNewBooking);
@@ -204,6 +208,7 @@ export default function AdminLayout({ children }) {
         { name: 'Payments', icon: CreditCard, href: '/admin/payments' },
         { name: 'Staff Management', icon: Users, href: '/admin/staff' },
         { name: 'Message', icon: MessageSquare, href: '/admin/messages' },
+        { name: 'Analytics & SEO', icon: BarChart2, href: '/admin/reports/analytics' },
         { name: 'My Account', icon: UserCircle, href: '/admin/account', section: 'bottom' },
         { name: 'Subscription', icon: Crown, href: '/admin/subscription', section: 'bottom' },
         { name: 'Widget Gen.', icon: Globe, href: '/admin/settings/widget', section: 'bottom' },
@@ -217,6 +222,7 @@ export default function AdminLayout({ children }) {
         { name: 'Platform Packages', icon: Package, href: '/admin/super/packages' },
         { name: 'Platform Messages', icon: MessageSquare, href: '/admin/super/messages' },
         { name: 'Landing CMS', icon: Globe, href: '/admin/super/cms' },
+        { name: 'SEO & Marketing', icon: Search, href: '/admin/super/seo' },
         { name: 'Platform Billing', icon: CreditCard, href: '/admin/super/billing' },
     ]
 
@@ -229,7 +235,7 @@ export default function AdminLayout({ children }) {
     }
 
     return (
-        <div className={`flex min-h-screen font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
+        <div className={`flex min-h-screen font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`} style={{ zoom: 0.9 }}>
             <UpgradeModal isOpen={isUpgradeModalOpen} onClose={closeUpgradeModal} />
 
             {/* Mobile Menu Overlay */}
@@ -241,7 +247,7 @@ export default function AdminLayout({ children }) {
             <aside className={`fixed inset-y-0 left-0 z-50 w-56 transform transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
                 } bg-slate-900 text-white flex flex-col`}>
                 <div className="h-16 flex items-center justify-between px-6">
-                    {!user?.roles?.includes('platform_admin') ? (
+                    {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) ? (
                         <div className="relative">
                             <button
                                 onClick={() => allHotels?.length > 1 && setHotelSwitcherOpen(!hotelSwitcherOpen)}
@@ -294,7 +300,7 @@ export default function AdminLayout({ children }) {
 
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-2">
                     {/* Primary Navigation */}
-                    {!isPlatformAdmin && menuItems.filter(i => !i.section).filter(item => {
+                    {(!isPlatformAdmin || user?.isImpersonating) && menuItems.filter(i => !i.section).filter(item => {
                         // Use hasAccess hook mapped to menu item names
                         const featureMap = {
                             'Dashboard': 'dashboard',
@@ -309,7 +315,8 @@ export default function AdminLayout({ children }) {
                             'Reports': 'reports',
                             'Payments': 'payments',
                             'Staff Management': 'staff',
-                            'Message': 'messages'
+                            'Message': 'messages',
+                            'Analytics & SEO': 'reports'
                         };
                         return hasAccess(featureMap[item.name]);
                     }).map((item) => {
@@ -331,7 +338,9 @@ export default function AdminLayout({ children }) {
                                         <item.icon size={18} />
                                         {item.name}
                                     </div>
-                                    <span title="Upgrade to PRO to unlock" className="text-amber-500">🔒</span>
+                                    <div title="Upgrade to PRO to unlock" className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
+                                        <Lock size={14} />
+                                    </div>
                                 </button>
                             )
                         }
@@ -354,7 +363,7 @@ export default function AdminLayout({ children }) {
                     <div className="my-4 border-t border-slate-800" />
 
                     {/* Platform Admin Navigation */}
-                    {user?.roles?.includes('platform_admin') && (
+                    {user?.roles?.includes('platform_admin') && !user?.isImpersonating && (
                         <div className="mb-6">
                             <div className="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
                                 Platform Admin
@@ -382,7 +391,7 @@ export default function AdminLayout({ children }) {
                     )}
 
                     {/* Plan Badge */}
-                    {!user?.roles?.includes('platform_admin') && (
+                    {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) && (
                         <div className="px-3 mb-6">
                             <div className={`rounded-xl p-4 border relative overflow-hidden group ${currentHotel?.package === 'PRO'
                                 ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
@@ -422,10 +431,10 @@ export default function AdminLayout({ children }) {
 
                     {/* Settings Section */}
                     <div>
-                        {!isPlatformAdmin && hasAccess('settings') && (
+                        {(!isPlatformAdmin || user?.isImpersonating) && hasAccess('settings') && (
                             <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">Settings</div>
                         )}
-                        {!isPlatformAdmin && menuItems.filter(i => i.section === 'bottom').filter(item => {
+                        {(!isPlatformAdmin || user?.isImpersonating) && menuItems.filter(i => i.section === 'bottom').filter(item => {
                             const featureMap = {
                                 'My Account': 'dashboard', // Everyone can see their account
                                 'Subscription': 'subscription',
@@ -450,7 +459,7 @@ export default function AdminLayout({ children }) {
                             )
                         })}
 
-                        {isPlatformAdmin && (
+                        {isPlatformAdmin && !user?.isImpersonating && (
                             <Link
                                 href="/admin/account"
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${router.pathname.startsWith('/admin/account')
@@ -493,7 +502,7 @@ export default function AdminLayout({ children }) {
                             <Menu size={20} />
                         </button>
 
-                        {!user?.roles?.includes('platform_admin') && (
+                        {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) && (
                             <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
                                 <Globe size={16} />
                                 View Website

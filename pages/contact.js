@@ -1,13 +1,32 @@
 import Layout from '@/components/Layout';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { apiFetch } from '@/lib/api';
 
 export default function ContactPage() {
+    const router = useRouter();
+    const { hotelId } = router.query;
+
+    const [hotel, setHotel] = useState(null);
     const [formData, setFormData] = useState({ name: '', email: '', subject: 'General Inquiry', message: '' });
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(!!hotelId);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (hotelId) {
+            setPageLoading(true);
+            apiFetch(`/hotels/public/${hotelId}`)
+                .then(data => setHotel(data))
+                .catch(err => console.error('Failed to fetch hotel info:', err))
+                .finally(() => setPageLoading(false));
+        } else {
+            setPageLoading(false);
+            setHotel(null);
+        }
+    }, [hotelId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,6 +40,7 @@ export default function ContactPage() {
                     email: formData.email,
                     subject: formData.subject,
                     content: formData.message,
+                    hotelId: hotelId || undefined,
                 })
             });
             setSubmitted(true);
@@ -33,8 +53,18 @@ export default function ContactPage() {
         }
     };
 
+    if (pageLoading) {
+        return (
+            <Layout>
+                <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+                    <p>Loading contact information...</p>
+                </div>
+            </Layout>
+        );
+    }
+
     return (
-        <Layout navbarProps={{ mode: 'saas' }}>
+        <Layout navbarProps={{ mode: hotelId ? 'hotel' : 'saas' }}>
             <div className="relative min-h-screen bg-slate-900 text-slate-200 overflow-hidden">
                 {/* Background Gradients */}
                 <div className="absolute top-0 left-0 -translate-x-[10%] -translate-y-[10%] w-[500px] h-[500px] rounded-full bg-primary-500/10 blur-[100px]" />
@@ -43,10 +73,12 @@ export default function ContactPage() {
                 <div className="relative z-10 pt-24 pb-12">
                     <div className="container mx-auto px-4 text-center">
                         <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6 animate-fade-in-up">
-                            Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Support</span>
+                            {hotel ? `Contact ${hotel.name}` : <>Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Support</span></>}
                         </h1>
                         <p className="text-xl text-slate-400 max-w-2xl mx-auto animate-fade-in-up delay-100">
-                            Have questions about BookingKub? We're here to help you scale your hotel business.
+                            {hotel
+                                ? `Have questions for ${hotel.name}? We're here to help make your stay perfect.`
+                                : `Have questions about BookingKub? We're here to help you scale your hotel business.`}
                         </p>
                     </div>
                 </div>
@@ -64,37 +96,48 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-white text-lg mb-1">Office</h4>
-                                        <p className="text-slate-400 leading-relaxed">
-                                            123 Tech Park, Sukhumvit Road<br />
-                                            Bangkok, Thailand 10110
+                                        <p className="text-slate-400 leading-relaxed whitespace-pre-wrap">
+                                            {hotel ? hotel.address : "123 Tech Park, Sukhumvit Road\nBangkok, Thailand 10110"}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4 group">
-                                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                        <Mail size={24} />
+                                {(hotel?.contactEmail || !hotel) && (
+                                    <div className="flex items-start gap-4 group">
+                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                            <Mail size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-white text-lg mb-1">Email</h4>
+                                            <a href={`mailto:${hotel ? hotel.contactEmail : 'support@bookingkub.com'}`} className="text-slate-400 hover:text-emerald-400 transition-colors">
+                                                {hotel ? hotel.contactEmail : 'support@bookingkub.com'}
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-white text-lg mb-1">Email</h4>
-                                        <a href="mailto:support@bookingkub.com" className="text-slate-400 hover:text-emerald-400 transition-colors">support@bookingkub.com</a>
-                                    </div>
-                                </div>
+                                )}
 
-                                <div className="flex items-start gap-4 group">
-                                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                        <MessageSquare size={24} />
+                                {(hotel?.contactPhone || !hotel) && (
+                                    <div className="flex items-start gap-4 group">
+                                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                            {hotel ? <Phone size={24} /> : <MessageSquare size={24} />}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-white text-lg mb-1">{hotel ? 'Phone' : 'Live Chat'}</h4>
+                                            {hotel ? (
+                                                <a href={`tel:${hotel.contactPhone}`} className="text-slate-400 hover:text-blue-400 transition-colors">{hotel.contactPhone}</a>
+                                            ) : (
+                                                <p className="text-slate-400">Available Mon-Fri, 9am - 6pm</p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-white text-lg mb-1">Live Chat</h4>
-                                        <p className="text-slate-400">Available Mon-Fri, 9am - 6pm</p>
-                                    </div>
-                                </div>
+                                )}
                             </div>
 
-                            <div className="mt-12 pt-8 border-t border-slate-700">
-                                <p className="text-slate-500 text-sm">Need urgent help? Check our <a href="#" className="text-primary-400 hover:underline">Knowledge Base</a>.</p>
-                            </div>
+                            {!hotel && (
+                                <div className="mt-12 pt-8 border-t border-slate-700">
+                                    <p className="text-slate-500 text-sm">Need urgent help? Check our <a href="#" className="text-primary-400 hover:underline">Knowledge Base</a>.</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Contact Form */}

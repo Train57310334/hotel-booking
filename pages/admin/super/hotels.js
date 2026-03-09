@@ -56,7 +56,7 @@ export default function SuperHotels() {
                 // Warning: We are overwriting the Super Admin token. 
                 // To get back, they must log out and log back in.
                 localStorage.setItem('token', data.token);
-                toast.success(`Successfully impersonating ${data.user.name}`, { id: 'spy' });
+                toast.success(`Successfully switched to hotel dashboard`, { id: 'spy' });
 
                 // Force a full page reload to flush all React contexts (Auth/Admin)
                 window.location.href = '/admin';
@@ -217,8 +217,8 @@ export default function SuperHotels() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => handleImpersonate(hotel.id)}
-                                                    className="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
-                                                    title="Impersonate Hotel Admin"
+                                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                    title="View Dashboard"
                                                 >
                                                     <ShieldAlert size={18} />
                                                 </button>

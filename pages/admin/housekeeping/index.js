@@ -67,12 +67,12 @@ export default function HousekeepingDashboard() {
 
     const getStatusDetails = (status) => {
         switch (status) {
-            case 'CLEAN': return { color: 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400', icon: Sparkles, label: 'Clean' };
-            case 'DIRTY': return { color: 'text-red-600 bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400', icon: Trash2, label: 'Dirty' };
-            case 'CLEANING': return { color: 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400', icon: Sparkles, label: 'Cleaning' };
-            case 'INSPECTED': return { color: 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400', icon: CheckCircle2, label: 'Inspected' };
-            case 'OOO': return { color: 'text-slate-600 bg-slate-100 border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400', icon: AlertCircle, label: 'Out of Order' };
-            default: return { color: 'text-slate-600 bg-slate-50 border-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400', icon: CheckCircle2, label: 'Unknown' };
+            case 'CLEAN': return { topBar: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20', icon: Sparkles, label: 'Clean' };
+            case 'DIRTY': return { topBar: 'bg-red-500', text: 'text-red-700 dark:text-red-400', badge: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-500/20', icon: Trash2, label: 'Dirty' };
+            case 'CLEANING': return { topBar: 'bg-amber-500', text: 'text-amber-700 dark:text-amber-400', badge: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/20', icon: Sparkles, label: 'Cleaning' };
+            case 'INSPECTED': return { topBar: 'bg-blue-500', text: 'text-blue-700 dark:text-blue-400', badge: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-500/20', icon: CheckCircle2, label: 'Inspected' };
+            case 'OOO': return { topBar: 'bg-slate-500', text: 'text-slate-700 dark:text-slate-400', badge: 'bg-slate-50 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 border-slate-200 dark:border-slate-500/20', icon: AlertCircle, label: 'Out of Order' };
+            default: return { topBar: 'bg-slate-500', text: 'text-slate-700 dark:text-slate-400', badge: 'bg-slate-50 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 border-slate-200 dark:border-slate-500/20', icon: CheckCircle2, label: 'Unknown' };
         }
     };
 
@@ -164,18 +164,21 @@ export default function HousekeepingDashboard() {
                                         const StatusIcon = statusObj.icon;
 
                                         return (
-                                            <div key={room.id} className={`p-4 lg:p-5 rounded-2xl border-2 transition-all ${statusObj.color} flex flex-col relative`}>
-                                                <div className="flex justify-between items-start mb-4">
+                                            <div key={room.id} className="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-sm hover:shadow-md transition-all flex flex-col relative overflow-hidden group">
+                                                {/* Top Status Border */}
+                                                <div className={`absolute top-0 left-0 w-full h-1.5 ${statusObj.topBar}`} />
+
+                                                <div className="flex justify-between items-start mb-4 mt-1">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-xl bg-white/50 backdrop-blur-sm shadow-sm flex items-center justify-center font-display font-bold text-xl dark:bg-slate-900/50">
+                                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-display font-bold text-xl border ${statusObj.badge}`}>
                                                             {room.roomNumber}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-lg flex items-center gap-1.5 leading-tight">
+                                                            <div className={`font-bold text-lg flex items-center gap-1.5 leading-tight ${statusObj.text}`}>
                                                                 <StatusIcon size={16} />
                                                                 {statusObj.label}
                                                             </div>
-                                                            <div className="text-[11px] uppercase tracking-wider font-bold opacity-70 mt-0.5">
+                                                            <div className="text-[11px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mt-0.5">
                                                                 {room.lastStatusUpdate ? timeAgo(room.lastStatusUpdate.updatedAt) : 'No updates'}
                                                             </div>
                                                         </div>
@@ -185,9 +188,9 @@ export default function HousekeepingDashboard() {
                                                     <div className="relative">
                                                         <button
                                                             onClick={(e) => toggleMenu(e, room.id)}
-                                                            className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                                            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition-colors"
                                                         >
-                                                            <MoreVertical size={20} className="opacity-70" />
+                                                            <MoreVertical size={20} />
                                                         </button>
 
                                                         {openMenuId === room.id && (
@@ -211,14 +214,16 @@ export default function HousekeepingDashboard() {
                                                 </div>
 
                                                 {/* Occupancy Info */}
-                                                <div className="flex-1 mb-5 text-sm font-semibold opacity-80 flex items-center gap-1.5">
+                                                <div className="flex-1 mb-5 flex items-center gap-2">
                                                     {room.isOccupied ? (
-                                                        <div className="flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2.5 py-1 rounded-md">
+                                                        <span className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 text-xs font-bold px-2.5 py-1 rounded-md">
                                                             <User size={14} />
                                                             In-House: {room.currentGuest}
-                                                        </div>
+                                                        </span>
                                                     ) : (
-                                                        <span className="opacity-60 bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-md">Vacant</span>
+                                                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-md">
+                                                            Vacant
+                                                        </span>
                                                     )}
                                                 </div>
 
@@ -227,40 +232,40 @@ export default function HousekeepingDashboard() {
                                                     {room.status === 'DIRTY' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(room.id, 'CLEANING', room.status)}
-                                                            className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                                                            className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2 outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
                                                         >
-                                                            <Sparkles size={18} /> Start Cleaning
+                                                            <Sparkles size={16} /> Start Cleaning
                                                         </button>
                                                     )}
 
                                                     {room.status === 'CLEANING' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(room.id, 'CLEAN', room.status)}
-                                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                                                            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2 outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
                                                         >
-                                                            <CheckCircle2 size={18} /> Mark as Clean
+                                                            <CheckCircle2 size={16} /> Mark as Clean
                                                         </button>
                                                     )}
 
                                                     {room.status === 'CLEAN' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(room.id, 'INSPECTED', room.status)}
-                                                            className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-lg"
+                                                            className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow active:scale-[0.98] transition-all flex items-center justify-center gap-2 outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
                                                         >
-                                                            <CheckCircle2 size={18} /> Inspect Room
+                                                            <CheckCircle2 size={16} /> Inspect Room
                                                         </button>
                                                     )}
 
                                                     {(room.status === 'INSPECTED' || room.status === 'OOO') && (
-                                                        <div className="w-full py-4 bg-black/5 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-bold rounded-xl flex items-center justify-center gap-2 text-lg cursor-not-allowed border border-dashed border-black/10 dark:border-white/10">
-                                                            {room.status === 'OOO' ? <Ban size={18} /> : <CheckCircle2 size={18} />}
+                                                        <div className="w-full py-3 bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold text-sm rounded-xl flex items-center justify-center gap-2 cursor-not-allowed border border-dashed border-slate-200 dark:border-slate-600">
+                                                            {room.status === 'OOO' ? <Ban size={16} /> : <CheckCircle2 size={16} />}
                                                             {room.status === 'OOO' ? 'Out of Order' : 'Ready for Guest'}
                                                         </div>
                                                     )}
                                                 </div>
 
                                                 {room.lastStatusUpdate && (
-                                                    <div className="absolute bottom-3 right-4 text-[10px] opacity-50 font-medium">
+                                                    <div className="absolute bottom-4 right-4 text-[10px] text-slate-400 font-medium whitespace-nowrap">
                                                         by {room.lastStatusUpdate.updatedBy}
                                                     </div>
                                                 )}

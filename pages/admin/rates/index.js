@@ -2,7 +2,7 @@ import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
 import toast from 'react-hot-toast'
-import { Calendar as CalendarIcon, Save, Plus, Trash2, Edit, AlertCircle } from 'lucide-react'
+import { Calendar as CalendarIcon, Save, Plus, Trash2, Edit, AlertCircle, Lock } from 'lucide-react'
 import { useAdmin } from '@/contexts/AdminContext'
 import { useRoleAccess } from '@/hooks/useRoleAccess'
 
@@ -337,7 +337,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
 
     const handleCellClick = (day) => {
         if (isReception) {
-            toast('Reception cannot edit rates/inventory.', { icon: '🔒' });
+            toast('Reception cannot edit rates/inventory.', { icon: <Lock size={16} className="text-amber-500" /> });
             return;
         }
 

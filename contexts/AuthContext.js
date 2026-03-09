@@ -7,11 +7,26 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [guestHotelId, setGuestHotelId] = useState(null);
     const router = useRouter();
 
     useEffect(() => {
         checkUser();
+
+        // Initialize from local storage on mount
+        const savedHotelId = localStorage.getItem('guestHotelId');
+        if (savedHotelId) {
+            setGuestHotelId(savedHotelId);
+        }
     }, []);
+
+    // Persist hotelId when it appears in router
+    useEffect(() => {
+        if (router.query.hotelId) {
+            setGuestHotelId(router.query.hotelId);
+            localStorage.setItem('guestHotelId', router.query.hotelId);
+        }
+    }, [router.query.hotelId]);
 
     const checkUser = async () => {
         const token = localStorage.getItem('token');
@@ -74,11 +89,11 @@ export function AuthProvider({ children }) {
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
-        router.push('/auth/login');
+        router.push(guestHotelId ? `/auth/login?hotelId=${guestHotelId}` : '/auth/login');
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, registerPartner, logout, loading, checkUser }}>
+        <AuthContext.Provider value={{ user, login, register, registerPartner, logout, loading, checkUser, guestHotelId }}>
             {children}
         </AuthContext.Provider>
     );

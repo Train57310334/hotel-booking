@@ -118,9 +118,9 @@ export default function AdminDashboard() {
         return;
       }
 
-      const statsData = await apiFetch(`/bookings/admin/dashboard?period=${timeRange}&hotelId=${hotelId}`)
-      const query = search ? `?search=${search}&hotelId=${hotelId}` : `?hotelId=${hotelId}`
-      const bookingsData = await apiFetch(`/bookings/admin/all${query}`)
+      const statsData = await apiFetch(`/ bookings / admin / dashboard ? period = ${timeRange}& hotelId=${hotelId} `)
+      const query = search ? `? search = ${search}& hotelId=${hotelId} ` : ` ? hotelId = ${hotelId} `
+      const bookingsData = await apiFetch(`/ bookings / admin / all${query} `)
 
       // preventing re-renders if data is same (Deep Compare simple approach)
       // API returns { data: [...], meta: {...} } — unwrap the array
@@ -164,14 +164,14 @@ export default function AdminDashboard() {
     setConfirmModal({
       isOpen: true,
       title: 'Update Booking Status',
-      message: `Are you sure you want to change status to "${newStatus}"?`,
+      message: `Are you sure you want to change status to "${newStatus}" ? `,
       type: newStatus === 'cancelled' ? 'danger' : 'warning',
       onConfirm: async () => {
         try {
           const hotelId = user?.roleAssignments?.[0]?.hotelId;
-          const query = hotelId ? `?hotelId=${hotelId}` : '';
+          const query = hotelId ? `? hotelId = ${hotelId} ` : '';
 
-          await apiFetch(`/bookings/admin/${id}/status${query}`, {
+          await apiFetch(`/ bookings / admin / ${id}/status${query}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
       color: 'bg-emerald-500',
       trend: '+12%',
       sub: 'Gross Income',
-      tooltip: 'Total income from confirmed bookings (excluding cancellations).'
+      tooltip: 'Sum of the room charges from all Confirmed, Checked-In, and Checked-Out bookings in the selected time period. Cancellations and Pending bookings are excluded.'
     },
     {
       label: 'New Bookings',
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
       color: 'bg-blue-500',
       trend: '+5',
       sub: 'Pending Confirmation',
-      tooltip: 'Number of new bookings received in this period.'
+      tooltip: 'Total number of booking reservations created in this period, across all statuses (Pending, Confirmed, Checked In, Checked Out). Does not include cancellations.'
     },
     {
       label: 'Today\'s Activity',
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
       color: 'bg-amber-500',
       trend: null,
       sub: 'In / Out',
-      tooltip: 'Guests checking in vs checking out today.'
+      tooltip: 'Left number = guests arriving today (Check-In). Right number = guests departing today (Check-Out). Use this to brief your front desk and housekeeping teams each morning.'
     },
     {
       label: 'Occupancy Rate',
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
       color: 'bg-rose-500',
       trend: stats.occupancyRate > 80 ? 'High' : 'Normal',
       sub: `${stats.availableRooms} Rooms Available`,
-      tooltip: 'Percentage of occupied rooms vs total inventory today.'
+      tooltip: 'Calculated as: Occupied Rooms ÷ Total Active Rooms × 100%. A healthy occupancy is typically 70–85%. Data updates every 30 seconds.'
     },
   ]
 
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 mb-8 text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Welcome to your Dashboard! 🚀</h2>
+              <h2 className="text-2xl font-bold mb-2">Welcome to your Dashboard! <Rocket className="inline-block pb-1" size={24} /></h2>
               <p className="text-emerald-100 mb-6 max-w-xl">
                 Your hotel system is almost ready. Complete these 3 steps to start accepting bookings.
               </p>
@@ -404,8 +404,10 @@ export default function AdminDashboard() {
                     {timeAgo(booking.createdAt)}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                      booking.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                    <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase ${booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                      booking.status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400' :
+                        booking.status === 'checked_in' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400' :
+                          'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                       }`}>
                       {booking.status.replace('_', ' ')}
                     </span>

@@ -667,7 +667,7 @@ export default function RoomManagement() {
                   <div>
                     <label className="flex items-center gap-2 text-sm font-bold mb-1 dark:text-slate-300">
                       Base Price (THB)
-                      <InfoTooltip content="Starting price per night. Seasonal rates can override this." />
+                      <InfoTooltip content="The default nightly rack rate for this room type, in Thai Baht (THB). Guests see this price on the booking page. You can override this on specific dates using the Rates → Calendar View." />
                     </label>
                     <input
                       type="number"
@@ -711,7 +711,7 @@ export default function RoomManagement() {
                   <div>
                     <label className="flex items-center gap-2 text-sm font-bold mb-1 dark:text-slate-300">
                       Max Adults
-                      <InfoTooltip content="Maximum number of adults allowed in this room type." />
+                      <InfoTooltip content="The maximum number of adult guests this room can accommodate. Guests cannot select more than this limit during booking. Typical values: Standard=2, Deluxe=2, Suite=4." />
                     </label>
                     <input
                       type="number"
@@ -784,6 +784,7 @@ export default function RoomManagement() {
                       className="rounded text-emerald-500 focus:ring-emerald-500 w-4 h-4"
                     />
                     Display this room on Homepage (Featured)
+                    <InfoTooltip content="Featured rooms appear in the highlighted 'Our Rooms' section on the hotel's public booking homepage. Enable this for your best/most popular room types. Non-featured rooms are still bookable via the search page." />
                   </label>
                 </div>
 
@@ -824,7 +825,7 @@ export default function RoomManagement() {
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold mb-1 text-blue-800 dark:text-blue-300">Import Calendar URL (Paste FROM Agoda)</label>
+                    <label className="block text-xs font-bold mb-1 text-blue-800 dark:text-blue-300 flex items-center gap-1">Import Calendar URL (Paste FROM Agoda/Booking.com) <InfoTooltip content="Go to your Agoda or Booking.com extranet → Availability → Export Calendar → Copy the .ics URL. Paste it here to automatically block dates that are booked externally and prevent double-bookings." /></label>
                     <input
                       type="url"
                       value={typeFormData.icalUrl}

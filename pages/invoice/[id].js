@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { apiFetch, API_BASE } from '@/lib/api';
-import { Printer } from 'lucide-react';
+import { Printer, Phone, Mail } from 'lucide-react';
 
 export default function InvoicePage() {
     const router = useRouter();
@@ -81,8 +81,8 @@ export default function InvoicePage() {
                             <h1 className="text-2xl font-bold text-slate-900">{hotel.name}</h1>
                             <p className="text-sm text-slate-500 max-w-xs mt-1">{hotel.address} {hotel.city} {hotel.country}</p>
                             <div className="mt-2 text-sm text-slate-500">
-                                {hotel.contactPhone && <span className="mr-4">📞 {hotel.contactPhone}</span>}
-                                {hotel.contactEmail && <span>✉️ {hotel.contactEmail}</span>}
+                                {hotel.contactPhone && <span className="mr-4 flex items-center gap-2"><Phone size={14} /> {hotel.contactPhone}</span>}
+                                {hotel.contactEmail && <span className="flex items-center gap-2"><Mail size={14} /> {hotel.contactEmail}</span>}
                             </div>
                         </div>
                     </div>

@@ -7,11 +7,15 @@ import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function NavBar(props) {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user, logout, guestHotelId } = useAuth()
   const { language, setLanguage, t } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Determine the active hotel ID from the URL or local storage
+  const activeHotelId = router.query.hotelId || guestHotelId;
+
+  // ... (keep existing useEffects and constants) ...
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
@@ -26,48 +30,56 @@ export default function NavBar(props) {
   const isTransparentPage = router.pathname === '/' || router.pathname === '/contact';
   const showSolidNav = scrolled || mobileMenuOpen || !isTransparentPage || props.forceSolid;
 
+  // Use a dark theme for SaaS mode to match the dark Hero and Contact sections, or regular light theme otherwise
+  const isSaas = props.mode === 'saas';
+  const navbarBg = isSaas
+    ? (showSolidNav ? 'bg-[#0A0F1C]/90 backdrop-blur-md border-b border-white/10 shadow-xl' : 'bg-transparent text-white')
+    : (showSolidNav ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100' : 'bg-transparent text-slate-800');
+
+  const textColor = isSaas ? 'text-white' : (showSolidNav ? 'text-slate-900' : 'text-slate-800');
+  const linkColor = isSaas ? 'text-slate-300 hover:text-white' : (showSolidNav ? 'text-slate-600 hover:text-primary-600' : 'text-slate-600 hover:text-primary-600');
+
   return (
-    <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 print:hidden ${showSolidNav ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-transparent'
-      }`}>
+    <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 print:hidden ${navbarBg}`}>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          <Link href="/" className="flex items-center gap-2 group relative z-50">
+        <div className="flex items-center justify-between h-20 relative">
+          <Link href={activeHotelId ? `/?hotelId=${activeHotelId}` : '/'} className="flex items-center gap-3 group relative z-50">
             {props.logo ? (
               <div className="h-10 w-10 relative rounded-xl overflow-hidden shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
                 <img src={props.logo} alt="Logo" className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="h-10 w-10 flex items-center justify-center bg-primary-600 p-1.5 rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/20">
+              <div className="h-10 w-10 flex items-center justify-center bg-gradient-to-br from-primary-600 to-emerald-600 p-2 rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/20">
                 <img src="/logo.png" alt="BookingKub" className="w-full h-full object-contain brightness-0 invert" />
               </div>
             )}
-            <span className={`text-xl font-display font-bold tracking-tight transition-colors ${showSolidNav ? 'text-slate-900' : 'text-white'}`}>
+            <span className={`text-xl font-display font-bold tracking-tight transition-colors ${textColor}`}>
               {props.brandName || 'BookingKub'}
             </span>
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            {props.mode === 'saas' ? (
+            {isSaas ? (
               <>
-                <a href="#features" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Features</a>
-                <a href="#pricing" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Pricing</a>
-                <a href="#contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Contact</a>
+                <a href="#features" className={`text-sm font-medium transition-colors ${linkColor}`}>Features</a>
+                <a href="#pricing" className={`text-sm font-medium transition-colors ${linkColor}`}>Pricing</a>
+                <a href="#contact" className={`text-sm font-medium transition-colors ${linkColor}`}>Contact</a>
               </>
             ) : (
               <>
-                <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.home')}</Link>
-                <Link href="/contact" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.contact')}</Link>
+                <Link href={activeHotelId ? `/?hotelId=${activeHotelId}` : '/'} className={`text-sm font-medium transition-colors ${linkColor}`}>{t('nav.home')}</Link>
+                <Link href={activeHotelId ? `/contact?hotelId=${activeHotelId}` : '/contact'} className={`text-sm font-medium transition-colors ${linkColor}`}>{t('nav.contact')}</Link>
                 {user ? (
-                  <Link href="/account/dashboard" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.myBookings')}</Link>
+                  <Link href={activeHotelId ? `/account/dashboard?hotelId=${activeHotelId}` : "/account/dashboard"} className={`text-sm font-medium transition-colors ${linkColor}`}>{t('nav.myBookings')}</Link>
                 ) : (
-                  <Link href="/find-booking" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.findBooking')}</Link>
+                  <Link href={activeHotelId ? `/find-booking?hotelId=${activeHotelId}` : "/find-booking"} className={`text-sm font-medium transition-colors ${linkColor}`}>{t('nav.findBooking')}</Link>
                 )}
 
                 {/* Language Toggle Desktop */}
                 <button
                   onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
-                  className={`flex items-center gap-1.5 text-sm font-bold px-2 py-1 rounded-md transition-colors hover:bg-slate-100 ${showSolidNav ? 'text-slate-600' : 'text-white/90 hover:bg-white/10'}`}
+                  className={`flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-100/10 ${textColor}`}
                 >
                   <Globe size={16} />
                   {language.toUpperCase()}
@@ -75,28 +87,28 @@ export default function NavBar(props) {
               </>
             )}
 
-            <div className={`pl-4 border-l transition-colors ${showSolidNav ? 'border-slate-200' : 'border-white/20'}`}>
+            <div className={`pl-6 border-l transition-colors ${isSaas ? 'border-white/10' : (showSolidNav ? 'border-slate-200' : 'border-slate-300')}`}>
               {user ? (
                 <div className="flex items-center gap-4">
                   {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) && (
-                    <Link href="/admin" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Admin</Link>
+                    <Link href="/admin" className={`text-sm font-medium transition-colors ${linkColor}`}>Admin</Link>
                   )}
                   {!(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) && (
-                    <Link href="/account/dashboard" className={`text-sm font-medium transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>Dashboard</Link>
+                    <Link href="/account/dashboard" className={`text-sm font-medium transition-colors ${linkColor}`}>Dashboard</Link>
                   )}
-                  <span className={`text-sm font-medium flex items-center gap-2 ${showSolidNav ? 'text-slate-700' : 'text-white'}`}>
+                  <span className={`text-sm font-medium flex items-center gap-2 ${textColor}`}>
                     <User size={16} className="text-primary-500" />
                     {user.name}
                   </span>
-                  <button onClick={logout} className={`p-2 transition-colors hover:text-red-500 ${showSolidNav ? 'text-slate-400' : 'text-white/70'}`}>
+                  <button onClick={logout} className={`p-2 transition-colors hover:text-red-500 ${isSaas ? 'text-slate-400' : 'text-slate-500'}`}>
                     <LogOut size={18} />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-3">
-                  <Link href="/auth/login" className={`text-sm font-medium px-3 py-2 transition-colors hover:text-primary-500 ${showSolidNav ? 'text-slate-600' : 'text-white/90'}`}>{t('nav.login')}</Link>
-                  <Link href="/auth/register" className="btn-primary flex items-center gap-2 text-sm shadow-lg shadow-primary-900/20">
-                    {props.mode === 'saas' ? 'Start Free' : t('auth.registerBtn')}
+                <div className="flex items-center gap-4">
+                  <Link href="/auth/login" className={`text-sm font-medium px-4 py-2 rounded-xl transition-all ${isSaas ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>{t('nav.login')}</Link>
+                  <Link href="/auth/register" className="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-500 hover:to-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:-translate-y-0.5 text-sm">
+                    {isSaas ? 'Start Free' : t('auth.registerBtn')}
                   </Link>
                 </div>
               )}
@@ -106,9 +118,9 @@ export default function NavBar(props) {
           {/* Mobile Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`md:hidden p-2 relative z-50 ${showSolidNav ? 'text-slate-600' : 'text-white'}`}
+            className={`md:hidden p-2 relative z-50 ${mobileMenuOpen ? 'text-slate-900' : textColor}`}
           >
-            {mobileMenuOpen ? <X /> : <Menu />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
@@ -133,22 +145,22 @@ export default function NavBar(props) {
               </>
             ) : (
               <>
-                <Link href="/" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                <Link href={activeHotelId ? `/?hotelId=${activeHotelId}` : '/'} className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Home size={20} className="text-slate-400" />
                   {t('nav.home')}
                 </Link>
                 {user ? (
-                  <Link href="/account/dashboard" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href={activeHotelId ? `/account/dashboard?hotelId=${activeHotelId}` : "/account/dashboard"} className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     <CalendarDays size={20} className="text-slate-400" />
                     {t('nav.myBookings')}
                   </Link>
                 ) : (
-                  <Link href="/find-booking" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href={activeHotelId ? `/find-booking?hotelId=${activeHotelId}` : "/find-booking"} className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     <Search size={20} className="text-slate-400" />
                     {t('nav.findBooking')}
                   </Link>
                 )}
-                <Link href="/contact" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                <Link href={activeHotelId ? `/contact?hotelId=${activeHotelId}` : '/contact'} className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   {t('nav.contact')}
                 </Link>
 
