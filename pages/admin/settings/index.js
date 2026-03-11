@@ -29,6 +29,7 @@ export default function HotelSettings() {
         contactPhone: '',
         heroTitle: '',
         heroDescription: '',
+        heroVideoUrl: '',
         logoUrl: '',
         imageUrl: '',
         images: [],
@@ -57,7 +58,8 @@ export default function HotelSettings() {
         googleTagManagerId: '',
         facebookPixelId: '',
         googleAdsId: '',
-        analyticsEmbedUrl: ''
+        analyticsEmbedUrl: '',
+        theme: 'classic' // Default theme
     });
 
     const isPlatformAdmin = user?.roles?.includes('platform_admin') || user?.roles?.includes('owner') || user?.roles?.includes('admin');
@@ -95,6 +97,7 @@ export default function HotelSettings() {
                 contactPhone: hotelData.contactPhone || '',
                 heroTitle: hotelData.heroTitle || '',
                 heroDescription: hotelData.heroDescription || '',
+                heroVideoUrl: hotelData.heroVideoUrl || '',
                 checkInTime: hotelData.checkInTime || '14:00',
                 checkOutTime: hotelData.checkOutTime || '12:00',
                 logoUrl: hotelData.logoUrl || '',
@@ -125,7 +128,8 @@ export default function HotelSettings() {
                 googleTagManagerId: hotelData.googleTagManagerId || '',
                 facebookPixelId: hotelData.facebookPixelId || '',
                 googleAdsId: hotelData.googleAdsId || '',
-                analyticsEmbedUrl: hotelData.analyticsEmbedUrl || ''
+                analyticsEmbedUrl: hotelData.analyticsEmbedUrl || '',
+                theme: hotelData.theme || 'classic'
             });
 
 
@@ -496,7 +500,87 @@ export default function HotelSettings() {
                                         Share this link with your customers to let them book directly.
                                     </p>
                                 </div>
-                                <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
+
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <LayoutTemplate size={18} className="text-indigo-500" /> Website Theme <InfoTooltip content="Choose the design template for your public booking page. Classic is the original clean design, Modern features dark mode, glassmorphism, and dynamic animations." />
+                                    </h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        {/* Classic Theme Card */}
+                                        <label className={`relative cursor-pointer rounded-2xl border-2 p-6 transition-all ${formData.theme === 'classic' || !formData.theme ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800'}`}>
+                                            <input
+                                                type="radio"
+                                                name="theme"
+                                                value="classic"
+                                                checked={formData.theme === 'classic' || !formData.theme}
+                                                onChange={handleChange}
+                                                className="absolute top-6 right-6 w-5 h-5 text-indigo-600 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col gap-3">
+                                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center text-slate-500">
+                                                    <Globe size={24} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900 dark:text-white text-lg">Classic Design</h4>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Clean, bright layout with standard grid sections. Focuses on simple utility.</p>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        {/* Modern Theme Card */}
+                                        <label className={`relative cursor-pointer rounded-2xl border-2 p-6 transition-all ${formData.theme === 'modern' ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800'}`}>
+                                            <input
+                                                type="radio"
+                                                name="theme"
+                                                value="modern"
+                                                checked={formData.theme === 'modern'}
+                                                onChange={handleChange}
+                                                className="absolute top-6 right-6 w-5 h-5 text-indigo-600 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col gap-3">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-slate-800 to-slate-950 rounded-xl flex items-center justify-center text-emerald-400 shadow-inner">
+                                                    <LayoutTemplate size={24} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                                                        Modern Premium
+                                                    </h4>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Stunning dark aesthetic, glassmorphism, and smooth scroll animations.</p>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        {/* Boutique Theme Card */}
+                                        <label className={`relative cursor-pointer rounded-2xl border-2 p-6 transition-all ${formData.theme === 'boutique' ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800'}`}>
+                                            <input
+                                                type="radio"
+                                                name="theme"
+                                                value="boutique"
+                                                checked={formData.theme === 'boutique'}
+                                                onChange={handleChange}
+                                                className="absolute top-6 right-6 w-5 h-5 text-amber-600 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col gap-3">
+                                                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-xl flex items-center justify-center text-amber-700 dark:text-amber-400">
+                                                    <ImageIcon size={24} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                                                        Boutique
+                                                        <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">New</span>
+                                                    </h4>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Warm earthy tones, elegant serif typography, and luxury aesthetic.</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
+
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Headline (Hero Title) <InfoTooltip content="The main headline displayed at the top of your public booking page. This is the first text guests read. Keep it compelling and under 80 characters. e.g. 'Escape to Paradise on the Andaman Coast'." /></label>
                                     <input
@@ -517,6 +601,17 @@ export default function HotelSettings() {
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
                                     />
                                     <p className="text-xs text-slate-400 mt-1">Accepts Markdown or Plain text.</p>
+                                </div>
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Hero Background Video URL <InfoTooltip content="Paste a direct link to an MP4 video to use as the background for your Hero section. (e.g. from AWS S3, Pexels CDN, etc.) Leave blank to use the template default." /></label>
+                                    <input
+                                        name="heroVideoUrl"
+                                        value={formData.heroVideoUrl}
+                                        onChange={handleChange}
+                                        placeholder="https://example.com/video.mp4"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                    />
                                 </div>
                                 <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
                                 <div>
@@ -642,61 +737,82 @@ export default function HotelSettings() {
 
                                 <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
 
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">Stripe Configuration (Online Card Payments) <InfoTooltip content="Stripe enables credit/debit card payments. Get your keys from dashboard.stripe.com → Developers → API Keys. Use 'pk_live_' and 'sk_live_' for production, or 'pk_test_' and 'sk_test_' for testing." /></h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Publishable Key</label>
-                                            <input
-                                                name="stripePublicKey"
-                                                value={formData.stripePublicKey}
-                                                onChange={handleChange}
-                                                placeholder="pk_live_..."
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
+                                {hotel?.hasOnlinePayment ? (
+                                    <>
+                                        {/* Stripe Configuration */}
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">Stripe Configuration (Online Card Payments) <InfoTooltip content="Stripe enables credit/debit card payments. Get your keys from dashboard.stripe.com → Developers → API Keys. Use 'pk_live_' and 'sk_live_' for production, or 'pk_test_' and 'sk_test_' for testing." /></h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="col-span-2">
+                                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Publishable Key</label>
+                                                    <input
+                                                        name="stripePublicKey"
+                                                        value={formData.stripePublicKey}
+                                                        onChange={handleChange}
+                                                        placeholder="pk_live_..."
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Secret Key</label>
+                                                    <input
+                                                        type="password"
+                                                        name="stripeSecretKey"
+                                                        value={formData.stripeSecretKey}
+                                                        onChange={handleChange}
+                                                        placeholder="sk_live_..."
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Secret Key</label>
-                                            <input
-                                                type="password"
-                                                name="stripeSecretKey"
-                                                value={formData.stripeSecretKey}
-                                                onChange={handleChange}
-                                                placeholder="sk_live_..."
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
+                                        <div className="border-t border-slate-100 dark:border-slate-700 my-6" />
 
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">Omise Configuration (PromptPay &amp; Optional Cards) <InfoTooltip content="Omise enables PromptPay QR payments and card processing for Thai merchants. Get your keys from dashboard.omise.co → API Keys. Use 'pkey_' (public) and 'skey_' (secret). Requires a PRO plan." /></h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Public Key</label>
-                                            <input
-                                                name="omisePublicKey"
-                                                value={formData.omisePublicKey}
-                                                onChange={handleChange}
-                                                placeholder="pkey_..."
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
+                                        {/* Omise Configuration */}
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">Omise Configuration (PromptPay & Optional Cards) <InfoTooltip content="Omise enables PromptPay QR payments and card processing for Thai merchants. Get your keys from dashboard.omise.co → API Keys. Use 'pkey_' (public) and 'skey_' (secret). Requires a PRO plan." /></h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="col-span-2">
+                                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Public Key</label>
+                                                    <input
+                                                        name="omisePublicKey"
+                                                        value={formData.omisePublicKey}
+                                                        onChange={handleChange}
+                                                        placeholder="pkey_..."
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Secret Key</label>
+                                                    <input
+                                                        type="password"
+                                                        name="omiseSecretKey"
+                                                        value={formData.omiseSecretKey}
+                                                        onChange={handleChange}
+                                                        placeholder="skey_..."
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Secret Key</label>
-                                            <input
-                                                type="password"
-                                                name="omiseSecretKey"
-                                                value={formData.omiseSecretKey}
-                                                onChange={handleChange}
-                                                placeholder="skey_..."
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
-                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-emerald-200 dark:border-emerald-500/20">
+                                        <CreditCard size={48} className="mx-auto text-emerald-400 mb-4" />
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Unlock Online Payments</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+                                            Connect your own Stripe or Omise account to accept credit cards and automated PromptPay QR directly on your booking engine.
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => openUpgradeModal && openUpgradeModal()}
+                                            className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-105 transition-all"
+                                        >
+                                            Upgrade to PRO
+                                        </button>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                         )}
@@ -709,62 +825,81 @@ export default function HotelSettings() {
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-2">
                                         <Search size={18} className="text-emerald-500" /> Search Engine Optimization (SEO)
                                     </h3>
-                                    <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">SEO Title <InfoTooltip content="The &lt;title&gt; tag shown in browser tabs and Google search results. Ideal length: 50-60 characters. If empty, the hotel name is used." /></label>
-                                            <span className={`text-xs font-mono ${(formData.seoTitle || '').length > 60 ? 'text-red-500' : 'text-slate-400'}`}>{(formData.seoTitle || '').length}/60</span>
-                                        </div>
-                                        <input
-                                            name="seoTitle"
-                                            value={formData.seoTitle}
-                                            onChange={handleChange}
-                                            placeholder={`${formData.name} – Book Direct & Save`}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">Meta Description <InfoTooltip content="The description snippet shown under your hotel in Google search results. Optimal length: 120-160 characters. This directly impacts click-through rate from search." /></label>
-                                            <span className={`text-xs font-mono ${(formData.seoDescription || '').length > 160 ? 'text-red-500' : 'text-slate-400'}`}>{(formData.seoDescription || '').length}/160</span>
-                                        </div>
-                                        <textarea
-                                            name="seoDescription"
-                                            value={formData.seoDescription}
-                                            onChange={handleChange}
-                                            rows={3}
-                                            placeholder="Experience luxury beachfront stays with world-class amenities. Book direct for the best rates and exclusive perks."
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Keywords <InfoTooltip content="Comma-separated keywords related to your hotel. While Google ignores this tag, some booking aggregators and Bing still use it. e.g. 'luxury hotel phuket, beachfront resort, pool villa'" /></label>
-                                        <input
-                                            name="seoKeywords"
-                                            value={formData.seoKeywords}
-                                            onChange={handleChange}
-                                            placeholder="luxury hotel phuket, beachfront resort, pool villa thailand"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
-                                        />
-                                    </div>
-
-                                    <div className="border-t border-slate-100 dark:border-slate-700 my-2 pt-4">
-                                        <div className="flex items-center justify-between">
+                                    {hotel?.hasSeo ? (
+                                        <>
                                             <div>
-                                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">Allow Search Engine Indexing <InfoTooltip content="When enabled, Google and other search engines can index your hotel page. Disable only if you want your hotel page to remain private or during testing." /></label>
-                                                <p className="text-xs text-slate-400 mt-1">If OFF, a &ldquo;noindex&rdquo; tag will be added to your page.</p>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">SEO Title <InfoTooltip content="The &lt;title&gt; tag shown in browser tabs and Google search results. Ideal length: 50-60 characters. If empty, the hotel name is used." /></label>
+                                                    <span className={`text-xs font-mono ${(formData.seoTitle || '').length > 60 ? 'text-red-500' : 'text-slate-400'}`}>{(formData.seoTitle || '').length}/60</span>
+                                                </div>
+                                                <input
+                                                    name="seoTitle"
+                                                    value={formData.seoTitle}
+                                                    onChange={handleChange}
+                                                    placeholder={`${formData.name} – Book Direct & Save`}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                                />
                                             </div>
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">Meta Description <InfoTooltip content="The description snippet shown under your hotel in Google search results. Optimal length: 120-160 characters. This directly impacts click-through rate from search." /></label>
+                                                    <span className={`text-xs font-mono ${(formData.seoDescription || '').length > 160 ? 'text-red-500' : 'text-slate-400'}`}>{(formData.seoDescription || '').length}/160</span>
+                                                </div>
+                                                <textarea
+                                                    name="seoDescription"
+                                                    value={formData.seoDescription}
+                                                    onChange={handleChange}
+                                                    rows={3}
+                                                    placeholder="Experience luxury beachfront stays with world-class amenities. Book direct for the best rates and exclusive perks."
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Keywords <InfoTooltip content="Comma-separated keywords related to your hotel. While Google ignores this tag, some booking aggregators and Bing still use it. e.g. 'luxury hotel phuket, beachfront resort, pool villa'" /></label>
+                                                <input
+                                                    name="seoKeywords"
+                                                    value={formData.seoKeywords}
+                                                    onChange={handleChange}
+                                                    placeholder="luxury hotel phuket, beachfront resort, pool villa thailand"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50"
+                                                />
+                                            </div>
+
+                                            <div className="border-t border-slate-100 dark:border-slate-700 my-2 pt-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">Allow Search Engine Indexing <InfoTooltip content="When enabled, Google and other search engines can index your hotel page. Disable only if you want your hotel page to remain private or during testing." /></label>
+                                                        <p className="text-xs text-slate-400 mt-1">If OFF, a &ldquo;noindex&rdquo; tag will be added to your page.</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData(prev => ({ ...prev, robotsIndex: !prev.robotsIndex }))}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${formData.robotsIndex
+                                                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                                            : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                                                            }`}
+                                                    >
+                                                        {formData.robotsIndex ? <><ToggleRight size={20} /> Indexing ON</> : <><ToggleLeft size={20} /> Indexing OFF</>}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-indigo-200 dark:border-indigo-500/20 mt-4">
+                                            <Search size={48} className="mx-auto text-indigo-400 mb-4" />
+                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Advanced SEO Control</h3>
+                                            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+                                                Take control of how your hotel appears on Google Search. Customize Title tags, Meta descriptions, and Keywords to increase direct bookings.
+                                            </p>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, robotsIndex: !prev.robotsIndex }))}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${formData.robotsIndex
-                                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
-                                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
-                                                    }`}
+                                                onClick={() => openUpgradeModal && openUpgradeModal()}
+                                                className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:scale-105 transition-all"
                                             >
-                                                {formData.robotsIndex ? <><ToggleRight size={20} /> Indexing ON</> : <><ToggleLeft size={20} /> Indexing OFF</>}
+                                                Upgrade to ENTERPRISE
                                             </button>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* Open Graph / Social Sharing */}
@@ -796,27 +931,44 @@ export default function HotelSettings() {
                                         </div>
                                         <p className="text-xs text-slate-400 mt-2">Recommended: 1200×630px (1.91:1 ratio). Max 5MB.</p>
                                     </div>
-                                    <div>
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Canonical URL <InfoTooltip content="If your hotel has a custom domain (e.g. https://grandhotel.com), enter it here. This tells Google which URL is the 'official' one, preventing duplicate content issues when the same page is accessible from multiple URLs." /></label>
-                                        <input
-                                            name="canonicalUrl"
-                                            value={formData.canonicalUrl}
-                                            onChange={handleChange}
-                                            placeholder="https://grandhotel.com"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                        />
-                                        <p className="text-xs text-slate-400 mt-1">Leave empty if using the platform URL only.</p>
-                                    </div>
-                                    <div>
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Custom Domain <InfoTooltip content="Your hotel's custom domain for sitemap and robots.txt generation. e.g. grandhotel.com (without https://). DNS setup must be done separately via your hosting provider." /></label>
-                                        <input
-                                            name="customDomain"
-                                            value={formData.customDomain}
-                                            onChange={handleChange}
-                                            placeholder="grandhotel.com"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                        />
-                                    </div>
+                                    {hotel?.hasCustomDomain ? (
+                                        <>
+                                            <div>
+                                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Canonical URL <InfoTooltip content="If your hotel has a custom domain (e.g. https://grandhotel.com), enter it here. This tells Google which URL is the 'official' one, preventing duplicate content issues when the same page is accessible from multiple URLs." /></label>
+                                                <input
+                                                    name="canonicalUrl"
+                                                    value={formData.canonicalUrl}
+                                                    onChange={handleChange}
+                                                    placeholder="https://grandhotel.com"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                />
+                                                <p className="text-xs text-slate-400 mt-1">Leave empty if using the platform URL only.</p>
+                                            </div>
+                                            <div>
+                                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Custom Domain <InfoTooltip content="Your hotel's custom domain for sitemap and robots.txt generation. e.g. grandhotel.com (without https://). DNS setup must be done separately via your hosting provider." /></label>
+                                                <input
+                                                    name="customDomain"
+                                                    value={formData.customDomain}
+                                                    onChange={handleChange}
+                                                    placeholder="grandhotel.com"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-dashed border-indigo-200 dark:border-indigo-500/20 flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                                            <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                                <Globe size={24} className="text-indigo-400" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-slate-800 dark:text-slate-200">Custom Domain Name</h4>
+                                                <p className="text-sm text-slate-500 max-w-sm mt-1">Use your own domain name like `www.yourhotel.com` for ultimate brand authority.</p>
+                                            </div>
+                                            <button type="button" onClick={() => openUpgradeModal && openUpgradeModal()} className="px-4 py-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 rounded-lg font-bold hover:bg-indigo-100 transition-colors text-sm">
+                                                Upgrade to ENTERPRISE
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Tracking Codes */}
@@ -827,55 +979,74 @@ export default function HotelSettings() {
                                     <div className="p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl">
                                         <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">💡 These tracking codes are injected on your hotel&apos;s public booking page only. They are separate from the platform-level analytics.</p>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Analytics 4 ID <InfoTooltip content="Your GA4 Measurement ID. Found in Google Analytics → Admin → Data Streams → Measurement ID. Format: G-XXXXXXXXXX. Create a free account at analytics.google.com" /></label>
-                                            <input
-                                                name="googleAnalyticsId"
-                                                value={formData.googleAnalyticsId}
-                                                onChange={handleChange}
-                                                placeholder="G-XXXXXXXXXX"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
+                                    {hotel?.package !== 'LITE' ? (
+                                        <>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Analytics 4 ID <InfoTooltip content="Your GA4 Measurement ID. Found in Google Analytics → Admin → Data Streams → Measurement ID. Format: G-XXXXXXXXXX. Create a free account at analytics.google.com" /></label>
+                                                    <input
+                                                        name="googleAnalyticsId"
+                                                        value={formData.googleAnalyticsId}
+                                                        onChange={handleChange}
+                                                        placeholder="G-XXXXXXXXXX"
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Tag Manager ID <InfoTooltip content="GTM Container ID for advanced tag management. Found in Google Tag Manager → Admin → Container Settings. Format: GTM-XXXXXXX. Use this instead of GA4 if you need multiple tracking tools." /></label>
+                                                    <input
+                                                        name="googleTagManagerId"
+                                                        value={formData.googleTagManagerId}
+                                                        onChange={handleChange}
+                                                        placeholder="GTM-XXXXXXX"
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Facebook Pixel ID <InfoTooltip content="Your Facebook (Meta) Pixel ID for tracking conversions on Facebook/Instagram Ads. Found in Meta Business Suite → Events Manager → Pixel. Format: a long number like 1234567890123456." /></label>
+                                                    <input
+                                                        name="facebookPixelId"
+                                                        value={formData.facebookPixelId}
+                                                        onChange={handleChange}
+                                                        placeholder="1234567890123456"
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Ads Conversion ID <InfoTooltip content="Your Google Ads Conversion Tracking ID. Found in Google Ads → Tools → Conversions → Tag Setup. Format: AW-XXXXXXXXX. Used to track bookings as conversions in your Google Ads campaigns." /></label>
+                                                    <input
+                                                        name="googleAdsId"
+                                                        value={formData.googleAdsId}
+                                                        onChange={handleChange}
+                                                        placeholder="AW-XXXXXXXXX"
+                                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 pt-2 text-xs text-slate-500 mt-2">
+                                                <span className="font-bold text-slate-600 dark:text-slate-400">Quick links:</span>
+                                                <a href="https://analytics.google.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />GA4 Console</a>
+                                                <a href="https://tagmanager.google.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />GTM Console</a>
+                                                <a href="https://business.facebook.com/events_manager" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />Meta Pixel</a>
+                                                <a href="https://ads.google.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />Google Ads</a>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-emerald-200 dark:border-emerald-500/20 mt-4">
+                                            <BarChart2 size={48} className="mx-auto text-emerald-400 mb-4" />
+                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Discover Where Your Bookings Come From</h3>
+                                            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+                                                Track visitors, integrate Facebook Pixel for ad targeting, and measure Google Ads conversions directly.
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => openUpgradeModal && openUpgradeModal()}
+                                                className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-105 transition-all"
+                                            >
+                                                Upgrade to PRO
+                                            </button>
                                         </div>
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Tag Manager ID <InfoTooltip content="GTM Container ID for advanced tag management. Found in Google Tag Manager → Admin → Container Settings. Format: GTM-XXXXXXX. Use this instead of GA4 if you need multiple tracking tools." /></label>
-                                            <input
-                                                name="googleTagManagerId"
-                                                value={formData.googleTagManagerId}
-                                                onChange={handleChange}
-                                                placeholder="GTM-XXXXXXX"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Facebook Pixel ID <InfoTooltip content="Your Facebook (Meta) Pixel ID for tracking conversions on Facebook/Instagram Ads. Found in Meta Business Suite → Events Manager → Pixel. Format: a long number like 1234567890123456." /></label>
-                                            <input
-                                                name="facebookPixelId"
-                                                value={formData.facebookPixelId}
-                                                onChange={handleChange}
-                                                placeholder="1234567890123456"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Ads Conversion ID <InfoTooltip content="Your Google Ads Conversion Tracking ID. Found in Google Ads → Tools → Conversions → Tag Setup. Format: AW-XXXXXXXXX. Used to track bookings as conversions in your Google Ads campaigns." /></label>
-                                            <input
-                                                name="googleAdsId"
-                                                value={formData.googleAdsId}
-                                                onChange={handleChange}
-                                                placeholder="AW-XXXXXXXXX"
-                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 pt-2 text-xs text-slate-500">
-                                        <span className="font-bold text-slate-600 dark:text-slate-400">Quick links:</span>
-                                        <a href="https://analytics.google.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />GA4 Console</a>
-                                        <a href="https://tagmanager.google.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />GTM Console</a>
-                                        <a href="https://business.facebook.com/events_manager" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />Meta Pixel</a>
-                                        <a href="https://ads.google.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline"><ExternalLink size={11} />Google Ads</a>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* Analytics Dashboard Embed */}
@@ -883,26 +1054,43 @@ export default function HotelSettings() {
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-2">
                                         <BarChart2 size={18} className="text-emerald-500" /> Analytics Dashboard
                                     </h3>
-                                    <div>
-                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Looker Studio Embed URL <InfoTooltip content="Paste the embed URL from a Looker Studio (Google Data Studio) report connected to your GA4. In Looker Studio → Share → Embed Report → Copy Embed Code and paste only the src=&quot;...&quot; URL here." /></label>
-                                        <input
-                                            name="analyticsEmbedUrl"
-                                            value={formData.analyticsEmbedUrl}
-                                            onChange={handleChange}
-                                            placeholder="https://lookerstudio.google.com/embed/reporting/..."
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
-                                        />
-                                        <p className="text-xs text-slate-400 mt-1">Once set, an Analytics Dashboard page will appear in your admin Reports menu.</p>
-                                    </div>
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600">
-                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">📊 How to set up your Analytics Dashboard:</p>
-                                        <ol className="text-sm text-slate-600 dark:text-slate-400 space-y-1 list-decimal list-inside">
-                                            <li>Set up GA4 by entering your Measurement ID above and saving</li>
-                                            <li>Create a free report at <a href="https://lookerstudio.google.com" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Looker Studio</a> connected to your GA4</li>
-                                            <li>Click <strong>Share → Embed Report</strong> and copy the URL from the iframe src attribute</li>
-                                            <li>Paste the URL in the field above and save</li>
-                                        </ol>
-                                    </div>
+                                    {hotel?.hasAdvancedAnalytics ? (
+                                        <>
+                                            <div className="mt-6">
+                                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Looker Studio Embed URL <InfoTooltip content="Paste the embed URL from a Looker Studio (Google Data Studio) report connected to your GA4. In Looker Studio → Share → Embed Report → Copy Embed Code and paste only the src=&quot;...&quot; URL here." /></label>
+                                                <input
+                                                    name="analyticsEmbedUrl"
+                                                    value={formData.analyticsEmbedUrl}
+                                                    onChange={handleChange}
+                                                    placeholder="https://lookerstudio.google.com/embed/reporting/..."
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 font-mono text-sm"
+                                                />
+                                                <p className="text-xs text-slate-400 mt-1">Once set, an Analytics Dashboard page will appear in your admin Reports menu.</p>
+                                            </div>
+                                            <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 mt-6">
+                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">📊 How to set up your Analytics Dashboard:</p>
+                                                <ol className="text-sm text-slate-600 dark:text-slate-400 space-y-1 list-decimal list-inside">
+                                                    <li>Set up GA4 by entering your Measurement ID above and saving</li>
+                                                    <li>Create a free report at <a href="https://lookerstudio.google.com" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Looker Studio</a> connected to your GA4</li>
+                                                    <li>Click <strong>Share → Embed Report</strong> and copy the URL from the iframe src attribute</li>
+                                                    <li>Paste the URL in the field above and save</li>
+                                                </ol>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-dashed border-indigo-200 dark:border-indigo-500/20 flex flex-col md:flex-row items-center gap-4 text-center md:text-left mt-4">
+                                            <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                                <BarChart2 size={24} className="text-indigo-400" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-slate-800 dark:text-slate-200">Embedded BI Dashboard</h4>
+                                                <p className="text-sm text-slate-500 max-w-sm mt-1">Connect your own Looker Studio dashboard directly inside your admin panel.</p>
+                                            </div>
+                                            <button type="button" onClick={() => openUpgradeModal && openUpgradeModal()} className="px-4 py-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 rounded-lg font-bold hover:bg-indigo-100 transition-colors text-sm">
+                                                Upgrade to ENTERPRISE
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

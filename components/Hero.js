@@ -20,6 +20,7 @@ export default function Hero(props) {
       <div className="absolute inset-0 bg-slate-900">
         {props.backgroundVideo ? (
           <video
+            key={props.backgroundVideo}
             src={props.backgroundVideo}
             autoPlay
             loop

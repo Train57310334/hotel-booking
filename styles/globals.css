@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,15 +7,58 @@
   --page-bg: #f8fafc;
 }
 
+/* Base Theme Configurations */
+.theme-classic {
+  --theme-bg: #f8fafc;
+  --theme-text: #0f172a;
+  --theme-card: #ffffff;
+  --theme-card-hover: #f1f5f9;
+  --theme-border: #e2e8f0;
+  --theme-accent: #10b981;
+  --theme-accent-hover: #059669;
+  --theme-muted: #64748b;
+  --font-theme: 'Plus Jakarta Sans', sans-serif;
+}
+
+.theme-modern {
+  --theme-bg: #020617;
+  --theme-text: #f8fafc;
+  --theme-card: rgba(255, 255, 255, 0.05);
+  --theme-card-hover: rgba(255, 255, 255, 0.1);
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-accent: #34d399;
+  --theme-accent-hover: #10b981;
+  --theme-muted: #94a3b8;
+  --font-theme: 'Outfit', sans-serif;
+}
+
+.theme-boutique {
+  --theme-bg: #FAF9F6;
+  --theme-text: #451a03;
+  --theme-card: rgba(255, 255, 255, 0.8);
+  --theme-card-hover: rgba(255, 255, 255, 0.95);
+  --theme-border: rgba(120, 53, 15, 0.15);
+  /* Slightly darker border */
+  --theme-accent: #d97706;
+  --theme-accent-hover: #b45309;
+  --theme-muted: #78350f;
+  --font-theme: 'Playfair Display', serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased font-sans;
+  @apply antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   @apply font-display tracking-tight;
 }
 
@@ -40,12 +83,15 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-300 rounded-full;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-400;
 }

@@ -34,10 +34,10 @@ export default function NavBar(props) {
   const isSaas = props.mode === 'saas';
   const navbarBg = isSaas
     ? (showSolidNav ? 'bg-[#0A0F1C]/90 backdrop-blur-md border-b border-white/10 shadow-xl' : 'bg-transparent text-white')
-    : (showSolidNav ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100' : 'bg-transparent text-slate-800');
+    : (showSolidNav ? 'bg-theme-bg/90 backdrop-blur-md shadow-sm border-b border-theme-border' : 'bg-transparent text-theme-text');
 
-  const textColor = isSaas ? 'text-white' : (showSolidNav ? 'text-slate-900' : 'text-slate-800');
-  const linkColor = isSaas ? 'text-slate-300 hover:text-white' : (showSolidNav ? 'text-slate-600 hover:text-primary-600' : 'text-slate-600 hover:text-primary-600');
+  const textColor = isSaas ? 'text-white' : (showSolidNav ? 'text-theme-text' : 'text-theme-text');
+  const linkColor = isSaas ? 'text-slate-300 hover:text-white' : (showSolidNav ? 'text-theme-text hover:text-theme-accent' : 'text-theme-text hover:text-theme-accent');
 
   return (
     <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 print:hidden ${navbarBg}`}>
@@ -49,7 +49,7 @@ export default function NavBar(props) {
                 <img src={props.logo} alt="Logo" className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="h-10 w-10 flex items-center justify-center bg-gradient-to-br from-primary-600 to-emerald-600 p-2 rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/20">
+              <div className="h-10 w-10 flex items-center justify-center bg-theme-accent text-white p-2 rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-theme-accent/20">
                 <img src="/logo.png" alt="BookingKub" className="w-full h-full object-contain brightness-0 invert" />
               </div>
             )}
@@ -87,7 +87,7 @@ export default function NavBar(props) {
               </>
             )}
 
-            <div className={`pl-6 border-l transition-colors ${isSaas ? 'border-white/10' : (showSolidNav ? 'border-slate-200' : 'border-slate-300')}`}>
+            <div className={`pl-6 border-l transition-colors ${isSaas ? 'border-white/10' : (showSolidNav ? 'border-theme-border' : 'border-theme-border')}`}>
               {user ? (
                 <div className="flex items-center gap-4">
                   {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) && (
@@ -106,8 +106,8 @@ export default function NavBar(props) {
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <Link href="/auth/login" className={`text-sm font-medium px-4 py-2 rounded-xl transition-all ${isSaas ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>{t('nav.login')}</Link>
-                  <Link href="/auth/register" className="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-500 hover:to-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:-translate-y-0.5 text-sm">
+                  <Link href="/auth/login" className={`text-sm font-medium px-4 py-2 rounded-xl transition-all ${isSaas ? 'text-white hover:bg-white/10' : 'text-theme-text hover:bg-theme-card-hover'}`}>{t('nav.login')}</Link>
+                  <Link href="/auth/register" className="px-5 py-2.5 bg-theme-accent hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-theme-accent/20 transition-all duration-300 transform hover:-translate-y-0.5 text-sm">
                     {isSaas ? 'Start Free' : t('auth.registerBtn')}
                   </Link>
                 </div>
@@ -127,8 +127,8 @@ export default function NavBar(props) {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white md:hidden pt-24 px-6 animate-in slide-in-from-top-10 duration-200 flex flex-col h-screen overflow-y-auto pb-20">
-          <div className="flex flex-col gap-6 text-lg font-medium text-slate-800">
+        <div className="fixed inset-0 z-40 bg-theme-bg md:hidden pt-24 px-6 animate-in slide-in-from-top-10 duration-200 flex flex-col h-screen overflow-y-auto pb-20">
+          <div className="flex flex-col gap-6 text-lg font-medium text-theme-text">
 
             {/* Mode Specific Links */}
             {props.mode === 'saas' ? (

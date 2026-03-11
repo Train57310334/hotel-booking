@@ -6,11 +6,13 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { User, Mail, Phone, Calendar, ArrowRight, ArrowLeft, BedDouble, Info, CheckCircle, Loader2, Building } from 'lucide-react';
 
 export default function GuestInfoPage() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { setTheme } = useTheme();
   const [bookingInfo, setBookingInfo] = useState(null);
   const [guest, setGuest] = useState({ name: '', email: '', phone: '', requests: '' });
   const { user } = useAuth();
@@ -21,11 +23,15 @@ export default function GuestInfoPage() {
   useEffect(() => {
     const stored = localStorage.getItem('bookingCart');
     if (stored) {
-      setBookingInfo(JSON.parse(stored));
+      const data = JSON.parse(stored);
+      setBookingInfo(data);
+      if (data.hotelTheme) {
+        setTheme(data.hotelTheme);
+      }
     } else {
       router.push('/');
     }
-  }, [router]);
+  }, [router, setTheme]);
 
   // Auto-fill form if user is logged in
   useEffect(() => {

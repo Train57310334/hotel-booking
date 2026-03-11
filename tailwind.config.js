@@ -7,8 +7,19 @@ module.exports = {
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
         display: ['Outfit', 'Inter', 'sans-serif'],
+        theme: ['var(--font-theme)', 'sans-serif'],
       },
       colors: {
+        theme: {
+          bg: 'var(--theme-bg)',
+          text: 'var(--theme-text)',
+          card: 'var(--theme-card)',
+          cardHover: 'var(--theme-card-hover)',
+          border: 'var(--theme-border)',
+          accent: 'var(--theme-accent)',
+          accentHover: 'var(--theme-accent-hover)',
+          muted: 'var(--theme-muted)',
+        },
         primary: {
           50: '#ecfdf5',
           100: '#d1fae5',

@@ -7,11 +7,13 @@ import Layout from '@/components/Layout';
 import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy, Lock, CreditCard } from 'lucide-react';
 import PaymentModal from '@/components/PaymentModal';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import toast from 'react-hot-toast';
 
 export default function ConfirmationPage() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { setTheme } = useTheme();
   const { id } = router.query;
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +38,9 @@ export default function ConfirmationPage() {
       })
       .then(data => {
         setBooking(data);
+        if (data.hotel && data.hotel.theme) {
+          setTheme(data.hotel.theme);
+        }
         setLoading(false);
       })
       .catch(err => {

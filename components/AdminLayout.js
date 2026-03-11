@@ -30,7 +30,8 @@ import {
     Lock,
     Info,
     Search,
-    BarChart2
+    BarChart2,
+    Mail
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -179,7 +180,11 @@ export default function AdminLayout({ children }) {
         if (typeof window !== 'undefined') {
             const isDark = localStorage.getItem('theme') === 'dark'
             setDarkMode(isDark)
-            if (isDark) document.documentElement.classList.add('dark')
+            if (isDark) {
+                document.documentElement.classList.add('dark')
+            } else {
+                document.documentElement.classList.remove('dark')
+            }
         }
     }, [])
 
@@ -223,6 +228,7 @@ export default function AdminLayout({ children }) {
         { name: 'Platform Messages', icon: MessageSquare, href: '/admin/super/messages' },
         { name: 'Landing CMS', icon: Globe, href: '/admin/super/cms' },
         { name: 'SEO & Marketing', icon: Search, href: '/admin/super/seo' },
+        { name: 'Platform Email', icon: Mail, href: '/admin/super/notifications' },
         { name: 'Platform Billing', icon: CreditCard, href: '/admin/super/billing' },
     ]
 
@@ -235,7 +241,7 @@ export default function AdminLayout({ children }) {
     }
 
     return (
-        <div className={`flex min-h-screen font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`} style={{ zoom: 0.9 }}>
+        <div className={`flex font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`} style={{ zoom: 0.9, minHeight: '115vh' }}>
             <UpgradeModal isOpen={isUpgradeModalOpen} onClose={closeUpgradeModal} />
 
             {/* Mobile Menu Overlay */}

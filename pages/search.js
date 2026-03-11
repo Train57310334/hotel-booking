@@ -8,10 +8,12 @@ import { motion } from 'framer-motion'
 import SearchBar from '@/components/SearchBar'
 import SearchFilters from '@/components/SearchFilters'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function SearchPage() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { setTheme } = useTheme();
   const { hotelId: qHotelId, checkIn: qCheckIn, checkOut: qCheckOut, adults: qAdults, children: qChildren, minPrice: qMinPrice, maxPrice: qMaxPrice, amenities: qAmenities, sort: qSort } = router.query;
 
   // Default to Today/Tomorrow
@@ -62,6 +64,7 @@ export default function SearchPage() {
           if (data && data.id) {
             setHotel(data);
             setRooms(data.roomTypes || []);
+            setTheme(data.theme || 'classic');
           } else {
             setHotel(null);
             setRooms([]);
@@ -71,6 +74,7 @@ export default function SearchPage() {
             const myHotel = data[0];
             setHotel(myHotel);
             setRooms(myHotel.roomTypes || []);
+            setTheme(myHotel.theme || 'classic');
           } else {
             setHotel(null);
             setRooms([]);
@@ -161,7 +165,8 @@ export default function SearchPage() {
       children,
       nights: diff,
       selections,
-      subtotal: selections.reduce((sum, item) => sum + item.totalPrice, 0)
+      subtotal: selections.reduce((sum, item) => sum + item.totalPrice, 0),
+      hotelTheme: hotel.theme
     };
 
     if (typeof window !== 'undefined') {
@@ -230,22 +235,22 @@ export default function SearchPage() {
             <div className="mb-10 animate-fade-in-up">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-3">{hotel.name || "Luxury Resort"}</h1>
-                  <div className="flex items-center gap-4 text-slate-500 text-sm">
-                    <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full text-slate-700 font-semibold border border-slate-200">
-                      <MapPin size={16} className="text-emerald-500" /> {hotel.city || "Bangkok, TH"}
+                  <h1 className="text-4xl md:text-5xl font-display font-bold text-theme-text mb-3">{hotel.name || "Luxury Resort"}</h1>
+                  <div className="flex items-center gap-4 text-theme-muted text-sm">
+                    <span className="flex items-center gap-1.5 bg-theme-card px-3 py-1.5 rounded-full text-theme-text font-semibold border border-theme-border shadow-sm">
+                      <MapPin size={16} className="text-theme-accent" /> {hotel.city || "Bangkok, TH"}
                     </span>
                     <span className="flex items-center gap-1.5 text-amber-500 font-medium">
                       <Star size={16} fill="currentColor" />
-                      <span className="text-slate-700">{hotel.reviews?.length > 0 ? (hotel.reviews.reduce((acc, r) => acc + r.rating, 0) / hotel.reviews.length).toFixed(1) : "New"}</span>
-                      <span className="text-slate-400 font-normal">({hotel.reviews?.length || 0} reviews)</span>
+                      <span className="text-theme-text">{hotel.reviews?.length > 0 ? (hotel.reviews.reduce((acc, r) => acc + r.rating, 0) / hotel.reviews.length).toFixed(1) : "New"}</span>
+                      <span className="text-theme-muted font-normal">({hotel.reviews?.length || 0} reviews)</span>
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* SearchBar at the top */}
-              <div className="bg-slate-50 rounded-[3rem] p-2 border border-slate-200 shadow-md">
+              <div className="bg-theme-card rounded-[3rem] p-2 border border-theme-border shadow-md">
                 <SearchBar query={router.query} />
               </div>
             </div>
@@ -270,9 +275,9 @@ export default function SearchPage() {
 
                 {/* Rooms List */}
                 <div id="rooms-section" className="flex-1 space-y-8">
-                  <h3 className="text-2xl font-display font-bold text-slate-900 mb-6 flex items-center gap-3">
+                  <h3 className="text-2xl font-display font-bold text-theme-text mb-6 flex items-center gap-3">
                     {t('search.availableRooms')}
-                    <span className="text-sm font-sans font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">{filteredAndSortedRooms.length} {t('search.found')}</span>
+                    <span className="text-sm font-sans font-medium text-theme-accent bg-theme-bg px-3 py-1 rounded-full border border-theme-border">{filteredAndSortedRooms.length} {t('search.found')}</span>
                   </h3>
 
                   {filteredAndSortedRooms.length > 0 ? (
@@ -298,10 +303,10 @@ export default function SearchPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-slate-50 rounded-3xl p-16 text-center border-2 border-dashed border-slate-300">
-                      <Calendar className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                      <h4 className="text-xl font-display font-bold text-slate-900 mb-2">{t('search.noRoomsTitle')}</h4>
-                      <p className="text-slate-500 max-w-md mx-auto">{t('search.noRoomsDesc')}</p>
+                    <div className="bg-theme-card rounded-3xl p-16 text-center border-2 border-dashed border-theme-border">
+                      <Calendar className="w-16 h-16 text-theme-muted mx-auto mb-4 opacity-50" />
+                      <h4 className="text-xl font-display font-bold text-theme-text mb-2">{t('search.noRoomsTitle')}</h4>
+                      <p className="text-theme-muted max-w-md mx-auto">{t('search.noRoomsDesc')}</p>
                     </div>
                   )}
                 </div>
@@ -311,57 +316,56 @@ export default function SearchPage() {
               <div className="lg:col-span-4 relative mt-14 lg:mt-0">
                 <div className="sticky top-28 space-y-6">
                   {/* Your Trip Summary */}
-                  <div className="bg-slate-900 text-white rounded-3xl p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] relative overflow-hidden group border border-slate-800">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-500/30 transition-colors pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+                  <div className="bg-theme-card text-theme-text rounded-3xl p-8 shadow-sm relative overflow-hidden group border border-theme-border">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-theme-accent/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-theme-accent/10 transition-colors pointer-events-none" />
 
-                    <h3 className="font-display font-bold text-2xl mb-8 flex items-center gap-3 relative z-10">
-                      <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 shadow-inner">
-                        <Calendar size={24} className="text-primary-400" />
+                    <h3 className="font-display font-bold text-2xl mb-8 flex items-center gap-3 relative z-10 text-theme-text">
+                      <div className="p-2.5 bg-theme-bg rounded-xl backdrop-blur-sm border border-theme-border shadow-inner">
+                        <Calendar size={24} className="text-theme-accent" />
                       </div>
                       {t('search.yourTrip')}
                     </h3>
 
                     <div className="space-y-6 relative z-10">
-                      <div className="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                      <div className="flex items-start gap-4 p-5 bg-theme-bg rounded-2xl border border-theme-border hover:bg-theme-card-hover transition-colors">
                         <div className="flex-1">
-                          <div className="text-[11px] uppercase tracking-widest text-primary-400 font-bold mb-1.5">{t('search.checkIn')}</div>
-                          <div className="font-medium text-xl">{checkIn}</div>
+                          <div className="text-[11px] uppercase tracking-widest text-theme-muted font-bold mb-1.5">{t('search.checkIn')}</div>
+                          <div className="font-medium text-xl text-theme-text">{checkIn}</div>
                         </div>
-                        <div className="w-px h-12 bg-white/10 self-center" />
+                        <div className="w-px h-12 bg-theme-border self-center" />
                         <div className="flex-1 pl-2">
-                          <div className="text-[11px] uppercase tracking-widest text-primary-400 font-bold mb-1.5">{t('search.checkOut')}</div>
-                          <div className="font-medium text-xl">{checkOut}</div>
+                          <div className="text-[11px] uppercase tracking-widest text-theme-muted font-bold mb-1.5">{t('search.checkOut')}</div>
+                          <div className="font-medium text-xl text-theme-text">{checkOut}</div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-5 p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                        <div className="px-4 py-3 bg-gradient-to-br from-primary-500/20 to-emerald-500/20 border border-white/5 rounded-xl text-primary-300 flex flex-col items-center justify-center min-w-[4rem] shadow-inner">
+                      <div className="flex items-center gap-5 p-5 bg-theme-bg rounded-2xl border border-theme-border hover:bg-theme-card-hover transition-colors">
+                        <div className="px-4 py-3 bg-theme-card border border-theme-border rounded-xl text-theme-accent flex flex-col items-center justify-center min-w-[4rem] shadow-inner">
                           <span className="font-display font-bold text-2xl leading-none">{nights}</span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider mt-1 text-primary-400">{t('search.nights')}</span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider mt-1 text-theme-muted">{t('search.nights')}</span>
                         </div>
                         <div>
-                          <div className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-1">{t('search.guests')}</div>
-                          <div className="font-medium text-lg leading-snug">{adults} {t('search.adults')}<br />{children} {t('search.children')}</div>
+                          <div className="text-[11px] uppercase tracking-widest text-theme-muted font-bold mb-1">{t('search.guests')}</div>
+                          <div className="font-medium text-lg leading-snug text-theme-text">{adults} {t('search.adults')}<br />{children} {t('search.children')}</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Good to know */}
-                  <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-                    <h3 className="font-display font-bold text-xl text-slate-900 mb-6 flex items-center gap-2">
-                      <CheckCircle size={22} className="text-emerald-500" />
+                  <div className="bg-theme-card rounded-3xl shadow-sm border border-theme-border p-8">
+                    <h3 className="font-display font-bold text-xl text-theme-text mb-6 flex items-center gap-2">
+                      <CheckCircle size={22} className="text-theme-accent" />
                       {t('search.goodToKnow')}
                     </h3>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <span className="text-slate-600 font-medium">{t('search.checkIn')}</span>
-                        <span className="font-bold text-slate-900 text-lg">{hotel.checkInTime || '14:00'}</span>
+                      <div className="flex items-center justify-between p-4 bg-theme-bg rounded-2xl border border-theme-border">
+                        <span className="text-theme-muted font-medium">{t('search.checkIn')}</span>
+                        <span className="font-bold text-theme-text text-lg">{hotel.checkInTime || '14:00'}</span>
                       </div>
-                      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <span className="text-slate-600 font-medium">{t('search.checkOut')}</span>
-                        <span className="font-bold text-slate-900 text-lg">{hotel.checkOutTime || '12:00'}</span>
+                      <div className="flex items-center justify-between p-4 bg-theme-bg rounded-2xl border border-theme-border">
+                        <span className="text-theme-muted font-medium">{t('search.checkOut')}</span>
+                        <span className="font-bold text-theme-text text-lg">{hotel.checkOutTime || '12:00'}</span>
                       </div>
                     </div>
                   </div>
@@ -371,8 +375,8 @@ export default function SearchPage() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-            <div className="w-16 h-16 border-4 border-slate-100 border-t-emerald-500 rounded-full animate-spin"></div>
-            <p className="text-slate-500 font-medium text-lg animate-pulse">{t('search.searching')}</p>
+            <div className="w-16 h-16 border-4 border-theme-border border-t-theme-accent rounded-full animate-spin"></div>
+            <p className="text-theme-muted font-medium text-lg animate-pulse">{t('search.searching')}</p>
           </div>
         )}
       </div>
@@ -382,23 +386,23 @@ export default function SearchPage() {
         <motion.div
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white/85 backdrop-blur-xl border-t border-white/50 shadow-[0_-20px_40px_-20px_rgba(0,0,0,0.15)] p-4 px-6 md:px-10"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-theme-bg/85 backdrop-blur-xl border-t border-theme-border shadow-[0_-20px_40px_-20px_rgba(0,0,0,0.15)] p-4 px-6 md:px-10"
         >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center sm:text-left">
-              <div className="bg-primary-50 text-primary-700 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 border border-primary-100 shadow-sm">
+              <div className="bg-theme-accent/10 text-theme-accent px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 border border-theme-accent/20 shadow-sm">
                 <CheckCircle size={16} />
                 {totalRooms} {totalRooms === 1 ? t('search.roomSelected') : t('search.roomsSelected')}
               </div>
               <div>
-                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">{t('search.totalFor')} {nights} {t('search.nights')}</div>
-                <div className="text-2xl font-black font-display text-slate-900 leading-none drop-shadow-sm">฿{subtotal.toLocaleString()}</div>
+                <div className="text-sm font-bold text-theme-muted uppercase tracking-wide">{t('search.totalFor')} {nights} {t('search.nights')}</div>
+                <div className="text-2xl font-black font-display text-theme-text leading-none drop-shadow-sm">฿{subtotal.toLocaleString()}</div>
               </div>
             </div>
 
             <button
               onClick={handleCheckout}
-              className="w-full md:w-auto py-3.5 px-8 bg-primary-600 hover:bg-primary-500 active:bg-primary-700 text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_-6px_rgba(59,130,246,0.6)] hover:shadow-[0_12px_25px_-6px_rgba(59,130,246,0.7)] transition-all flex items-center justify-center gap-2 group relative overflow-hidden whitespace-nowrap"
+              className="w-full md:w-auto py-3.5 px-8 bg-theme-accent hover:bg-theme-accent-hover active:scale-95 text-white font-bold text-lg rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group relative overflow-hidden whitespace-nowrap"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-shine" />
               {t('search.continueCheckout')} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

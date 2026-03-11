@@ -137,12 +137,16 @@ function SeoHead({ hotel, platformSettings }) {
   )
 }
 
+import { ThemeProvider } from '@/contexts/ThemeContext'
+
+// ... existing code ...
+
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter()
-  const [hotel, setHotel] = useState(null)
-  const [platformSettings, setPlatformSettings] = useState(null)
+  const [hotel, setHotel] = useState(pageProps?.hotel || null)
+  const [platformSettings, setPlatformSettings] = useState(pageProps?.saasSettings || null)
 
-  const hotelId = router.query.hotelId
+  const hotelId = router.query.hotelId || pageProps?.hotel?.id
 
   useEffect(() => {
     // Fetch platform-level SEO settings (always)
@@ -165,13 +169,16 @@ export default function MyApp({ Component, pageProps }) {
       <AuthProvider>
         <AdminProvider>
           <ToastProvider>
-            <SeoHead hotel={hotel} platformSettings={platformSettings} />
-            <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-gray-100 transition-colors">
-              <main className="flex-1">
-                <Component {...pageProps} />
-              </main>
-            </div>
-            <Toaster position="top-center" toastOptions={{ className: 'dark:bg-slate-800 dark:text-white' }} />
+            <ThemeProvider initialTheme={pageProps?.hotel?.theme || hotel?.theme || 'classic'}>
+              <SeoHead hotel={hotel || pageProps?.hotel} platformSettings={platformSettings} />
+              {/* Note: The 'theme-*' wrapper is already injected by ThemeProvider */}
+              <div className="flex flex-col flex-1 transition-colors">
+                <main className="flex-1">
+                  <Component {...pageProps} />
+                </main>
+              </div>
+              <Toaster position="top-center" toastOptions={{ className: 'dark:bg-slate-800 dark:text-white' }} />
+            </ThemeProvider>
           </ToastProvider>
         </AdminProvider>
       </AuthProvider>

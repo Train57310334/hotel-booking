@@ -31,8 +31,8 @@ export default function HotelLanding({ hotel }) {
         return <ComingSoon hotelName={hotel.name} />;
     }
 
-    // Placeholder video for demo purposes
-    const heroVideo = hotel.heroVideoUrl || "https://videos.pexels.com/video-files/3163534/3163534-uhd_2560_1440_30fps.mp4";
+    // Placeholder video for demo purposes. Force fallback if empty string or null.
+    const heroVideo = hotel.heroVideoUrl?.trim() ? hotel.heroVideoUrl : "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
 
     return (
         <Layout navbarProps={{ logo: hotel.logoUrl, brandName: hotel.heroTitle ? hotel.name : 'BookingKub' }}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { XCircle, HelpCircle } from 'lucide-react'
 import DatePicker from '@/components/DatePicker'
 import { apiFetch } from '@/lib/api'
@@ -38,6 +38,10 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
         paymentStatus: 'pending',
         hotelId: currentHotel?.id || ''
     })
+    const [errors, setErrors] = useState({ checkIn: false, checkOut: false });
+
+    const checkInRef = useRef(null);
+    const checkOutRef = useRef(null);
 
     useEffect(() => {
         if (currentHotel) {
@@ -75,12 +79,32 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
+        setErrors({ checkIn: false, checkOut: false })
 
         // Validation: Check dates
-        if (new Date(form.checkIn) >= new Date(form.checkOut)) {
+        const isDateValid = (d) => d && !isNaN(new Date(d).getTime());
+        let hasError = false;
+        const newErrors = { checkIn: false, checkOut: false };
+
+        if (!isDateValid(form.checkIn)) {
+            newErrors.checkIn = true;
+            hasError = true;
+            if (checkInRef.current?.flatpickr?.input) checkInRef.current.flatpickr.input.focus();
+        } else if (!isDateValid(form.checkOut)) {
+            newErrors.checkOut = true;
+            hasError = true;
+            if (checkOutRef.current?.flatpickr?.input) checkOutRef.current.flatpickr.input.focus();
+        } else if (new Date(form.checkIn) >= new Date(form.checkOut)) {
+            newErrors.checkOut = true;
+            hasError = true;
             error('Check-out date must be after Check-in date')
-            setLoading(false)
-            return
+            if (checkOutRef.current?.flatpickr?.input) checkOutRef.current.flatpickr.input.focus();
+        }
+
+        if (hasError) {
+            setErrors(newErrors);
+            setLoading(false);
+            return;
         }
 
         try {
@@ -153,8 +177,13 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                         <div>
                             <LabelWithTooltip label="Check In" text="Date of arrival (start of stay)" />
                             <DatePicker
+                                innerRef={checkInRef}
+                                hasError={errors.checkIn}
                                 value={form.checkIn}
-                                onChange={([dateStr]) => setForm({ ...form, checkIn: dateStr || '' })}
+                                onChange={([dateStr]) => {
+                                    setForm({ ...form, checkIn: dateStr || '' });
+                                    setErrors(prev => ({ ...prev, checkIn: false }));
+                                }}
                                 options={{ minDate: "today" }}
                                 className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 wrapperClassName="w-full"
@@ -163,8 +192,13 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                         <div>
                             <LabelWithTooltip label="Check Out" text="Date of departure (end of stay)" />
                             <DatePicker
+                                innerRef={checkOutRef}
+                                hasError={errors.checkOut}
                                 value={form.checkOut}
-                                onChange={([dateStr]) => setForm({ ...form, checkOut: dateStr || '' })}
+                                onChange={([dateStr]) => {
+                                    setForm({ ...form, checkOut: dateStr || '' });
+                                    setErrors(prev => ({ ...prev, checkOut: false }));
+                                }}
                                 options={{ minDate: form.checkIn || "today" }}
                                 className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                                 wrapperClassName="w-full"

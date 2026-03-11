@@ -12,10 +12,10 @@ import dynamic from 'next/dynamic';
 const PromptPayQR = dynamic(() => import('@/components/PromptPayQR'), { ssr: false });
 
 
-// Stripe Imports
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Init Stripe (Move key to env in production)
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51P');
@@ -160,6 +160,7 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
 export default function PaymentPage() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { setTheme } = useTheme();
   const [bookingData, setBookingData] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -193,6 +194,9 @@ export default function PaymentPage() {
       const stored = sessionStorage.getItem('bookingPayload');
       if (stored) {
         currentBookingData = JSON.parse(stored);
+        if (currentBookingData.hotelTheme) {
+          setTheme(currentBookingData.hotelTheme);
+        }
       } else {
         // Tier 2: Server draft via URL ref param
         const refId = router.query.ref;
@@ -201,6 +205,9 @@ export default function PaymentPage() {
             const draft = await apiFetch(`/bookings/draft/${refId}`);
             if (draft) {
               currentBookingData = draft;
+              if (draft.hotelTheme) {
+                setTheme(draft.hotelTheme);
+              }
               sessionStorage.setItem('bookingPayload', JSON.stringify(draft));
             }
           } catch (e) {

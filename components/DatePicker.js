@@ -11,6 +11,8 @@ export default function DatePicker({
     placeholder = "Select Date",
     className = "",
     wrapperClassName = "",
+    innerRef,
+    hasError = false,
 }) {
     const formattedValue = useMemo(() => {
         return value ? new Date(value) : null;
@@ -23,8 +25,8 @@ export default function DatePicker({
     }), [options]);
 
     return (
-        <div className={`relative group w-full ${wrapperClassName}`}>
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors pointer-events-none z-10">
+        <div className={`relative group w-full flex items-center ${wrapperClassName}`}>
+            <div className={`absolute left-4 text-theme-muted group-focus-within:text-theme-accent transition-colors pointer-events-none z-10`}>
                 <Calendar size={20} />
             </div>
             <Flatpickr
@@ -41,7 +43,7 @@ export default function DatePicker({
                     }
                 }}
                 options={memoizedOptions}
-                className={`w-full bg-white/50 hover:bg-white focus:bg-white border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 focus:ring-2 focus:ring-primary-200 transition-all outline-none cursor-pointer ${className}`}
+                className={`w-full bg-theme-bg/50 hover:bg-theme-bg focus:bg-theme-bg border-none rounded-xl py-4 pl-12 pr-4 text-theme-text focus:ring-2 focus:ring-theme-accent/30 transition-all outline-none cursor-pointer ${className}`}
                 placeholder={placeholder}
             />
         </div>

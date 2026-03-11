@@ -6,8 +6,9 @@ import Features from '@/components/landing/Features';
 import Pricing from '@/components/landing/Pricing';
 import ContactSection from '@/components/landing/ContactSection';
 import Footer from '@/components/landing/Footer';
-// Hotel Component
 import HotelLanding from '@/components/HotelLanding';
+import ModernTheme from '@/components/themes/ModernTheme';
+import BoutiqueTheme from '@/components/themes/BoutiqueTheme';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE } from '@/lib/api';
@@ -18,6 +19,12 @@ export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
 
   // If we have a specific hotel and we are NOT in SaaS mode, show the hotel landing
   if (!isSaaSLanding && hotel && !error) {
+    if (hotel.theme === 'modern') {
+      return <ModernTheme hotel={hotel} />;
+    }
+    if (hotel.theme === 'boutique') {
+      return <BoutiqueTheme hotel={hotel} />;
+    }
     return <HotelLanding hotel={hotel} />;
   }
 

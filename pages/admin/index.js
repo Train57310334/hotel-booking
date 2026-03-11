@@ -29,7 +29,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  LogIn
+  LogIn,
+  Rocket
 } from 'lucide-react'
 import {
   BarChart,
