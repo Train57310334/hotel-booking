@@ -125,7 +125,7 @@ export default function GuestRegisterPage({ branding }) {
                         >
                             <h2 className="text-5xl font-display font-bold text-white leading-[1.15]">
                                 {t('auth.createAccountTitle')} <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-300">start booking today.</span>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-300">start booking today.</span>
                             </h2>
                         </motion.div>
                     </div>

@@ -223,7 +223,7 @@ export default function PlatformPackages() {
                             <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
                                 <div className="flex justify-between items-center border-b pb-2 mb-4">
                                     <h2 className="text-lg font-bold">Included Features</h2>
-                                    <button type="button" onClick={() => addArrayItem('features')} className="text-emerald-500 hover:bg-emerald-50 p-1 rounded"><Plus size={16} /></button>
+                                    <button type="button" onClick={() => addArrayItem('features')} className="text-blue-500 hover:bg-blue-50 p-1 rounded"><Plus size={16} /></button>
                                 </div>
                                 {currentPlan.features.map((feat, i) => (
                                     <div key={i} className="flex gap-2 mb-2">
@@ -306,8 +306,8 @@ export default function PlatformPackages() {
                                     <div className="flex justify-between"><span>Staff Accts:</span> <strong>{plan.maxStaff === 9999 ? 'Unlimited' : plan.maxStaff}</strong></div>
                                     <div className="flex justify-between"><span>Room Types:</span> <strong>{plan.maxRoomTypes === 9999 ? 'Unlimited' : plan.maxRoomTypes}</strong></div>
                                     <div className="flex justify-between text-xs mt-2">
-                                        <span className={plan.hasOnlinePayment ? 'text-emerald-500 font-bold' : 'text-slate-400'}>Online Payments</span>
-                                        <span className={plan.hasPromotions ? 'text-emerald-500 font-bold' : 'text-slate-400'}>Promotions</span>
+                                        <span className={plan.hasOnlinePayment ? 'text-blue-500 font-bold' : 'text-slate-400'}>Online Payments</span>
+                                        <span className={plan.hasPromotions ? 'text-blue-500 font-bold' : 'text-slate-400'}>Promotions</span>
                                     </div>
                                 </div>
                             </div>
@@ -328,3 +328,4 @@ export default function PlatformPackages() {
         </AdminLayout>
     )
 }
+

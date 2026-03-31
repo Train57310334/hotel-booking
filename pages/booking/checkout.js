@@ -249,9 +249,9 @@ export default function GuestInfoPage() {
                   ))}
                 </div>
 
-                <div className="flex justify-between items-end bg-gradient-to-br from-primary-50 to-emerald-50 p-5 rounded-2xl border border-primary-100/50 shadow-inner relative z-10">
+                <div className="flex justify-between items-end bg-gradient-to-br from-primary-50 to-blue-50 p-5 rounded-2xl border border-primary-100/50 shadow-inner relative z-10">
                   <span className="text-primary-800 font-bold uppercase tracking-wider text-sm">{t('checkout.totalPrice')}</span>
-                  <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-600 font-display">฿{bookingInfo.subtotal?.toLocaleString()}</span>
+                  <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 font-display">฿{bookingInfo.subtotal?.toLocaleString()}</span>
                 </div>
               </div>
             </div>

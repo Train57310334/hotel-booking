@@ -68,12 +68,12 @@ export default function ContactPage() {
             <div className="relative min-h-screen bg-slate-900 text-slate-200 overflow-hidden">
                 {/* Background Gradients */}
                 <div className="absolute top-0 left-0 -translate-x-[10%] -translate-y-[10%] w-[500px] h-[500px] rounded-full bg-primary-500/10 blur-[100px]" />
-                <div className="absolute bottom-0 right-0 translate-x-[10%] translate-y-[10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[100px]" />
+                <div className="absolute bottom-0 right-0 translate-x-[10%] translate-y-[10%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[100px]" />
 
                 <div className="relative z-10 pt-24 pb-12">
                     <div className="container mx-auto px-4 text-center">
                         <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6 animate-fade-in-up">
-                            {hotel ? `Contact ${hotel.name}` : <>Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Support</span></>}
+                            {hotel ? `Contact ${hotel.name}` : <>Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-400">Support</span></>}
                         </h1>
                         <p className="text-xl text-slate-400 max-w-2xl mx-auto animate-fade-in-up delay-100">
                             {hotel
@@ -104,12 +104,12 @@ export default function ContactPage() {
 
                                 {(hotel?.contactEmail || !hotel) && (
                                     <div className="flex items-start gap-4 group">
-                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                                             <Mail size={24} />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-white text-lg mb-1">Email</h4>
-                                            <a href={`mailto:${hotel ? hotel.contactEmail : 'support@bookingkub.com'}`} className="text-slate-400 hover:text-emerald-400 transition-colors">
+                                            <a href={`mailto:${hotel ? hotel.contactEmail : 'support@bookingkub.com'}`} className="text-slate-400 hover:text-blue-400 transition-colors">
                                                 {hotel ? hotel.contactEmail : 'support@bookingkub.com'}
                                             </a>
                                         </div>
@@ -144,7 +144,7 @@ export default function ContactPage() {
                         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 p-8 md:p-10 rounded-3xl lg:col-span-2 animate-fade-in-up delay-300">
                             {submitted ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center p-10 animate-in fade-in zoom-in py-20">
-                                    <div className="w-24 h-24 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-6">
+                                    <div className="w-24 h-24 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mb-6">
                                         <Send size={40} />
                                     </div>
                                     <h3 className="text-3xl font-bold text-white mb-4">Message Sent!</h3>

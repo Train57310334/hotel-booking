@@ -102,7 +102,7 @@ export default function LoginPage({ branding }) {
             >
               <h2 className="text-5xl font-display font-bold text-white leading-[1.15]">
                 Experience the art of <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-300">luxury hospitality.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-300">luxury hospitality.</span>
               </h2>
               <div className="flex items-center gap-4 text-slate-300 bg-slate-900/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl w-max">
                 <div className="flex -space-x-3">

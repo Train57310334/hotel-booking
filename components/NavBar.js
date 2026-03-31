@@ -183,7 +183,7 @@ export default function NavBar(props) {
             {user ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                     {user.name?.[0]}
                   </div>
                   <div>

@@ -38,7 +38,7 @@ export default function ManageBooking() {
 
     const statusColors = {
         pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-        confirmed: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+        confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
         cancelled: 'bg-red-100 text-red-800 border-red-200',
         checked_in: 'bg-blue-100 text-blue-800 border-blue-200',
         checked_out: 'bg-slate-100 text-slate-800 border-slate-200',
@@ -197,7 +197,7 @@ export default function ManageBooking() {
 
                                                     {booking.status === 'pending' && (
                                                         <div className="mt-5">
-                                                            <Link href={`/booking/payment?id=${booking.id}`} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
+                                                            <Link href={`/booking/payment?id=${booking.id}`} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                                                                 <CreditCard className="w-5 h-5 mr-2" />
                                                                 Complete Payment
                                                             </Link>

@@ -128,7 +128,7 @@ export default function PromptPayQR({ promptPayId, amount, hotelName }) {
     if (!dataUrl) {
         return (
             <div className="w-60 h-60 mx-auto flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200">
-                <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
+                <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
             </div>
         );
     }
@@ -155,9 +155,9 @@ export default function PromptPayQR({ promptPayId, amount, hotelName }) {
 
                 {/* Amount overlay at bottom */}
                 {amount && (
-                    <div className="mt-3 bg-emerald-50 rounded-xl px-4 py-2 text-center border border-emerald-100">
+                    <div className="mt-3 bg-blue-50 rounded-xl px-4 py-2 text-center border border-blue-100">
                         <p className="text-xs text-slate-500">Amount</p>
-                        <p className="text-xl font-extrabold text-emerald-700">
+                        <p className="text-xl font-extrabold text-blue-700">
                             ฿{amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
                         </p>
                     </div>

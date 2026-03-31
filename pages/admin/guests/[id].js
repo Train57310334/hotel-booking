@@ -89,14 +89,14 @@ export default function GuestProfile() {
             {/* Profile Header */}
             <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm mb-8">
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                    <div className="w-24 h-24 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl font-bold dark:bg-emerald-500/20">
+                    <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-4xl font-bold dark:bg-blue-500/20">
                         {guest.name?.[0] || 'G'}
                     </div>
                     <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                                 {guest.name || 'Unknown Guest'}
-                                <button onClick={() => setIsEditModalOpen(true)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-slate-100 rounded-full transition-colors">
+                                <button onClick={() => setIsEditModalOpen(true)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-slate-100 rounded-full transition-colors">
                                     <Edit size={18} />
                                 </button>
                             </h1>
@@ -117,7 +117,7 @@ export default function GuestProfile() {
                     </div>
                     <div className="text-right hidden md:block">
                         <p className="text-sm text-slate-400">Total Spend</p>
-                        <p className="text-2xl font-bold text-emerald-600">฿{guest.bookings?.reduce((acc, b) => acc + b.totalAmount, 0).toLocaleString() || 0}</p>
+                        <p className="text-2xl font-bold text-blue-600">฿{guest.bookings?.reduce((acc, b) => acc + b.totalAmount, 0).toLocaleString() || 0}</p>
                         <p className="text-xs text-slate-400">{guest._count?.bookings || 0} Bookings</p>
                     </div>
                 </div>
@@ -193,13 +193,13 @@ export default function GuestProfile() {
 
                     <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                            <StickyNote size={20} className="text-emerald-500" /> Private Notes
+                            <StickyNote size={20} className="text-blue-500" /> Private Notes
                         </h3>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Internal notes about this guest (e.g. Do not disturb preference, allergies...)"
-                            className="w-full h-32 p-3 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            className="w-full h-32 p-3 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                         />
                     </div>
 
@@ -211,14 +211,14 @@ export default function GuestProfile() {
                             value={preferences}
                             onChange={(e) => setPreferences(e.target.value)}
                             placeholder="Room preferences (High floor, Extra pillows...)"
-                            className="w-full h-24 p-3 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            className="w-full h-24 p-3 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                         />
                     </div>
 
                     <button
                         onClick={handleSaveCRM}
                         disabled={saving}
-                        className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                     </button>
@@ -229,7 +229,7 @@ export default function GuestProfile() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[400px] shadow-2xl border border-slate-100 dark:border-slate-700">
                         <h3 className="font-bold text-lg mb-4 dark:text-white flex items-center gap-2">
-                            <User size={20} className="text-emerald-500" /> Edit Guest Profile
+                            <User size={20} className="text-blue-500" /> Edit Guest Profile
                         </h3>
                         <form onSubmit={(e) => {
                             e.preventDefault()
@@ -254,7 +254,7 @@ export default function GuestProfile() {
                             </div>
                             <div className="flex gap-2 pt-4">
                                 <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
-                                <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save</button>
+                                <button type="submit" className="flex-1 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600">Save</button>
                             </div>
                         </form>
                     </div>

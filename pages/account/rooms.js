@@ -58,7 +58,7 @@ export default function RoomManagement() {
                                     <td className="px-6 py-4">
                                         <span
                                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${room.status === 'Available' ? 'bg-emerald-50 text-emerald-600' :
+                        ${room.status === 'Available' ? 'bg-blue-50 text-blue-600' :
                                                     room.status === 'Occupied' ? 'bg-red-50 text-red-600' :
                                                         'bg-orange-50 text-orange-600'}
                       `}

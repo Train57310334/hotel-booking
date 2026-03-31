@@ -149,7 +149,7 @@ export default function BookingManagement() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'confirmed': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400'
+      case 'confirmed': return 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400'
       case 'pending': return 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400'
       case 'cancelled': return 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
       case 'checked_in': return 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400'
@@ -161,56 +161,54 @@ export default function BookingManagement() {
 
   return (
     <AdminLayout>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             Booking
             {isLiveMode && (
-              <span className="flex h-3 w-3 relative">
+              <span className="flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
               </span>
             )}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
             Manage all reservations
             <button
               onClick={() => setIsLiveMode(!isLiveMode)}
-              className={`text-xs px-2 py-0.5 rounded-full font-bold border transition-all ${isLiveMode ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}
+              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border transition-all ${isLiveMode ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}
             >
-              {isLiveMode ? '● Live Updates On' : '○ Live Updates Off'}
+              {isLiveMode ? '● Live' : '○ Live'}
             </button>
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold transition-all shadow-sm"
         >
-          <Plus size={20} />
+          <Plus size={15} />
           Create Booking
         </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 font-sans">
-          {['All', 'Pending', 'Confirmed', 'Cancelled', 'Checked_in'].map(status => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${statusFilter === status
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-lg shadow-slate-900/10'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300 dark:hover:bg-slate-700'
-                }`}
-            >
-              {status.replace('_', ' ')}
-            </button>
-          ))}
-        </div>
+      <div className="bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm mb-4 flex flex-wrap gap-1.5">
+        {['All', 'Pending', 'Confirmed', 'Cancelled', 'Checked_in'].map(status => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${statusFilter === status
+              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+              : 'bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-700/50 dark:text-slate-300'
+              }`}
+          >
+            {status.replace('_', ' ')}
+          </button>
+        ))}
       </div>
 
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-3">
         <select
-          className="p-2 rounded-xl border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+          className="p-1.5 rounded-lg border text-xs dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           value={`${sortConfig.key}-${sortConfig.direction}`}
           onChange={(e) => {
             const [key, direction] = e.target.value.split('-')
@@ -226,18 +224,18 @@ export default function BookingManagement() {
         </select>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Booking ID</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Guest</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Room</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Check In/Out</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Booking ID</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Guest</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Room</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Check In/Out</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-2.5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
@@ -249,19 +247,19 @@ export default function BookingManagement() {
                 bookings.map((booking) => {
                   const isNew = new Date(booking.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000);
                   return (
-                    <tr key={booking.id} className={`transition-colors group ${isNew ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
-                      <td className="px-6 py-4">
+                    <tr key={booking.id} className={`transition-colors group ${isNew ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
+                      <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
                             #{booking.id.slice(-6).toUpperCase()}
                           </span>
-                          {isNew && <span className="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">NEW</span>}
+                          {isNew && <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">NEW</span>}
                         </div>
                         <div className="text-[10px] text-slate-400 mt-1">
                           {new Date(booking.createdAt).toLocaleString()}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <div className="flex flex-col">
                           <span className="font-bold text-slate-900 dark:text-white">{booking.leadName}</span>
                           <span className="text-xs text-slate-500">{booking.leadEmail}</span>
@@ -278,27 +276,27 @@ export default function BookingManagement() {
                           {booking.specialRequests && <span className="flex items-center gap-1 text-[10px] text-amber-600 mt-1 truncate max-w-[150px]"><MessageSquare size={10} /> {booking.specialRequests}</span>}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                      <td className="px-4 py-2 text-xs text-slate-600 dark:text-slate-300">
                         {booking.roomType?.name || 'Unknown Type'}
                         {booking.room && <span className="ml-2 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">#{booking.room.id.slice(-4)}</span>}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                      <td className="px-4 py-2 text-xs text-slate-600 dark:text-slate-300">
                         <div className="flex flex-col text-xs">
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">In: {formatDate(booking.checkIn)}</span>
+                          <span className="text-blue-600 dark:text-blue-400 font-medium">In: {formatDate(booking.checkIn)}</span>
                           <span className="text-rose-600 dark:text-rose-400 font-medium">Out: {formatDate(booking.checkOut)}</span>
                           <span className="text-slate-400 mt-0.5">{Math.ceil((new Date(booking.checkOut) - new Date(booking.checkIn)) / (1000 * 60 * 60 * 24))} nights</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <div className="font-bold text-slate-900 dark:text-white">฿{booking.totalAmount?.toLocaleString()}</div>
                         <div className={`text-[10px] font-bold px-1.5 py-0.5 inline-flex rounded mt-1 border ${booking.payment?.status === 'authorized' || booking.payment?.status === 'captured'
-                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                          ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
                           : 'bg-slate-50 text-slate-500 border-slate-100 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
                           }`}>
                           {booking.payment?.status === 'authorized' || booking.payment?.status === 'captured' ? 'PAID' : 'UNPAID'}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${getStatusColor(booking.status)}`}>
                           {booking.status.replace('_', ' ')}
                         </span>
@@ -325,7 +323,7 @@ export default function BookingManagement() {
                           )}
                           <button
                             onClick={() => openDetails(booking)}
-                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
+                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
                           >
                             <Eye size={18} />
                           </button>

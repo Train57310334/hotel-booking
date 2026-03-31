@@ -64,7 +64,7 @@ export default function GuestDashboard() {
                         {/* Sidebar */}
                         <div className="w-full md:w-72 shrink-0">
                             <div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-100 p-6 overflow-hidden relative">
-                                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-primary-500/10 via-emerald-500/10 to-transparent"></div>
+                                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-primary-500/10 via-blue-500/10 to-transparent"></div>
                                 <div className="relative z-10 flex flex-col items-center mb-8 pt-4">
                                     <div className="w-20 h-20 rounded-full bg-slate-200 border-4 border-white shadow-lg overflow-hidden mb-4">
                                         {user?.avatarUrl ? (
@@ -160,7 +160,7 @@ export function BookingCard({ booking, isPast, onCancel, hotelId }) {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'confirmed': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            case 'confirmed': return 'bg-blue-100 text-blue-700 border-blue-200';
             case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
             case 'cancelled': return 'bg-rose-100 text-rose-700 border-rose-200';
             case 'checked_in': return 'bg-blue-100 text-blue-700 border-blue-200';
@@ -255,7 +255,7 @@ function EmptyState({ message, isPast, hotelId }) {
             <p className="text-slate-500 mb-8 max-w-sm mx-auto leading-relaxed">{message}</p>
             <Link
                 href={hotelId ? `/?hotelId=${hotelId}` : '/'}
-                className="inline-flex px-8 py-3.5 bg-gradient-to-r from-primary-600 to-emerald-600 text-white font-bold rounded-xl hover:from-primary-500 hover:to-emerald-500 transition-all duration-300 shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5"
+                className="inline-flex px-8 py-3.5 bg-gradient-to-r from-primary-600 to-blue-600 text-white font-bold rounded-xl hover:from-primary-500 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5"
             >
                 Start Exploring
             </Link>

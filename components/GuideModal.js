@@ -24,14 +24,14 @@ export default function GuideModal({ isOpen, onClose, data }) {
                     className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700"
                 >
                     {/* Header */}
-                    <div className="bg-emerald-500 p-6 flex justify-between items-start text-white">
+                    <div className="bg-blue-500 p-6 flex justify-between items-start text-white">
                         <div className="flex gap-4">
                             <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
                                 {data.icon ? <data.icon size={32} /> : <HelpCircle size={32} />}
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold">{data.title}</h2>
-                                <p className="text-emerald-50 opacity-90 font-medium">Quick User Guide</p>
+                                <p className="text-blue-50 opacity-90 font-medium">Quick User Guide</p>
                             </div>
                         </div>
                         <button
@@ -47,7 +47,7 @@ export default function GuideModal({ isOpen, onClose, data }) {
                         <div className="space-y-6">
                             {data.steps.map((step, index) => (
                                 <div key={index} className="flex gap-4">
-                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
                                         {index + 1}
                                     </div>
                                     <div className="pt-1">
@@ -65,7 +65,7 @@ export default function GuideModal({ isOpen, onClose, data }) {
                     <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end">
                         <button
                             onClick={onClose}
-                            className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                            className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
                         >
                             Got it, thanks!
                         </button>

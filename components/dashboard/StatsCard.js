@@ -1,6 +1,6 @@
 export default function StatsCard({ icon: Icon, title, value, subtext, color = "green" }) {
     const colorStyles = {
-        green: "bg-emerald-50 text-emerald-600",
+        green: "bg-blue-50 text-blue-600",
         blue: "bg-blue-50 text-blue-600",
         orange: "bg-orange-50 text-orange-600",
         purple: "bg-purple-50 text-purple-600",

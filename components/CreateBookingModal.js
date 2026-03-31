@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { XCircle, HelpCircle } from 'lucide-react'
 import DatePicker from '@/components/DatePicker'
 import { apiFetch } from '@/lib/api'
-import { useToast } from '@/contexts/ToastContext'
+import { toast } from 'react-hot-toast'
 import { useAdmin } from '@/contexts/AdminContext'
 import ConfirmationModal from '@/components/ConfirmationModal'
 
@@ -18,7 +18,6 @@ const LabelWithTooltip = ({ label, text }) => (
 )
 
 export default function CreateBookingModal({ onClose, onSuccess, initialData = {} }) {
-    const { success, error } = useToast()
     const { currentHotel } = useAdmin()
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState([])
@@ -35,10 +34,14 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
         leadPhone: '',
         totalAmount: 0,
         paymentMethod: '',
+        paymentMethod: '',
         paymentStatus: 'pending',
+        promotionCode: '',
         hotelId: currentHotel?.id || ''
     })
     const [errors, setErrors] = useState({ checkIn: false, checkOut: false });
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [validatingPromo, setValidatingPromo] = useState(false);
 
     const checkInRef = useRef(null);
     const checkOutRef = useRef(null);
@@ -72,9 +75,50 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
             // TODO: Fetch dynamic price from backend /rates/calculate for accurate pricing with overrides
 
             const validDays = days > 0 ? days : 0;
-            setForm(prev => ({ ...prev, totalAmount: price * validDays }));
+            let total = price * validDays;
+            
+            if (appliedPromo) {
+                total -= appliedPromo.discountAmount;
+            }
+
+            setForm(prev => ({ ...prev, totalAmount: Math.max(0, total) }));
         }
-    }, [form.checkIn, form.checkOut, form.ratePlanId, selectedType]);
+    }, [form.checkIn, form.checkOut, form.ratePlanId, selectedType, appliedPromo]);
+
+    const handleApplyPromo = async () => {
+        if (!form.promotionCode) return;
+        setValidatingPromo(true);
+        try {
+            // Recalculate base total before promo to pass to validation
+            const start = new Date(form.checkIn);
+            const end = new Date(form.checkOut);
+            const days = Math.max(0, (end - start) / (1000 * 60 * 60 * 24));
+            const baseTotal = (selectedType?.basePrice || 1000) * days;
+
+            const result = await apiFetch('/promotions/validate', {
+                method: 'POST',
+                body: JSON.stringify({ code: form.promotionCode, amount: baseTotal, hotelId: currentHotel?.id })
+            });
+
+            if (result.valid) {
+                setAppliedPromo(result);
+                toast.success('Promo applied successfully');
+            } else {
+                setAppliedPromo(null);
+                toast.error(result.message || 'Invalid promotion code');
+            }
+        } catch (err) {
+            setAppliedPromo(null);
+            toast.error(err.message || 'Error validating promo code');
+        } finally {
+            setValidatingPromo(false);
+        }
+    }
+
+    const removePromo = () => {
+        setAppliedPromo(null);
+        setForm(prev => ({ ...prev, promotionCode: '' }));
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -97,7 +141,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
         } else if (new Date(form.checkIn) >= new Date(form.checkOut)) {
             newErrors.checkOut = true;
             hasError = true;
-            error('Check-out date must be after Check-in date')
+            toast.error('Check-out date must be after Check-in date')
             if (checkOutRef.current?.flatpickr?.input) checkOutRef.current.flatpickr.input.focus();
         }
 
@@ -125,6 +169,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                     roomTypeId: form.roomTypeId,
                     roomId: form.roomId || undefined, // Allow unassigned
                     ratePlanId: form.ratePlanId || undefined,
+                    promotionCode: appliedPromo ? appliedPromo.code : undefined,
                     totalAmount: Number(form.totalAmount),
                     paymentMethod: form.paymentMethod || undefined,
                     paymentStatus: form.paymentStatus
@@ -132,12 +177,12 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
             })
             onSuccess()
             onClose()
-            success('Booking created successfully!')
+            toast.success('Booking created successfully!')
         } catch (err) {
             if (err.message && err.message.includes('already booked')) {
                 setShowConflict(true)
             } else {
-                error('Failed to create booking: ' + err.message)
+                toast.error('Failed to create booking: ' + err.message)
             }
         } finally {
             setLoading(false)
@@ -228,7 +273,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 mt-4">
                         <div>
                             <LabelWithTooltip label="Rate Plan" text="Pricing package (e.g. Standard, Breakfast Included)" />
                             <select required className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
@@ -240,10 +285,40 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                             </select>
                         </div>
                         <div>
-                            <LabelWithTooltip label="Total Amount" text="Calculated price based on nights & rate" />
-                            <input required type="number" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white"
-                                value={form.totalAmount}
-                                onChange={e => setForm({ ...form, totalAmount: e.target.value })} />
+                            <LabelWithTooltip label="Promo Code" text="Optional voucher code for discounts" />
+                            {!appliedPromo ? (
+                                <div className="flex gap-2">
+                                    <input type="text" className="w-full p-2 rounded-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white uppercase"
+                                        placeholder="e.g. SUMMER50"
+                                        value={form.promotionCode}
+                                        onChange={e => setForm({ ...form, promotionCode: e.target.value.toUpperCase() })} />
+                                    <button type="button" onClick={handleApplyPromo} disabled={validatingPromo || !form.promotionCode} className="px-4 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 rounded-lg text-sm font-bold whitespace-nowrap transition-colors disabled:opacity-50">
+                                        {validatingPromo ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between p-2 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+                                    <div>
+                                        <p className="text-xs font-bold text-green-700 dark:text-green-400">{appliedPromo.code}</p>
+                                        <p className="text-[10px] text-green-600 dark:text-green-500">- ฿{appliedPromo.discountAmount} applied</p>
+                                    </div>
+                                    <button type="button" onClick={removePromo} className="text-slate-400 hover:text-rose-500 transition-colors">
+                                        <XCircle size={16} />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="col-span-2 md:col-span-1 md:col-start-2">
+                            <LabelWithTooltip label="Total Amount" text="Calculated price based on nights & rate minus discounts" />
+                            <div className="flex items-center">
+                                <span className="p-2 border border-r-0 rounded-l-lg bg-slate-50 dark:bg-slate-800 dark:border-slate-600 text-slate-500 font-bold">฿</span>
+                                <input required type="number" className="w-full p-2 rounded-r-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white font-bold"
+                                    value={form.totalAmount}
+                                    onChange={e => setForm({ ...form, totalAmount: e.target.value })} />
+                            </div>
                         </div>
                     </div>
 
@@ -274,7 +349,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                         </div>
                     </div>
 
-                    <button disabled={loading} className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg mt-4">
+                    <button disabled={loading} className="w-full py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-lg mt-4">
                         {loading ? 'Creating...' : 'Create Booking'}
                     </button>
 

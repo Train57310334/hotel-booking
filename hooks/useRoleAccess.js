@@ -43,7 +43,7 @@ export function useRoleAccess() {
         role,
         hasAccess,
         isOwner: role === 'owner',
-        isAdmin: isOwnerOrAdmin(role),
+        isAdmin: isOwnerOrAdmin(role) || isPlatformAdmin,
         isManager: role === 'manager',
         isReception: role === 'reception',
         isHousekeeper: role === 'housekeeper',

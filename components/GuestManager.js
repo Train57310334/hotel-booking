@@ -283,7 +283,7 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
                 </h4>
                 <button
                     onClick={() => setIsAdding(!isAdding)}
-                    className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors"
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-colors"
                 >
                     {isAdding ? 'Cancel' : '+ Add Guest'}
                 </button>
@@ -384,7 +384,7 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
 
                             {/* Upload Status */}
                             {newGuest.documentUrl && (
-                                <p className="text-xs text-emerald-600 flex items-center gap-1 md:col-span-2">
+                                <p className="text-xs text-blue-600 flex items-center gap-1 md:col-span-2">
                                     <Upload size={12} /> Document attached
                                 </p>
                             )}
@@ -393,7 +393,7 @@ export default function GuestManager({ bookingId, guests, onUpdate }) {
                         <button
                             onClick={handleAddGuest}
                             disabled={loading || !newGuest.name}
-                            className="w-full py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-2 bg-blue-500 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Saving...' : 'Save Guest'}
                         </button>

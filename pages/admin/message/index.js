@@ -51,7 +51,7 @@ export default function MessageCenter() {
             <div className="flex flex-col h-[calc(100vh-100px)]">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Messages</h1>
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Messages</h1>
                         <p className="text-slate-500 dark:text-slate-400">Support Inbox</p>
                     </div>
                 </div>
@@ -69,7 +69,7 @@ export default function MessageCenter() {
                                     placeholder="Search inbox..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border-none focus:ring-2 focus:ring-emerald-500/20 text-slate-900 dark:text-white text-sm"
+                                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white text-sm"
                                 />
                             </div>
                         </div>
@@ -90,7 +90,7 @@ export default function MessageCenter() {
                                         <div className="flex justify-between items-start mb-1">
                                             <h4 className={`font-bold text-sm ${msg.status === 'unread' ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
                                                 {msg.name}
-                                                {msg.status === 'unread' && <span className="ml-2 w-2 h-2 rounded-full bg-emerald-500 inline-block align-middle" />}
+                                                {msg.status === 'unread' && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block align-middle" />}
                                             </h4>
                                             <span className="text-xs text-slate-400 whitespace-nowrap">{new Date(msg.createdAt).toLocaleDateString()}</span>
                                         </div>
@@ -148,12 +148,12 @@ export default function MessageCenter() {
                                             value={replyText}
                                             onChange={(e) => setReplyText(e.target.value)}
                                             placeholder="Type your reply here..."
-                                            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                             onKeyDown={(e) => e.key === 'Enter' && sendReply()}
                                         />
                                         <button
                                             onClick={sendReply}
-                                            className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                                            className="px-6 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 flex items-center gap-2 shadow-lg shadow-blue-500/20"
                                         >
                                             <Send size={18} />
                                             <span>Send</span>
@@ -175,3 +175,4 @@ export default function MessageCenter() {
         </AdminLayout>
     )
 }
+

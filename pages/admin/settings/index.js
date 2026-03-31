@@ -251,13 +251,13 @@ export default function HotelSettings() {
             <div className="max-w-5xl mx-auto pb-20">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Hotel Settings</h1>
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Hotel Settings</h1>
                         <p className="text-slate-500 dark:text-slate-400">Manage your property details and branding</p>
                     </div>
                     <button
                         onClick={handleSubmit}
                         disabled={saving}
-                        className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50"
+                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50"
                     >
                         {saving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                     </button>
@@ -271,7 +271,7 @@ export default function HotelSettings() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === tab.id
-                                    ? 'bg-white dark:bg-slate-800 text-emerald-500 shadow-sm'
+                                    ? 'bg-white dark:bg-slate-800 text-blue-500 shadow-sm'
                                     : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                                     }`}
                             >
@@ -470,13 +470,13 @@ export default function HotelSettings() {
                         {activeTab === 'web' && (
                             <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
                                 {/* Public URL Section */}
-                                <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
-                                    <label className="block text-sm font-bold text-emerald-800 dark:text-emerald-400 mb-2">Public Website URL</label>
+                                <div className="p-4 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+                                    <label className="block text-sm font-bold text-blue-800 dark:text-blue-400 mb-2">Public Website URL</label>
                                     <div className="flex gap-2">
                                         <input
                                             readOnly
                                             value={typeof window !== 'undefined' ? `${window.location.origin}/?hotelId=${hotel?.id}` : ''}
-                                            className="flex-1 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-mono text-sm"
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-blue-200 dark:border-blue-500/30 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-mono text-sm"
                                             onClick={(e) => e.target.select()}
                                         />
                                         <button
@@ -484,19 +484,19 @@ export default function HotelSettings() {
                                                 navigator.clipboard.writeText(`${window.location.origin}/?hotelId=${hotel?.id}`);
                                                 toast.success('Copied to clipboard');
                                             }}
-                                            className="px-4 py-2 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/20 transition-colors"
+                                            className="px-4 py-2 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold rounded-xl hover:bg-blue-50 dark:hover:bg-blue-500/20 transition-colors"
                                         >
                                             Copy
                                         </button>
                                         <a
                                             href={`/?hotelId=${hotel?.id}`}
                                             target="_blank"
-                                            className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors flex items-center gap-2"
+                                            className="px-4 py-2 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-colors flex items-center gap-2"
                                         >
                                             <Globe size={18} /> View Live
                                         </a>
                                     </div>
-                                    <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-2">
+                                    <p className="text-xs text-blue-600/80 dark:text-blue-400/80 mt-2">
                                         Share this link with your customers to let them book directly.
                                     </p>
                                 </div>
@@ -541,7 +541,7 @@ export default function HotelSettings() {
                                                 className="absolute top-6 right-6 w-5 h-5 text-indigo-600 cursor-pointer"
                                             />
                                             <div className="flex flex-col gap-3">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-slate-800 to-slate-950 rounded-xl flex items-center justify-center text-emerald-400 shadow-inner">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-slate-800 to-slate-950 rounded-xl flex items-center justify-center text-blue-400 shadow-inner">
                                                     <LayoutTemplate size={24} />
                                                 </div>
                                                 <div>
@@ -798,8 +798,8 @@ export default function HotelSettings() {
                                         </div>
                                     </>
                                 ) : (
-                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-emerald-200 dark:border-emerald-500/20">
-                                        <CreditCard size={48} className="mx-auto text-emerald-400 mb-4" />
+                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-blue-200 dark:border-blue-500/20">
+                                        <CreditCard size={48} className="mx-auto text-blue-400 mb-4" />
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Unlock Online Payments</h3>
                                         <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
                                             Connect your own Stripe or Omise account to accept credit cards and automated PromptPay QR directly on your booking engine.
@@ -807,7 +807,7 @@ export default function HotelSettings() {
                                         <button
                                             type="button"
                                             onClick={() => openUpgradeModal && openUpgradeModal()}
-                                            className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-105 transition-all"
+                                            className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:scale-105 transition-all"
                                         >
                                             Upgrade to PRO
                                         </button>
@@ -823,7 +823,7 @@ export default function HotelSettings() {
                                 {/* Meta Tags */}
                                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-2">
-                                        <Search size={18} className="text-emerald-500" /> Search Engine Optimization (SEO)
+                                        <Search size={18} className="text-blue-500" /> Search Engine Optimization (SEO)
                                     </h3>
                                     {hotel?.hasSeo ? (
                                         <>
@@ -875,7 +875,7 @@ export default function HotelSettings() {
                                                         type="button"
                                                         onClick={() => setFormData(prev => ({ ...prev, robotsIndex: !prev.robotsIndex }))}
                                                         className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${formData.robotsIndex
-                                                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                                            ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
                                                             : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
                                                             }`}
                                                     >
@@ -1032,8 +1032,8 @@ export default function HotelSettings() {
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-emerald-200 dark:border-emerald-500/20 mt-4">
-                                            <BarChart2 size={48} className="mx-auto text-emerald-400 mb-4" />
+                                        <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-blue-200 dark:border-blue-500/20 mt-4">
+                                            <BarChart2 size={48} className="mx-auto text-blue-400 mb-4" />
                                             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Discover Where Your Bookings Come From</h3>
                                             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
                                                 Track visitors, integrate Facebook Pixel for ad targeting, and measure Google Ads conversions directly.
@@ -1041,7 +1041,7 @@ export default function HotelSettings() {
                                             <button
                                                 type="button"
                                                 onClick={() => openUpgradeModal && openUpgradeModal()}
-                                                className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-105 transition-all"
+                                                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:scale-105 transition-all"
                                             >
                                                 Upgrade to PRO
                                             </button>
@@ -1052,7 +1052,7 @@ export default function HotelSettings() {
                                 {/* Analytics Dashboard Embed */}
                                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-2">
-                                        <BarChart2 size={18} className="text-emerald-500" /> Analytics Dashboard
+                                        <BarChart2 size={18} className="text-blue-500" /> Analytics Dashboard
                                     </h3>
                                     {hotel?.hasAdvancedAnalytics ? (
                                         <>
@@ -1101,3 +1101,4 @@ export default function HotelSettings() {
         </AdminLayout >
     );
 }
+

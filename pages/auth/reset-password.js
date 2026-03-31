@@ -122,10 +122,10 @@ export default function ResetPasswordPage({ branding }) {
                             )}
 
                             {status.type === 'success' && (
-                                <div className="bg-emerald-50 text-emerald-700 px-4 py-4 rounded-xl text-sm flex items-start gap-3 border border-emerald-100">
-                                    <CheckCircle2 className="shrink-0 text-emerald-500 mt-0.5" size={20} />
+                                <div className="bg-blue-50 text-blue-700 px-4 py-4 rounded-xl text-sm flex items-start gap-3 border border-blue-100">
+                                    <CheckCircle2 className="shrink-0 text-blue-500 mt-0.5" size={20} />
                                     <div>
-                                        <p className="font-bold text-emerald-800 text-base mb-1">Password updated</p>
+                                        <p className="font-bold text-blue-800 text-base mb-1">Password updated</p>
                                         <p>{status.message}</p>
                                     </div>
                                 </div>

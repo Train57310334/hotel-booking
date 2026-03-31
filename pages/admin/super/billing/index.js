@@ -188,7 +188,7 @@ export default function PlatformBillingSettings() {
                         {summary && (
                             <div className="text-right">
                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Total Platform Revenue</p>
-                                <p className="text-2xl font-black text-emerald-600">฿{(summary.totalRevenue / 100).toLocaleString()}</p>
+                                <p className="text-2xl font-black text-blue-600">฿{(summary.totalRevenue / 100).toLocaleString()}</p>
                             </div>
                         )}
                     </div>
@@ -197,12 +197,12 @@ export default function PlatformBillingSettings() {
                         <table className="w-full text-sm text-left">
                             <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-700/50">
                                 <tr>
-                                    <th className="px-6 py-4">Transaction ID</th>
-                                    <th className="px-6 py-4">Property</th>
-                                    <th className="px-6 py-4">Package</th>
-                                    <th className="px-6 py-4">Amount</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4">Date</th>
+                                    <th className="px-4 py-2.5">Transaction ID</th>
+                                    <th className="px-4 py-2.5">Property</th>
+                                    <th className="px-4 py-2.5">Package</th>
+                                    <th className="px-4 py-2.5">Amount</th>
+                                    <th className="px-4 py-2.5">Status</th>
+                                    <th className="px-4 py-2.5">Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -215,11 +215,11 @@ export default function PlatformBillingSettings() {
                                         <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
                                             {tx.chargeId}
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-4 py-2.5">
                                             <div className="font-bold text-slate-900 dark:text-white">{tx.hotel?.name || 'Unknown Hotel'}</div>
                                             <div className="text-[10px] text-slate-500">{tx.hotel?.contactEmail}</div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-4 py-2.5">
                                             <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${tx.plan === 'ENTERPRISE' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
                                                     tx.plan === 'PRO' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                                         'bg-slate-100 text-slate-700 border border-slate-200'
@@ -230,8 +230,8 @@ export default function PlatformBillingSettings() {
                                         <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
                                             ฿{(tx.amount / 100).toLocaleString()}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${tx.status === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                                        <td className="px-4 py-2.5">
+                                            <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${tx.status === 'success' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700'
                                                 }`}>
                                                 {tx.status}
                                             </span>
@@ -260,3 +260,4 @@ export default function PlatformBillingSettings() {
         </AdminLayout>
     )
 }
+

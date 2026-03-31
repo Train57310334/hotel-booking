@@ -16,7 +16,7 @@ export default function ContactSection() {
         <section id="contact" className="relative bg-[#0A0F1C] overflow-hidden py-24">
             {/* Background Mesh Gradients */}
             <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px] mix-blend-screen -translate-y-1/2" />
-            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen translate-y-1/3" />
+            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[150px] mix-blend-screen translate-y-1/3" />
             <div className="absolute inset-0 bg-[url('/img/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(255,255,255,0),white)]" opacity="0.05" />
 
             <div className="container mx-auto px-4 relative z-10 max-w-6xl">
@@ -28,7 +28,7 @@ export default function ContactSection() {
                     className="text-center mb-16"
                 >
                     <h2 className="text-4xl md:text-5xl font-display font-extrabold text-white mb-5 tracking-tight">
-                        Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-400">Support</span>
+                        Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-400">Support</span>
                     </h2>
                     <p className="text-lg text-slate-400 max-w-2xl mx-auto">
                         Have questions about BookingKub? We're here to help you scale your hotel business.
@@ -62,12 +62,12 @@ export default function ContactSection() {
                             </div>
 
                             <div className="flex items-start gap-4 group/item">
-                                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover/item:scale-110 group-hover/item:bg-emerald-500/20 transition-all duration-300">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover/item:scale-110 group-hover/item:bg-blue-500/20 transition-all duration-300">
                                     <Mail size={22} />
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-white text-base mb-2">Email</h4>
-                                    <a href="mailto:support@bookingkub.com" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">support@bookingkub.com</a>
+                                    <a href="mailto:support@bookingkub.com" className="text-slate-400 hover:text-blue-400 transition-colors text-sm">support@bookingkub.com</a>
                                 </div>
                             </div>
 
@@ -97,7 +97,7 @@ export default function ContactSection() {
                     >
                         {submitted ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-10 py-24 animate-in fade-in zoom-in duration-500">
-                                <div className="w-24 h-24 bg-emerald-500/20 text-emerald-400 rounded-[2rem] flex items-center justify-center mb-8 shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]">
+                                <div className="w-24 h-24 bg-blue-500/20 text-blue-400 rounded-[2rem] flex items-center justify-center mb-8 shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]">
                                     <Send size={40} />
                                 </div>
                                 <h3 className="text-3xl font-bold text-white mb-4">Message Sent!</h3>
@@ -158,7 +158,7 @@ export default function ContactSection() {
                                     />
                                 </div>
 
-                                <button type="submit" className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-500 hover:to-emerald-500 text-white font-bold rounded-2xl shadow-[0_0_30px_-5px_rgba(16,185,129,0.4)] hover:shadow-[0_0_40px_-5px_rgba(16,185,129,0.6)] transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1">
+                                <button type="submit" className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white font-bold rounded-2xl shadow-[0_0_30px_-5px_rgba(16,185,129,0.4)] hover:shadow-[0_0_40px_-5px_rgba(16,185,129,0.6)] transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1">
                                     Send Message <Send size={18} className="transition-transform group-hover:translate-x-1" />
                                 </button>
                             </form>

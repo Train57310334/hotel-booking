@@ -42,10 +42,10 @@ export default function MockDashboard({ activeView: externalActiveView }) {
                 <div className="flex gap-2">
                     <div className="w-3 h-3 rounded-full bg-rose-500/80 group-hover:bg-rose-500 transition-colors"></div>
                     <div className="w-3 h-3 rounded-full bg-amber-500/80 group-hover:bg-amber-500 transition-colors"></div>
-                    <div className="w-3 h-3 rounded-full bg-emerald-500/80 group-hover:bg-emerald-500 transition-colors"></div>
+                    <div className="w-3 h-3 rounded-full bg-blue-500/80 group-hover:bg-blue-500 transition-colors"></div>
                 </div>
                 <div className="mx-auto bg-slate-900/50 text-slate-500 text-[10px] sm:text-xs px-24 py-1 rounded-md border border-slate-700/30 flex items-center gap-2 max-w-[200px] sm:max-w-xs truncate">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500/50 animate-pulse"></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-500/50 animate-pulse"></div>
                     app.bookingkub.com
                 </div>
             </div>
@@ -55,7 +55,7 @@ export default function MockDashboard({ activeView: externalActiveView }) {
                 {!isGuestView && (
                     <div className="w-16 sm:w-48 bg-slate-800/20 border-r border-slate-700/50 flex flex-col p-3 transition-all duration-300 shrink-0">
                         <div className="flex items-center gap-3 px-2 mb-8 hidden sm:flex">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center text-white font-bold">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-blue-500 flex items-center justify-center text-white font-bold">
                                 B
                             </div>
                             <span className="font-bold text-slate-200 text-sm truncate">BookingKub</span>
@@ -79,7 +79,7 @@ export default function MockDashboard({ activeView: externalActiveView }) {
                 <div className="flex-1 bg-slate-900/50 p-4 sm:p-6 overflow-hidden flex flex-col relative">
                     {/* Floating Glow Orbs */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
                     {/* Dynamic View Content */}
                     {currentView === 'overview' && <OverviewView pulse={pulse} />}
@@ -258,9 +258,9 @@ function CalendarView({ pulse }) {
                         <div className="text-[8px] text-blue-500/80 hidden sm:block truncate">Standard Double</div>
                     </div>
 
-                    <div className="absolute top-[30%] left-[42.85%] w-[40%] h-[20%] bg-emerald-500/20 border border-emerald-500/50 rounded-md p-1 sm:p-2 m-1">
-                        <div className="text-[8px] sm:text-[10px] font-bold text-emerald-400 truncate">Sarah Connor</div>
-                        <div className="text-[8px] text-emerald-500/80 hidden sm:block truncate">Ocean View Suite</div>
+                    <div className="absolute top-[30%] left-[42.85%] w-[40%] h-[20%] bg-blue-500/20 border border-blue-500/50 rounded-md p-1 sm:p-2 m-1">
+                        <div className="text-[8px] sm:text-[10px] font-bold text-blue-400 truncate">Sarah Connor</div>
+                        <div className="text-[8px] text-blue-500/80 hidden sm:block truncate">Ocean View Suite</div>
                     </div>
 
                     <div className="absolute top-[55%] left-[28.57%] w-[14%] h-[20%] bg-amber-500/20 border border-amber-500/50 rounded-md p-1 sm:p-2 m-1">
@@ -303,7 +303,7 @@ function GuestsView({ pulse }) {
                             <td className="px-4 py-3 font-medium text-slate-200">Alex Johnson</td>
                             <td className="px-4 py-3 hidden sm:table-cell">alex@example.com</td>
                             <td className="px-4 py-3 font-medium text-primary-400">฿12,400</td>
-                            <td className="px-4 py-3 hidden sm:table-cell"><span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded text-xs">VIP</span></td>
+                            <td className="px-4 py-3 hidden sm:table-cell"><span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-xs">VIP</span></td>
                         </tr>
                         <tr className="hover:bg-slate-800/50 transition-colors">
                             <td className="px-4 py-3 font-medium text-slate-200">Maria Garcia</td>
@@ -360,13 +360,13 @@ function PaymentsView({ pulse }) {
                 <div className="space-y-3">
                     <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400"><TrendingUp size={14} /></div>
+                            <div className="w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center text-blue-400"><TrendingUp size={14} /></div>
                             <div>
                                 <div className="text-sm font-bold text-slate-200">Payout to Bank ****4092</div>
                                 <div className="text-[10px] text-slate-500">Today, 2:30 PM</div>
                             </div>
                         </div>
-                        <div className="text-sm font-bold text-emerald-400">฿10,000</div>
+                        <div className="text-sm font-bold text-blue-400">฿10,000</div>
                     </div>
                     <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
                         <div className="flex items-center gap-3">
@@ -488,13 +488,13 @@ function SearchView({ pulse }) {
                                     </p>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <div className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-600 font-black text-xl sm:text-2xl leading-none">฿3,800</div>
+                                    <div className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 font-black text-xl sm:text-2xl leading-none">฿3,800</div>
                                     <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">/ night</div>
                                 </div>
                             </div>
                             <div className="flex justify-between items-end mt-3 pt-3 border-t border-slate-100">
                                 <div className="flex flex-wrap gap-2">
-                                    <span className="px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[9px] sm:text-[10px] font-bold rounded-lg flex items-center gap-1"><CheckCircle size={10} /> Free Breakfast</span>
+                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-100 text-[9px] sm:text-[10px] font-bold rounded-lg flex items-center gap-1"><CheckCircle size={10} /> Free Breakfast</span>
                                 </div>
                                 <button className={`bg-primary-600 text-white text-[11px] sm:text-sm font-bold px-4 sm:px-5 py-2 rounded-xl transition-all duration-300 relative overflow-hidden flex items-center gap-1 ${pulse ? 'shadow-[0_8px_20px_-6px_rgba(59,130,246,0.6)]' : 'group-hover:shadow-[0_8px_20px_-6px_rgba(59,130,246,0.6)]'}`}>
                                     <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] ${pulse ? 'animate-shine' : 'group-hover:animate-shine'}`} />
@@ -522,7 +522,7 @@ function SearchView({ pulse }) {
                             </div>
                             <div className="flex justify-between items-end mt-3">
                                 <div className="flex flex-wrap gap-1.5">
-                                    <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] sm:text-[10px] font-bold rounded">Free Breakfast</span>
+                                    <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] sm:text-[10px] font-bold rounded">Free Breakfast</span>
                                 </div>
                                 <button className="border-2 border-primary-600 text-primary-600 hover:bg-primary-50 text-[11px] sm:text-xs font-bold px-4 py-1.5 rounded-lg transition-colors">
                                     Select
@@ -540,14 +540,14 @@ function ConfirmationView({ pulse }) {
     return (
         <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 animate-fade-in-up relative overflow-hidden">
             {/* Deep Mesh Gradients */}
-            <div className={`absolute top-0 right-0 w-[400px] h-[400px] bg-emerald-500/20 rounded-full blur-[80px] pointer-events-none transition-all duration-1000 ${pulse ? 'scale-110 translate-x-4' : ''}`} />
+            <div className={`absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[80px] pointer-events-none transition-all duration-1000 ${pulse ? 'scale-110 translate-x-4' : ''}`} />
             <div className={`absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary-500/20 rounded-full blur-[80px] pointer-events-none transition-all duration-1000 ${pulse ? 'scale-110 -translate-x-4' : ''}`} />
 
-            <div className={`bg-white rounded-[2rem] shadow-2xl border border-slate-200/60 p-5 max-w-sm w-full text-center transition-all duration-1000 relative z-10 ${pulse ? 'scale-[1.02] shadow-emerald-500/20' : 'scale-100'}`}>
+            <div className={`bg-white rounded-[2rem] shadow-2xl border border-slate-200/60 p-5 max-w-sm w-full text-center transition-all duration-1000 relative z-10 ${pulse ? 'scale-[1.02] shadow-blue-500/20' : 'scale-100'}`}>
                 <div className="inline-block relative mb-4">
-                    <div className={`absolute inset-0 rounded-full blur-xl bg-emerald-500/30 transition-opacity duration-1000 ${pulse ? 'opacity-100 animate-pulse' : 'opacity-50'}`} />
-                    <div className="w-14 h-14 bg-gradient-to-b from-emerald-400/20 to-emerald-400/10 border border-emerald-400/30 backdrop-blur-xl rounded-full flex items-center justify-center relative shadow-lg">
-                        <CheckCircle size={28} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                    <div className={`absolute inset-0 rounded-full blur-xl bg-blue-500/30 transition-opacity duration-1000 ${pulse ? 'opacity-100 animate-pulse' : 'opacity-50'}`} />
+                    <div className="w-14 h-14 bg-gradient-to-b from-blue-400/20 to-blue-400/10 border border-blue-400/30 backdrop-blur-xl rounded-full flex items-center justify-center relative shadow-lg">
+                        <CheckCircle size={28} className="text-blue-500 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
                     </div>
                 </div>
 
@@ -555,7 +555,7 @@ function ConfirmationView({ pulse }) {
                 <p className="text-[11px] sm:text-xs font-medium text-slate-500 mb-4 leading-relaxed px-2">Thank you for choosing The Riverside Hotel. Your itinerary has been sent to your email.</p>
 
                 <div className="bg-slate-50 rounded-2xl p-4 text-left border border-slate-100 mb-4 shadow-inner relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-400" />
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-400" />
                     <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-200">
                         <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Booking Ref</span>
                         <span className="text-xs sm:text-sm font-mono font-bold text-slate-900 tracking-tight">BKG-7742</span>
@@ -575,7 +575,7 @@ function ConfirmationView({ pulse }) {
 
                 <div className="flex justify-between items-center mb-4 px-1">
                     <span className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">Total Paid</span>
-                    <span className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-600 font-display">฿11,400</span>
+                    <span className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 font-display">฿11,400</span>
                 </div>
 
                 <button className={`w-full bg-[#1C58EA] text-white font-bold py-3 sm:py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden shadow-[0_8px_20px_-6px_rgba(28,88,234,0.6)] ${pulse ? 'shadow-[0_12px_25px_-6px_rgba(28,88,234,0.8)]' : 'hover:bg-[#1642b3]'}`}>
@@ -611,7 +611,7 @@ function StatCard({ title, value, trend, isUp, delay, pulse }) {
         >
             <h4 className="text-xs font-medium text-slate-400 mb-1">{title}</h4>
             <div className="text-lg sm:text-xl font-bold text-white mb-2 tracking-tight">{value}</div>
-            <div className={`flex items-center gap-1 text-xs font-medium ${isUp ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <div className={`flex items-center gap-1 text-xs font-medium ${isUp ? 'text-blue-400' : 'text-rose-400'}`}>
                 {isUp ? <TrendingUp size={12} /> : <TrendingUp size={12} className="rotate-180" />}
                 {trend}
             </div>
@@ -633,7 +633,7 @@ function ActivityItem({ name, room, time, amount, status }) {
             </div>
             <div className="text-right">
                 <div className="text-xs font-bold text-white">{amount}</div>
-                <div className={`text-[10px] font-medium ${status === 'confirmed' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <div className={`text-[10px] font-medium ${status === 'confirmed' ? 'text-blue-400' : 'text-amber-400'}`}>
                     {status}
                 </div>
             </div>

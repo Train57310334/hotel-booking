@@ -98,7 +98,7 @@ export default function SubscriptionPage() {
         }
 
         if (isPopular) {
-            return `${base} border-emerald-500 shadow-xl scale-105 z-10 hidden md:flex`
+            return `${base} border-blue-500 shadow-xl scale-105 z-10 hidden md:flex`
         }
 
         return `${base} border-transparent hover:border-slate-300 dark:hover:border-slate-600 shadow-sm opacity-90 hover:opacity-100`
@@ -144,10 +144,10 @@ export default function SubscriptionPage() {
                             const isLoading = loadingPlan === plan.id
 
                             // To handle Tailwind dynamic classes robustly we map them explicitly here
-                            const bgColors = { slate: 'bg-slate-500', emerald: 'bg-emerald-500', indigo: 'bg-indigo-500' }
-                            const textColors = { slate: 'text-slate-500', emerald: 'text-emerald-500', indigo: 'text-indigo-500' }
-                            const borderColors = { slate: 'border-slate-500', emerald: 'border-emerald-500', indigo: 'border-indigo-500' }
-                            const shadowColors = { slate: 'shadow-slate-500/20', emerald: 'shadow-emerald-500/20', indigo: 'shadow-indigo-500/20' }
+                            const bgColors = { slate: 'bg-slate-500', emerald: 'bg-blue-500', indigo: 'bg-indigo-500' }
+                            const textColors = { slate: 'text-slate-500', emerald: 'text-blue-500', indigo: 'text-indigo-500' }
+                            const borderColors = { slate: 'border-slate-500', emerald: 'border-blue-500', indigo: 'border-indigo-500' }
+                            const shadowColors = { slate: 'shadow-slate-500/20', emerald: 'shadow-blue-500/20', indigo: 'shadow-indigo-500/20' }
 
                             let wrapperClasses = 'relative overflow-hidden rounded-3xl border-2 transition-all p-8 flex flex-col bg-white dark:bg-slate-800'
                             if (isActive) {
@@ -161,7 +161,7 @@ export default function SubscriptionPage() {
                             return (
                                 <div key={plan.id} className={wrapperClasses}>
                                     {plan.isPopular && !isActive && (
-                                        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
+                                        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-400 to-teal-500"></div>
                                     )}
                                     {isActive && (
                                         <div className={`absolute top-0 inset-x-0 h-1.5 ${bgColors[plan.color]}`}></div>
@@ -187,7 +187,7 @@ export default function SubscriptionPage() {
                                         )}
                                     </div>
 
-                                    <div className="mb-8 flex items-baseline gap-2">
+                                    <div className="mb-4 flex items-baseline gap-2">
                                         <span className="text-4xl font-black text-slate-900 dark:text-white">{plan.priceLabel}</span>
                                         {plan.period && <span className="text-slate-500 font-medium">{plan.period}</span>}
                                     </div>
@@ -252,7 +252,7 @@ export default function SubscriptionPage() {
 
                         <div className="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
-                                className={`h-full rounded-full bg-emerald-500`}
+                                className={`h-full rounded-full bg-blue-500`}
                                 style={{ width: currentHotel.maxRooms === 9999 ? '20%' : `${Math.min(((currentHotel.physicalRoomsCount || 0) / (currentHotel.maxRooms || 10)) * 100, 100)}%` }}
                             ></div>
                         </div>
@@ -272,3 +272,4 @@ export default function SubscriptionPage() {
         </AdminLayout>
     )
 }
+

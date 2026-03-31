@@ -63,7 +63,7 @@ export default function OwnerManagement() {
                                         <span
                                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                         ${owner.status === 'Active'
-                                                    ? 'bg-emerald-50 text-emerald-600'
+                                                    ? 'bg-blue-50 text-blue-600'
                                                     : 'bg-red-50 text-red-600'
                                                 }
                       `}

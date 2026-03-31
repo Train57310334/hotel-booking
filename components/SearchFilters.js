@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Filter, X, Check, ArrowDownUp } from 'lucide-react';
+import { Filter, X, Check, ArrowDownUp, EyeOff } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const COMMON_AMENITIES = [
@@ -18,6 +18,7 @@ export default function SearchFilters({ onFilterChange, initialFilters }) {
     const [maxPrice, setMaxPrice] = useState(initialFilters?.maxPrice || '');
     const [selectedAmenities, setSelectedAmenities] = useState(initialFilters?.amenities || []);
     const [sort, setSort] = useState(initialFilters?.sort || 'recommended');
+    const [hideFullRooms, setHideFullRooms] = useState(initialFilters?.hideFullRooms || false);
 
     const onFilterChangeRef = useRef(onFilterChange);
 
@@ -32,11 +33,12 @@ export default function SearchFilters({ onFilterChange, initialFilters }) {
                 minPrice: minPrice ? Number(minPrice) : null,
                 maxPrice: maxPrice ? Number(maxPrice) : null,
                 amenities: selectedAmenities,
-                sort: sort
+                sort: sort,
+                hideFullRooms
             });
         }, 500); // 500ms debounce
         return () => clearTimeout(handler);
-    }, [minPrice, maxPrice, selectedAmenities, sort]);
+    }, [minPrice, maxPrice, selectedAmenities, sort, hideFullRooms]);
 
     const toggleAmenity = (id) => {
         setSelectedAmenities(prev =>
@@ -51,9 +53,10 @@ export default function SearchFilters({ onFilterChange, initialFilters }) {
         setMaxPrice('');
         setSelectedAmenities([]);
         setSort('recommended');
+        setHideFullRooms(false);
     };
 
-    const hasActiveFilters = minPrice !== '' || maxPrice !== '' || selectedAmenities.length > 0 || sort !== 'recommended';
+    const hasActiveFilters = minPrice !== '' || maxPrice !== '' || selectedAmenities.length > 0 || sort !== 'recommended' || hideFullRooms;
 
     return (
         <div className="bg-theme-card rounded-3xl shadow-sm border border-theme-border p-6 xl:p-8">
@@ -70,6 +73,31 @@ export default function SearchFilters({ onFilterChange, initialFilters }) {
                         {t('filters.clearAll')}
                     </button>
                 )}
+            </div>
+
+            {/* Available Only Toggle — top priority for staff */}
+            <div
+                onClick={() => setHideFullRooms(v => !v)}
+                className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 mb-6 ${
+                    hideFullRooms
+                        ? 'bg-theme-accent border-theme-accent text-white'
+                        : 'bg-theme-bg border-theme-border hover:border-theme-accent/50 text-theme-text'
+                }`}
+            >
+                <div className="flex items-center gap-3">
+                    <EyeOff size={18} className={hideFullRooms ? 'text-white' : 'text-theme-accent'} />
+                    <div>
+                        <div className={`font-bold text-sm ${hideFullRooms ? 'text-white' : 'text-theme-text'}`}>Available Rooms Only</div>
+                        <div className={`text-xs ${hideFullRooms ? 'text-white/70' : 'text-theme-muted'}`}>ซ่อนห้องที่เต็มแล้ว</div>
+                    </div>
+                </div>
+                <div className={`w-11 h-6 rounded-full transition-all duration-200 flex items-center px-1 ${
+                    hideFullRooms ? 'bg-white/30' : 'bg-theme-border'
+                }`}>
+                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${
+                        hideFullRooms ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                </div>
             </div>
 
             {/* Sort Order */}

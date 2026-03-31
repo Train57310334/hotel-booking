@@ -30,7 +30,7 @@ export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, m
                             }}
                             className={`flex-1 px-4 py-2.5 text-white rounded-xl font-bold shadow-lg transition-colors ${type === 'danger'
                                 ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
-                                : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
+                                : 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/20'
                                 }`}
                         >
                             {confirmText}

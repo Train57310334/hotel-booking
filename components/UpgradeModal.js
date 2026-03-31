@@ -50,7 +50,7 @@ function CheckoutForm({ onSuccess, onError }) {
             <button
                 type="submit"
                 disabled={!stripe || loading}
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+                className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
             >
                 {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -121,8 +121,8 @@ export default function UpgradeModal({ isOpen, onClose }) {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                 <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl p-8 text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
-                    <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-teal-500"></div>
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                         <Check size={32} strokeWidth={3} />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upgrade Successful!</h3>
@@ -146,7 +146,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
 
                 {/* Header with Gradient */}
                 <div className="bg-slate-900 text-white p-6 relative overflow-hidden shrink-0">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl -ml-12 -mb-12 pointer-events-none"></div>
 
                     <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors z-10">
@@ -154,7 +154,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
                     </button>
 
                     <div className="relative z-10">
-                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-emerald-300 mb-3 border border-white/10 uppercase tracking-wider">
+                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-blue-300 mb-3 border border-white/10 uppercase tracking-wider">
                             <Crown size={12} /> Recommended
                         </div>
                         <h2 className="text-3xl font-display font-bold mb-2">Upgrade to PRO</h2>
@@ -171,7 +171,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
 
                     <div className="space-y-4 mb-8">
                         <FeatureItem icon={<Rocket className="text-amber-500" />} title="Unlimited Rooms" desc="Remove the 5-room limit and manage your entire property." />
-                        <FeatureItem icon={<Shield className="text-emerald-500" />} title="Automated Payments" desc="Accept credit cards via Stripe/Omise directly." />
+                        <FeatureItem icon={<Shield className="text-blue-500" />} title="Automated Payments" desc="Accept credit cards via Stripe/Omise directly." />
                         <FeatureItem icon={<Star className="text-blue-500" />} title="Advanced Analytics" desc="Deep dive into occupancy rates, RevPAR, and trends." />
                         <FeatureItem icon={<Check className="text-slate-400" />} title="Priority Support" desc="24/7 dedicated support channel." />
                     </div>
@@ -188,7 +188,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
                             </Elements>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-8 gap-3 text-slate-400">
-                                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+                                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                                 <span className="text-xs font-bold">Initializing Secure Connection...</span>
                             </div>
                         )}

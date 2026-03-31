@@ -114,13 +114,13 @@ export default function StaffManagement() {
     <AdminLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Staff Management</h1>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Staff Management</h1>
           <p className="text-slate-500 dark:text-slate-400">Manage hotel staff and their permissions</p>
         </div>
         {canEditStaff && (
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/20 transition-all active:scale-95"
           >
             <Plus size={20} />
             Add Staff
@@ -137,7 +137,7 @@ export default function StaffManagement() {
             placeholder="Search staff by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
           />
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function StaffManagement() {
               ) : (
                 staff.map((user) => (
                   <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/20 ${user.avatarUrl ? 'bg-white' : 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-bold'}`}>
                           {user.avatarUrl ? (
@@ -178,7 +178,7 @@ export default function StaffManagement() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                           <Mail size={14} className="text-slate-400" />
@@ -192,17 +192,17 @@ export default function StaffManagement() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide
                         ${user.role === 'owner' ? 'bg-purple-100 text-purple-800' :
                           user.role === 'admin' ? 'bg-blue-100 text-blue-800' :
                             user.role === 'manager' ? 'bg-orange-100 text-orange-800' :
-                              'bg-emerald-100 text-emerald-800'}`}>
+                              'bg-blue-100 text-blue-800'}`}>
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <td className="px-4 py-2.5">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400">
                         <CheckCircle size={14} /> Active
                       </span>
                     </td>
@@ -214,7 +214,7 @@ export default function StaffManagement() {
                             <>
                               <button
                                 onClick={() => openEditModal(user)}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
                               >
                                 <Edit size={16} />
                               </button>
@@ -258,7 +258,7 @@ export default function StaffManagement() {
                     type="text"
                     required={!editUser}
                     disabled={!!editUser} // Cannot change name here if editing (optional)
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
                     placeholder="Jane Doe"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -273,7 +273,7 @@ export default function StaffManagement() {
                     type="email"
                     required
                     disabled={!!editUser} // Email is identity
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
                     placeholder="jane@example.com"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
@@ -289,7 +289,7 @@ export default function StaffManagement() {
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 appearance-none"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none"
                   >
                     <option value="reception">Reception (Front Desk)</option>
                     <option value="housekeeper">Housekeeper</option>
@@ -311,7 +311,7 @@ export default function StaffManagement() {
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="tel"
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     placeholder="+66 81 234 5678"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
@@ -325,7 +325,7 @@ export default function StaffManagement() {
                   <input
                     type="password"
                     required
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={e => setFormData({ ...formData, password: e.target.value })}
@@ -343,7 +343,7 @@ export default function StaffManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                  className="px-6 py-2 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                 >
                   {editUser ? 'Save Changes' : 'Add Staff'}
                 </button>
@@ -363,3 +363,4 @@ export default function StaffManagement() {
     </AdminLayout>
   )
 }
+

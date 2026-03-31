@@ -1,4 +1,4 @@
-import { User, Mail, Phone, Calendar, CreditCard, XCircle, Receipt, LayoutDashboard, Printer } from 'lucide-react'
+import { User, Mail, Phone, Calendar, CreditCard, XCircle, Receipt, LayoutDashboard, Printer, Link as LinkIcon, ClipboardCheck } from 'lucide-react'
 
 import GuestManager from './GuestManager'
 import FolioTab from './FolioTab' // Import
@@ -30,11 +30,17 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
         }
     }
 
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/checkin/${booking.id}`;
+        navigator.clipboard.writeText(url);
+        toast.success('Web Check-in link copied to clipboard!');
+    };
+
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB')
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'confirmed': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400'
+            case 'confirmed': return 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400'
             case 'pending': return 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400'
             case 'cancelled': return 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
             case 'checked_in': return 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400'
@@ -87,10 +93,21 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                             <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(booking.status)}`}>
                                 {booking.status.replace('_', ' ')}
                             </span>
+                            {booking.isWebCheckedIn && (
+                                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/30">
+                                    ✅ Pre-Registered
+                                </span>
+                            )}
                         </h3>
                         <p className="text-sm text-slate-500">ID: #{booking.id}</p>
                     </div>
                     <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleCopyLink}
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 shadow-sm dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 dark:hover:bg-blue-500/20 transition-colors"
+                        >
+                            <LinkIcon size={16} /> Guest Link
+                        </button>
                         <a
                             href={`/invoice/${booking.id}`}
                             target="_blank"
@@ -111,6 +128,14 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                     >
                         <LayoutDashboard size={16} /> Overview
                     </button>
+                    {booking.isWebCheckedIn && (
+                        <button
+                            onClick={() => setActiveTab('registration')}
+                            className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'registration' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                        >
+                            <ClipboardCheck size={16} /> Registration Card
+                        </button>
+                    )}
                     <button
                         onClick={() => setActiveTab('folio')}
                         className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'folio' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
@@ -209,6 +234,12 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                                         <span>Rate Plan:</span>
                                         <span className="font-bold bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-xs">{booking.ratePlan?.name || 'Standard'}</span>
                                     </div>
+                                    {booking.promotion && (
+                                        <div className="flex justify-between items-center text-indigo-600 dark:text-indigo-400 mt-2">
+                                            <span>Promotion Used:</span>
+                                            <span className="font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded text-xs border border-indigo-100 dark:border-indigo-800">{booking.promotion.code}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {booking.specialRequests && (
@@ -225,12 +256,12 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                                 <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl flex justify-between items-center">
                                     <div>
                                         <p className="text-sm text-slate-500">Total Amount</p>
-                                        <p className="text-2xl font-bold text-emerald-600">฿{booking.totalAmount?.toLocaleString()}</p>
+                                        <p className="text-2xl font-bold text-blue-600">฿{booking.totalAmount?.toLocaleString()}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="text-right">
                                             <p className="text-sm text-slate-500 mb-1">Method</p>
-                                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold dark:bg-emerald-500/20 dark:text-emerald-400">
+                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold dark:bg-blue-500/20 dark:text-blue-400">
                                                 {booking.payment?.provider ? booking.payment.provider.replace('_', ' ') : 'Pay Later'}
                                             </span>
                                         </div>
@@ -261,8 +292,54 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                                 />
                             </div>
                         </div>
-                    ) : (
+                    ) : activeTab === 'folio' ? (
                         <FolioTab booking={booking} onUpdate={refreshBooking} />
+                    ) : activeTab === 'registration' && (
+                        <div className="space-y-6">
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">Digital Registration Card</h4>
+                            
+                            {/* ETA */}
+                            {booking.estimatedArrivalTime && (
+                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800 text-sm font-medium border border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-500/30 w-max">
+                                    <strong>Guest ETA:</strong> {booking.estimatedArrivalTime}
+                                </div>
+                            )}
+
+                            {/* Signatures */}
+                            <div>
+                                <h5 className="font-bold text-slate-700 dark:text-slate-300 mb-3">Guest Signature</h5>
+                                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 max-w-sm">
+                                    {booking.signatureUrl ? (
+                                        <img src={booking.signatureUrl} alt="Signature" className="max-w-full h-auto filter dark:invert" />
+                                    ) : (
+                                        <div className="text-slate-400 italic text-sm">No signature available</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Identity Documents from Guests */}
+                            <div>
+                                <h5 className="font-bold text-slate-700 dark:text-slate-300 mb-3">Identity Documents</h5>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {booking.guests?.map(g => (
+                                        <div key={g.id} className="bg-slate-50 dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 rounded-xl">
+                                            <p className="font-bold text-sm text-slate-900 dark:text-white mb-1">{g.name} <span className="text-xs font-normal text-slate-500 uppercase">({g.idType || 'Document'})</span></p>
+                                            {g.idNumber && <p className="text-xs text-slate-500 font-mono mb-3">No: {g.idNumber}</p>}
+                                            {g.documentUrl ? (
+                                                <a href={g.documentUrl} target="_blank" rel="noopener noreferrer">
+                                                    <img src={g.documentUrl} alt={g.name} className="w-full h-32 object-cover rounded-lg border border-slate-200 dark:border-slate-600 hover:opacity-80 transition-opacity" />
+                                                </a>
+                                            ) : (
+                                                <div className="w-full h-32 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg flex items-center justify-center text-xs text-slate-400 border border-slate-200 dark:border-slate-700">No Image Uploaded</div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {booking.guests?.length === 0 && (
+                                        <div className="text-slate-400 italic text-sm">No guest documents uploaded.</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
 
@@ -271,7 +348,7 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                     {booking.status === 'pending' && (
                         <button
                             onClick={() => onUpdateStatus(booking.id, 'confirmed')}
-                            className="px-6 py-2 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
+                            className="px-6 py-2 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20"
                         >
                             Confirm Booking
                         </button>

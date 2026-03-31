@@ -6,7 +6,7 @@ export default function WordPressSection() {
         <section id="wordpress" className="py-24 bg-slate-900 text-white relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -17,7 +17,7 @@ export default function WordPressSection() {
                         </div>
 
                         <h2 className="text-4xl md:text-5xl font-display font-bold leading-tight">
-                            Turn your WordPress site into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Booking Powerhouse.</span>
+                            Turn your WordPress site into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-400">Booking Powerhouse.</span>
                         </h2>
 
                         <p className="text-lg text-slate-400 leading-relaxed">

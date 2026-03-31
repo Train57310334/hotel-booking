@@ -16,7 +16,9 @@ import {
     Crown,
     Globe,
     Building2,
-    Package
+    Package,
+    Share2,
+    Moon
 } from 'lucide-react'
 
 export const guideData = {
@@ -329,16 +331,76 @@ export const guideData = {
         icon: SprayCan,
         steps: [
             {
-                title: 'Room Status Board',
-                content: 'View all physical rooms grouped by floor/type. Each room card shows its current status: Dirty (needs cleaning), Cleaning (in progress), Clean (done), Inspected (ready for guest), or Out of Order (OOO).'
+                title: 'Tab: Rooms — Room Status Board',
+                content: 'View all physical rooms grouped by type. Each card shows the current status: Dirty (needs cleaning), Cleaning (in progress), Clean (done), Inspected (ready for guest), or Out of Order. Use the 1-tap buttons to move rooms through the workflow instantly.'
             },
             {
-                title: 'Update Room Status',
-                content: 'Housekeepers can update room status directly from this page or from the Rooms page. Changes are reflected system-wide in real-time, including triggering a WebSocket notification to the admin dashboard.'
+                title: 'Tab: Maintenance — Issue Reports',
+                content: 'View all open maintenance issues reported by housekeeping staff. Each report shows the room number, category (Plumbing, Electrical, Furniture, etc.), priority level, and description. Click "Resolve" once the issue has been fixed.'
             },
             {
-                title: 'Post-Checkout Workflow',
-                content: 'When a guest checks out, the room status automatically becomes "Dirty". Housekeepers can quickly filter for Dirty rooms to prioritize their cleaning schedule.'
+                title: 'Priority Levels',
+                content: 'Issues are marked as LOW, NORMAL, or HIGH. High-priority issues (e.g., water leak) should be addressed immediately. The red triangle icon helps you spot urgent items at a glance.'
+            },
+            {
+                title: 'Housekeeper Mobile App',
+                content: 'Room attendants can use the dedicated mobile app at /housekeeper (separate from this admin view). They log in with their Hotel ID + Email, update room statuses with large thumb-friendly buttons, and report issues on the spot via a bottom sheet form.'
+            },
+            {
+                title: 'Real-Time Updates',
+                content: 'Status changes made by housekeepers on the mobile app appear here immediately via WebSocket. No need to refresh the page.'
+            }
+        ]
+    },
+    '/admin/channels': {
+        title: 'Channel Manager',
+        icon: Share2,
+        steps: [
+            {
+                title: 'What is the Channel Manager?',
+                content: 'The Channel Manager connects your hotel to Online Travel Agencies (OTAs) like Agoda, Booking.com, and Airbnb using iCal feeds. This prevents double-bookings by keeping availability in sync automatically.'
+            },
+            {
+                title: 'Inbound iCal — Import OTA Bookings',
+                content: 'For each Room Type, paste the iCal URL from your OTA listing (usually found in the OTA\'s channel settings). The system fetches new bookings every 30 minutes and blocks those dates automatically. Click "Sync Now" for an immediate update.'
+            },
+            {
+                title: 'Outbound Feed — Export Your Availability',
+                content: 'Each Room Type has a unique outbound iCal URL (click the copy icon). Paste this URL into your OTA to let them read your hotel\'s availability and prevent overbooking from the OTA side.'
+            },
+            {
+                title: 'OTA Bookings on Calendar',
+                content: 'Bookings imported from OTAs appear on the Admin Calendar with a striped pattern and an "OTA" badge so front-desk staff can easily tell them apart from direct bookings.'
+            },
+            {
+                title: 'Auto-Deletion Sweep',
+                content: 'If an OTA booking is cancelled and removed from the iCal feed, it will be automatically deleted from your system on the next sync — keeping your calendar clean without manual intervention.'
+            }
+        ]
+    },
+    '/admin/reports/night-audit': {
+        title: 'Night Audit',
+        icon: Moon,
+        steps: [
+            {
+                title: 'What is Night Audit?',
+                content: 'Night Audit is the end-of-day close procedure for hotels. Run it once each evening to lock in the day\'s KPIs, auto-checkout any overdue guests, and reset rooms for the next day.'
+            },
+            {
+                title: 'Run Night Audit',
+                content: 'Click the "Run Night Audit" button in the top-right corner. The system will: (1) Auto-checkout any bookings with a past checkout date, (2) Calculate and save today\'s KPIs (Occupancy, ADR, RevPAR, Revenue), and (3) Reset those rooms to Dirty for housekeeping.'
+            },
+            {
+                title: 'KPI Cards',
+                content: 'After running the audit, six KPI cards are shown: Occupied Rooms (out of total), Occupancy Rate (%), Tonight\'s Revenue, Average Daily Rate (ADR), RevPAR, and Total Rooms. These numbers are locked as the official record for the day.'
+            },
+            {
+                title: 'Booking Breakdown Tables',
+                content: 'Three tables show all today\'s activity: Check-ins (new arrivals), Check-outs (departures), and Staying Over (guests continuing their stay). Each row shows guest name, room type, dates, amount, and status.'
+            },
+            {
+                title: 'Print Report',
+                content: 'Click "Print Report" to print a clean, formatted shift summary. The admin sidebar is automatically hidden when printing. Hand this to the incoming shift manager as a physical handover record.'
             }
         ]
     },

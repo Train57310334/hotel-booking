@@ -108,9 +108,9 @@ export default function SuperAdminNotifications() {
         <AdminLayout>
             <div className="max-w-3xl mx-auto pb-20 p-6">
                 {/* Header */}
-                <div className="flex justify-between items-start mb-8 gap-4">
+                <div className="flex justify-between items-start mb-4 gap-4">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
                             <Mail className="text-indigo-500" size={28} />
                             Platform Email Settings
                         </h1>
@@ -130,7 +130,7 @@ export default function SuperAdminNotifications() {
 
                 {/* Status Banner */}
                 <div className={`flex items-center gap-3 p-4 rounded-xl mb-6 border ${isConfigured
-                        ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                        ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20 text-blue-700 dark:text-blue-300'
                         : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-700 dark:text-amber-300'
                     }`}>
                     {isConfigured
@@ -227,7 +227,7 @@ export default function SuperAdminNotifications() {
                     {/* Sender Identity */}
                     <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm space-y-6">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-2">
-                            <Mail size={18} className="text-emerald-500" />
+                            <Mail size={18} className="text-blue-500" />
                             Sender Identity
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -312,3 +312,4 @@ export default function SuperAdminNotifications() {
         </AdminLayout>
     );
 }
+

@@ -214,7 +214,7 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                     <button
                         onClick={() => setActiveTab('cash')}
                         className={`flex-1 py-2 px-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'cash'
-                            ? 'bg-white dark:bg-slate-800 text-emerald-600 shadow-sm'
+                            ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-sm'
                             : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                     >
@@ -282,7 +282,7 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
 
                     {activeTab === 'cash' && (
                         <div className="text-center space-y-6">
-                            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
                                 <Banknote size={32} />
                             </div>
                             <p className="text-slate-600 dark:text-slate-300">
@@ -291,7 +291,7 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                             <button
                                 onClick={() => handleManualPayment('CASH')}
                                 disabled={manualLoading}
-                                className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 disabled:opacity-50 flex justify-center items-center gap-2"
+                                className="w-full py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20 disabled:opacity-50 flex justify-center items-center gap-2"
                             >
                                 {manualLoading ? <Loader2 className="animate-spin" /> : 'Confirm Cash Payment'}
                             </button>
@@ -332,7 +332,7 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
                         <div className="flex flex-col items-center pb-6">
                             {paymentStatus === 'success' ? (
                                 <div className="flex flex-col items-center text-center space-y-4 py-8">
-                                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center animate-bounce">
+                                    <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-bounce">
                                         <Lock size={40} />
                                     </div>
                                     <h3 className="text-2xl font-black text-slate-800 dark:text-white">Payment Secure</h3>

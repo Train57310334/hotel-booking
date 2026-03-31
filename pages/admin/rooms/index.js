@@ -354,19 +354,19 @@ export default function RoomManagement() {
     <AdminLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Room Management</h1>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Room Management</h1>
           <p className="text-slate-500 dark:text-slate-400">Manage Rooms, Types, and Images</p>
         </div>
         <div className="flex gap-2 bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-100 dark:border-slate-700">
           <button
             onClick={() => setActiveTab('inventory')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'inventory' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'inventory' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
           >
             Room Inventory
           </button>
           <button
             onClick={() => setActiveTab('types')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'types' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'types' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
           >
             Room Types & Images
           </button>
@@ -386,7 +386,7 @@ export default function RoomManagement() {
             <div className="w-1/2">
               <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${rooms.length >= currentHotel.maxRooms ? 'bg-red-500' : 'bg-emerald-500'}`}
+                  className={`h-full rounded-full transition-all ${rooms.length >= currentHotel.maxRooms ? 'bg-red-500' : 'bg-blue-500'}`}
                   style={{ width: `${Math.min(100, (rooms.length / currentHotel.maxRooms) * 100)}%` }}
                 />
               </div>
@@ -402,7 +402,7 @@ export default function RoomManagement() {
             <div className="w-1/2">
               <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${roomTypes.length >= currentHotel.maxRoomTypes ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                  className={`h-full rounded-full transition-all ${roomTypes.length >= currentHotel.maxRoomTypes ? 'bg-amber-500' : 'bg-blue-500'}`}
                   style={{ width: `${Math.min(100, (roomTypes.length / currentHotel.maxRoomTypes) * 100)}%` }}
                 />
               </div>
@@ -413,7 +413,7 @@ export default function RoomManagement() {
 
       {/* Search Indicator */}
       {searchQuery && (
-        <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400 flex items-center gap-2">
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-500/20 text-blue-800 dark:text-blue-400 flex items-center gap-2">
           <Search size={18} />
           <span>Showing results for: <strong>{searchQuery}</strong></span>
         </div>
@@ -424,7 +424,7 @@ export default function RoomManagement() {
         <>
           {!isReception && (
             <div className="flex justify-end mb-4">
-              <button onClick={() => openRoomModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20">
+              <button onClick={() => openRoomModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
                 <Plus size={18} /> Add Physical Room
               </button>
             </div>
@@ -462,7 +462,7 @@ export default function RoomManagement() {
                       {!isReception && (
                         <button
                           onClick={(e) => { e.stopPropagation(); openRoomModal({ roomTypeId: type.id }); }}
-                          className="text-emerald-600 hover:text-emerald-700 text-sm font-bold bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20"
+                          className="text-blue-600 hover:text-blue-700 text-sm font-bold bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-500/20"
                         >
                           + Add Room
                         </button>
@@ -481,7 +481,7 @@ export default function RoomManagement() {
                                   {r.roomNumber}
                                 </div>
                                 <div onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="cursor-pointer">
-                                  <div className="font-bold text-sm text-slate-900 dark:text-white hover:text-emerald-500 transition-colors">Room {r.roomNumber}</div>
+                                  <div className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-500 transition-colors">Room {r.roomNumber}</div>
                                   {!isReception && (
                                     <div className="flex gap-1">
                                       <button onClick={(e) => { e.stopPropagation(); openRoomModal(r); }} className="p-1 text-slate-300 hover:text-blue-500"><Edit size={12} /></button>
@@ -494,7 +494,7 @@ export default function RoomManagement() {
                               <div className="flex flex-col items-end gap-1">
                                 <select
                                   className={`px-2 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider cursor-pointer outline-none focus:ring-2 focus:ring-offset-1 transition-all
-                                    ${(r.status === 'CLEAN' || r.status === 'INSPECTED') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' :
+                                    ${(r.status === 'CLEAN' || r.status === 'INSPECTED') ? 'bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-500 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
                                       r.status === 'DIRTY' ? 'bg-red-50 text-red-700 border-red-200 focus:ring-red-500 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' :
                                         r.status === 'CLEANING' ? 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
                                           r.status === 'OOO' ? 'bg-slate-100 text-slate-500 border-slate-200 focus:ring-slate-500 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600' :
@@ -565,7 +565,7 @@ export default function RoomManagement() {
         <>
           {!isReception && (
             <div className="flex justify-end mb-4">
-              <button onClick={() => openTypeModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">
+              <button onClick={() => openTypeModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                 <Plus size={18} /> Add Room Type
               </button>
             </div>
@@ -588,7 +588,7 @@ export default function RoomManagement() {
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-lg dark:text-white line-clamp-1" title={type.name}>{type.name} <span className="text-xs text-slate-400 font-normal">#{type.id.slice(-4)}</span></h3>
-                    <span className="text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-lg text-sm">
+                    <span className="text-blue-500 font-bold bg-blue-50 dark:bg-blue-500/10 px-2.5 py-1 rounded-lg text-sm">
                       ฿{type.basePrice?.toLocaleString()}
                     </span>
                   </div>
@@ -619,7 +619,7 @@ export default function RoomManagement() {
                     {!isReception && (
                       <button
                         onClick={() => openTypeModal(type)}
-                        className="flex-1 py-2.5 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-emerald-500/25"
+                        className="flex-1 py-2.5 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-blue-500 hover:text-white transition-all shadow-sm hover:shadow-blue-500/25"
                       >
                         Edit Details
                       </button>
@@ -749,7 +749,7 @@ export default function RoomManagement() {
                               setTypeFormData(prev => ({ ...prev, amenities: prev.amenities.filter(a => a !== amenity) }))
                             }
                           }}
-                          className="rounded text-emerald-500 focus:ring-emerald-500"
+                          className="rounded text-blue-500 focus:ring-blue-500"
                         />
                         <span>{amenity}</span>
                       </label>
@@ -767,8 +767,8 @@ export default function RoomManagement() {
                         <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
                       </div>
                     ))}
-                    <label className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
-                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div> : <Upload className="text-slate-400" />}
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors">
+                      {uploading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div> : <Upload className="text-slate-400" />}
                       <span className="text-xs font-bold text-slate-400 mt-2">Add Photo</span>
                       <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                     </label>
@@ -781,7 +781,7 @@ export default function RoomManagement() {
                       type="checkbox"
                       checked={typeFormData.isFeatured}
                       onChange={(e) => setTypeFormData({ ...typeFormData, isFeatured: e.target.checked })}
-                      className="rounded text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                      className="rounded text-blue-500 focus:ring-blue-500 w-4 h-4"
                     />
                     Display this room on Homepage (Featured)
                     <InfoTooltip content="Featured rooms appear in the highlighted 'Our Rooms' section on the hotel's public booking homepage. Enable this for your best/most popular room types. Non-featured rooms are still bookable via the search page." />
@@ -836,7 +836,7 @@ export default function RoomManagement() {
                   </div>
                 </div>
 
-                <button onClick={handleSubmitType} className="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">Save Changes</button>
+                <button onClick={handleSubmitType} className="w-full py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-blue-500/20">Save Changes</button>
               </div>
             </div>
           </div>
@@ -854,13 +854,13 @@ export default function RoomManagement() {
                 <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-lg mb-4">
                   <button
                     onClick={() => setRoomFormData({ ...roomFormData, isBulk: false })}
-                    className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${!roomFormData.isBulk ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}
+                    className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${!roomFormData.isBulk ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
                   >
                     Single Room
                   </button>
                   <button
                     onClick={() => setRoomFormData({ ...roomFormData, isBulk: true })}
-                    className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${roomFormData.isBulk ? 'bg-white shadow text-emerald-600' : 'text-slate-500'}`}
+                    className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${roomFormData.isBulk ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
                   >
                     Bulk Generate
                   </button>
@@ -923,7 +923,7 @@ export default function RoomManagement() {
               >
                 {roomTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
-              <button onClick={handleSubmitRoom} className="w-full bg-emerald-500 text-white py-2 rounded-lg font-bold hover:bg-emerald-600 transition-colors">
+              <button onClick={handleSubmitRoom} className="w-full bg-blue-500 text-white py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors">
                 {editRoom ? 'Update Room' : 'Create Room'}
               </button>
               <button onClick={() => setIsRoomModalOpen(false)} className="w-full mt-2 text-slate-500 hover:text-slate-700">Cancel</button>
@@ -972,3 +972,4 @@ export default function RoomManagement() {
     </AdminLayout >
   )
 }
+

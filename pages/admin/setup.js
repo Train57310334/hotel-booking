@@ -61,12 +61,12 @@ export default function SetupHotel() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div className="bg-emerald-600 p-6 text-center">
+                <div className="bg-blue-600 p-6 text-center">
                     <div className="mx-auto w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
                         <Building2 className="text-white" size={32} />
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">Setup Your Property</h1>
-                    <p className="text-emerald-100 text-sm">Welcome to BookingKub! Let's get your hotel started.</p>
+                    <p className="text-blue-100 text-sm">Welcome to BookingKub! Let's get your hotel started.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -78,7 +78,7 @@ export default function SetupHotel() {
                         <input
                             name="name"
                             required
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
                             placeholder="e.g. Seaside Resort"
                             onChange={handleChange}
                         />
@@ -93,7 +93,7 @@ export default function SetupHotel() {
                             <input
                                 name="city"
                                 required
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
                                 placeholder="Bangkok"
                                 onChange={handleChange}
                             />
@@ -106,7 +106,7 @@ export default function SetupHotel() {
                             <input
                                 name="country"
                                 required
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
                                 value={formData.country}
                                 onChange={handleChange}
                             />
@@ -122,7 +122,7 @@ export default function SetupHotel() {
                             name="address"
                             required
                             rows="3"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all resize-none text-slate-900 placeholder:text-slate-400"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none text-slate-900 placeholder:text-slate-400"
                             placeholder="123 Sukhumvit Road..."
                             onChange={handleChange}
                         />
@@ -145,3 +145,4 @@ export default function SetupHotel() {
         </div>
     );
 }
+

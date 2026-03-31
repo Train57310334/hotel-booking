@@ -151,7 +151,7 @@ export default function PlatformCMS() {
             <div className="max-w-4xl mx-auto pb-20 p-6">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Landing CMS</h1>
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Landing CMS</h1>
                         <p className="text-slate-500 dark:text-slate-400">Manage the public SaaS platform pages</p>
                     </div>
                     <button
@@ -393,3 +393,4 @@ export default function PlatformCMS() {
         </AdminLayout>
     );
 }
+

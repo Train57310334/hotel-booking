@@ -303,7 +303,7 @@ export default function PaymentPage() {
     try {
       const result = await apiFetch('/promotions/validate', {
         method: 'POST',
-        body: JSON.stringify({ code: promoCode, amount: bookingData.totalPrice })
+        body: JSON.stringify({ code: promoCode, amount: bookingData.totalPrice, hotelId: bookingData.hotelId })
       });
 
       if (result.valid) {
@@ -425,7 +425,7 @@ export default function PaymentPage() {
           </p>
           <button
             onClick={() => router.push('/search')}
-            className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors"
+            className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors"
           >
             {t('payment.startNewBooking')}
           </button>
@@ -561,7 +561,7 @@ export default function PaymentPage() {
                       <button
                         onClick={handleManualPayment}
                         disabled={isProcessing}
-                        className="w-full px-8 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition disabled:opacity-50"
+                        className="w-full px-8 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition disabled:opacity-50"
                       >
                         {isProcessing ? 'Processing...' : 'I have paid ✓'}
                       </button>
@@ -690,9 +690,9 @@ export default function PaymentPage() {
                   )}
                 </div>
 
-                <div className="flex justify-between items-end bg-gradient-to-br from-primary-50 to-emerald-50 p-5 rounded-2xl border border-primary-100/50 shadow-inner mt-6 relative z-10">
+                <div className="flex justify-between items-end bg-gradient-to-br from-primary-50 to-blue-50 p-5 rounded-2xl border border-primary-100/50 shadow-inner mt-6 relative z-10">
                   <span className="text-primary-800 font-bold uppercase tracking-wider text-sm">{t('checkout.totalPrice')}</span>
-                  <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-600 font-display">฿{finalPrice?.toLocaleString()}</span>
+                  <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-600 font-display">฿{finalPrice?.toLocaleString()}</span>
                 </div>
               </div>
             </div>

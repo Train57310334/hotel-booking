@@ -65,8 +65,8 @@ export default function AnalyticsDashboard() {
         <AdminLayout>
             <div className="max-w-6xl mx-auto pb-20 p-6">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
-                        <BarChart2 className="text-emerald-500" size={28} />
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                        <BarChart2 className="text-blue-500" size={28} />
                         Analytics Dashboard
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400">
@@ -76,24 +76,24 @@ export default function AnalyticsDashboard() {
 
                 {/* Status Bar */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${hasGaId ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
-                        {hasGaId ? <CheckCircle size={20} className="text-emerald-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
+                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${hasGaId ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                        {hasGaId ? <CheckCircle size={20} className="text-blue-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
                         <div>
-                            <p className={`text-sm font-bold ${hasGaId ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>GA4 Tracking</p>
+                            <p className={`text-sm font-bold ${hasGaId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>GA4 Tracking</p>
                             <p className="text-xs text-slate-500">{hasGaId ? hotel.googleAnalyticsId : 'Not configured'}</p>
                         </div>
                     </div>
-                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${hotel?.googleTagManagerId ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
-                        {hotel?.googleTagManagerId ? <CheckCircle size={20} className="text-emerald-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
+                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${hotel?.googleTagManagerId ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                        {hotel?.googleTagManagerId ? <CheckCircle size={20} className="text-blue-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
                         <div>
-                            <p className={`text-sm font-bold ${hotel?.googleTagManagerId ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>GTM</p>
+                            <p className={`text-sm font-bold ${hotel?.googleTagManagerId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>GTM</p>
                             <p className="text-xs text-slate-500">{hotel?.googleTagManagerId || 'Not configured'}</p>
                         </div>
                     </div>
-                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${hotel?.facebookPixelId ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
-                        {hotel?.facebookPixelId ? <CheckCircle size={20} className="text-emerald-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
+                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${hotel?.facebookPixelId ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                        {hotel?.facebookPixelId ? <CheckCircle size={20} className="text-blue-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
                         <div>
-                            <p className={`text-sm font-bold ${hotel?.facebookPixelId ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>Facebook Pixel</p>
+                            <p className={`text-sm font-bold ${hotel?.facebookPixelId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>Facebook Pixel</p>
                             <p className="text-xs text-slate-500">{hotel?.facebookPixelId || 'Not configured'}</p>
                         </div>
                     </div>
@@ -129,22 +129,22 @@ export default function AnalyticsDashboard() {
                             <p className="text-slate-500 dark:text-slate-400 mb-8">Follow these steps to connect your Google Analytics data and view it directly in your admin panel.</p>
                             <div className="space-y-4">
                                 {setupSteps.map((step, idx) => (
-                                    <div key={idx} className={`flex gap-4 p-4 rounded-xl border transition-all ${step.done ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600'}`}>
+                                    <div key={idx} className={`flex gap-4 p-4 rounded-xl border transition-all ${step.done ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600'}`}>
                                         <div className="shrink-0 mt-0.5">
                                             {step.done
-                                                ? <CheckCircle size={22} className="text-emerald-500" />
+                                                ? <CheckCircle size={22} className="text-blue-500" />
                                                 : <div className="w-6 h-6 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center text-xs font-bold text-slate-500">{idx + 1}</div>
                                             }
                                         </div>
                                         <div className="flex-1">
-                                            <p className={`font-bold text-sm mb-1 ${step.done ? 'text-emerald-700 dark:text-emerald-400 line-through' : 'text-slate-900 dark:text-white'}`}>{step.label}</p>
+                                            <p className={`font-bold text-sm mb-1 ${step.done ? 'text-blue-700 dark:text-blue-400 line-through' : 'text-slate-900 dark:text-white'}`}>{step.label}</p>
                                             <p className="text-sm text-slate-500 dark:text-slate-400">{step.desc}</p>
                                             {step.action && !step.done && (
                                                 <a
                                                     href={step.action.href}
                                                     target={step.action.external ? '_blank' : '_self'}
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-1.5 mt-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                                                    className="inline-flex items-center gap-1.5 mt-2 text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline"
                                                 >
                                                     {step.action.label} <ArrowRight size={14} />
                                                 </a>
@@ -175,3 +175,4 @@ export default function AnalyticsDashboard() {
         </AdminLayout>
     );
 }
+

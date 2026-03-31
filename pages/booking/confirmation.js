@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { API_BASE } from '@/lib/api';
 import Navbar from '@/components/NavBar';
 import Layout from '@/components/Layout';
-import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy, Lock, CreditCard } from 'lucide-react';
+import { CheckCircle, Calendar, Users, MapPin, Printer, Home, Download, Copy, Lock, CreditCard, Smartphone } from 'lucide-react';
 import PaymentModal from '@/components/PaymentModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -86,13 +86,13 @@ export default function ConfirmationPage() {
   return (
     <Layout navbarProps={{ brandName: booking?.hotel?.name, logo: booking?.hotel?.logoUrl, facebookUrl: booking?.hotel?.facebookUrl, instagramUrl: booking?.hotel?.instagramUrl, twitterUrl: booking?.hotel?.twitterUrl, footerDescription: booking?.hotel?.footerDescription }}>
       <div className="relative bg-slate-900 pb-32 pt-16 md:pt-24 print:hidden overflow-hidden">
-        <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-emerald-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-primary-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="inline-block relative">
-            <div className={`absolute inset-0 rounded-full blur-xl ${isPaid ? 'bg-emerald-500/30 animate-pulse' : 'bg-amber-500/30 animate-pulse'}`} />
-            <div className={`relative inline-flex items-center justify-center p-5 ${isPaid ? 'bg-gradient-to-b from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30' : 'bg-gradient-to-b from-amber-500/20 to-amber-500/10 border border-amber-500/30'} backdrop-blur-xl rounded-full mb-8 shadow-2xl`}>
-              {isPaid ? <CheckCircle size={56} className="text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" /> : <Lock size={56} className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />}
+            <div className={`absolute inset-0 rounded-full blur-xl ${isPaid ? 'bg-blue-500/30 animate-pulse' : 'bg-amber-500/30 animate-pulse'}`} />
+            <div className={`relative inline-flex items-center justify-center p-5 ${isPaid ? 'bg-gradient-to-b from-blue-500/20 to-blue-500/10 border border-blue-500/30' : 'bg-gradient-to-b from-amber-500/20 to-amber-500/10 border border-amber-500/30'} backdrop-blur-xl rounded-full mb-8 shadow-2xl`}>
+              {isPaid ? <CheckCircle size={56} className="text-blue-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" /> : <Lock size={56} className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />}
             </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-display font-black text-white mb-6 tracking-tight drop-shadow-md">
@@ -137,7 +137,7 @@ export default function ConfirmationPage() {
                     </button>
                   </div>
                 </div>
-                <span className={`shrink-0 px-4 py-2 text-sm font-bold rounded-xl border ${isPaid ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm'}`}>
+                <span className={`shrink-0 px-4 py-2 text-sm font-bold rounded-xl border ${isPaid ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm' : 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm'}`}>
                   {isPaid ? t('confirmation.statusConfirmed') : t('confirmation.statusPending')}
                 </span>
               </div>
@@ -218,6 +218,15 @@ export default function ConfirmationPage() {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-shine" />
                     <CreditCard size={20} /> {t('payment.payNow')}
+                  </button>
+                )}
+
+                {isPaid && !booking.isWebCheckedIn && (
+                  <button
+                    onClick={() => window.open(`/checkin/${id}`, '_blank')}
+                    className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 group transition-all"
+                  >
+                    <Smartphone size={20} className="group-hover:scale-110 transition-transform"/> Start Web Check-in
                   </button>
                 )}
 

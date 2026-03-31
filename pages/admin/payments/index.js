@@ -42,7 +42,7 @@ export default function PaymentManagement() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'captured': return 'bg-emerald-100 text-emerald-700'
+      case 'captured': return 'bg-blue-100 text-blue-700'
       case 'created': return 'bg-blue-100 text-blue-700'
       case 'failed': return 'bg-rose-100 text-rose-700'
       case 'pending': return 'bg-amber-100 text-amber-700'
@@ -61,7 +61,7 @@ export default function PaymentManagement() {
             placeholder="Search by guest name or booking ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
@@ -70,7 +70,7 @@ export default function PaymentManagement() {
               key={status}
               onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${statusFilter === status
-                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                 }`}
             >
@@ -121,7 +121,7 @@ export default function PaymentManagement() {
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {formatDate(pay.date || pay.createdAt)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${getStatusColor(pay.status)}`}>
                         {pay.status}
                       </span>
@@ -129,7 +129,7 @@ export default function PaymentManagement() {
                     <td className="px-6 py-4 text-right">
                       {pay.status === 'pending' && (
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => handleVerify(pay.id)} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded" title="Confirm">
+                          <button onClick={() => handleVerify(pay.id)} className="p-1 text-blue-500 hover:bg-blue-50 rounded" title="Confirm">
                             <CheckCircle size={18} />
                           </button>
                           <button onClick={() => handleReject(pay.id)} className="p-1 text-rose-500 hover:bg-rose-50 rounded" title="Reject">
@@ -200,3 +200,4 @@ export default function PaymentManagement() {
     </AdminLayout>
   )
 }
+

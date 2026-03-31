@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -76,7 +76,7 @@ h6 {
 }
 
 .btn-primary {
-  @apply bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg shadow-primary-500/30 transition-all duration-300 hover:-translate-y-0.5 font-medium rounded-xl px-6 py-2.5;
+  @apply bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/20 transition-all duration-200 hover:-translate-y-[1px] font-medium rounded-lg px-6 py-2.5;
 }
 
 /* Custom Scrollbar */

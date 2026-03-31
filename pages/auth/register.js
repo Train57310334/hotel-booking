@@ -109,7 +109,7 @@ export default function RegisterPage({ branding }) {
             >
               <h2 className="text-5xl font-display font-bold text-white leading-[1.15]">
                 Manage your hotel <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-300">with ease.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-300">with ease.</span>
               </h2>
               <p className="text-lg text-slate-200 max-w-md leading-relaxed">
                 Join thousands of hotel owners growing their business with our all-in-one platform.

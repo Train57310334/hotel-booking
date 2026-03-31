@@ -139,31 +139,31 @@ export default function AccountSettings() {
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">My Account</h1>
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">My Account</h1>
         <p className="text-slate-500 dark:text-slate-400 mb-8">Manage your personal information and security settings</p>
 
         {/* Tabs */}
         <div className="flex gap-6 border-b border-slate-200 dark:border-slate-700 mb-8">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`pb-4 px-2 font-medium text-sm transition-colors relative ${activeTab === 'profile' ? 'text-emerald-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={`pb-4 px-2 font-medium text-sm transition-colors relative ${activeTab === 'profile' ? 'text-blue-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             <span className="flex items-center gap-2"><User size={18} /> Profile</span>
-            {activeTab === 'profile' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 rounded-t-full" />}
+            {activeTab === 'profile' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-full" />}
           </button>
           <button
             onClick={() => setActiveTab('security')}
-            className={`pb-4 px-2 font-medium text-sm transition-colors relative ${activeTab === 'security' ? 'text-emerald-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={`pb-4 px-2 font-medium text-sm transition-colors relative ${activeTab === 'security' ? 'text-blue-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             <span className="flex items-center gap-2"><Shield size={18} /> Security</span>
-            {activeTab === 'security' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 rounded-t-full" />}
+            {activeTab === 'security' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-full" />}
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
-            className={`pb-4 px-2 font-medium text-sm transition-colors relative ${activeTab === 'notifications' ? 'text-emerald-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={`pb-4 px-2 font-medium text-sm transition-colors relative ${activeTab === 'notifications' ? 'text-blue-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             <span className="flex items-center gap-2"><Bell size={18} /> Notifications</span>
-            {activeTab === 'notifications' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 rounded-t-full" />}
+            {activeTab === 'notifications' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-full" />}
           </button>
         </div>
 
@@ -179,7 +179,7 @@ export default function AccountSettings() {
                     <User size={64} />
                   )}
                 </div>
-                <label className="absolute bottom-1 right-1 p-2 bg-emerald-500 text-white rounded-full cursor-pointer hover:bg-emerald-600 shadow-lg transition-transform hover:scale-105">
+                <label className="absolute bottom-1 right-1 p-2 bg-blue-500 text-white rounded-full cursor-pointer hover:bg-blue-600 shadow-lg transition-transform hover:scale-105">
                   <Camera size={16} />
                   <input type="file" className="hidden" onChange={handleAvatarChange} accept="image/*" />
                 </label>
@@ -194,7 +194,7 @@ export default function AccountSettings() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500">Status</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">Active</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">Active</span>
                 </div>
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function AccountSettings() {
                           type="text"
                           value={formData.name}
                           onChange={e => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:text-white transition-all"
                         />
                       </div>
                     </div>
@@ -227,7 +227,7 @@ export default function AccountSettings() {
                           type="tel"
                           value={formData.phone}
                           onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:text-white transition-all"
                         />
                       </div>
                     </div>
@@ -251,7 +251,7 @@ export default function AccountSettings() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                     </button>
@@ -302,7 +302,7 @@ export default function AccountSettings() {
                             <button
                               type="submit"
                               disabled={saving}
-                              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
                             >
                               {saving ? 'Updating...' : 'Update Password'}
                             </button>
@@ -326,7 +326,7 @@ export default function AccountSettings() {
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" className="sr-only peer" disabled />
-                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                           </label>
                         </div>
                         <p className="text-xs text-orange-500 mt-2">Requires SMTP/SMS gateway configuration (Contact Admin)</p>
@@ -351,7 +351,7 @@ export default function AccountSettings() {
                           <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{item}</span>
                           <div className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" defaultChecked={idx < 2} className="sr-only peer" />
-                            <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                           </div>
                         </label>
                       ))}
@@ -359,7 +359,7 @@ export default function AccountSettings() {
                   </div>
 
                   <div className="flex justify-end">
-                    <button className="px-6 py-2 bg-emerald-500 text-white font-bold rounded-lg shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all opacity-50 cursor-not-allowed" title="Preferences saving not yet implemented">
+                    <button className="px-6 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all opacity-50 cursor-not-allowed" title="Preferences saving not yet implemented">
                       Save Preferences
                     </button>
                   </div>
@@ -372,3 +372,4 @@ export default function AccountSettings() {
     </AdminLayout>
   )
 }
+

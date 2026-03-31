@@ -1,10 +1,10 @@
 // ✅ pages/search.js (Single Hotel Layout)
 import { useRouter } from 'next/router'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Layout from '@/components/Layout'
 import RoomCard from '@/components/RoomCard'
-import { Users, Calendar, MapPin, Star, CheckCircle, ArrowRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Users, Calendar, MapPin, Star, CheckCircle, ArrowRight, LayoutList, CalendarDays, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import SearchBar from '@/components/SearchBar'
 import SearchFilters from '@/components/SearchFilters'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -35,6 +35,8 @@ export default function SearchPage() {
   const [hotel, setHotel] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'calendar'
+  const [hideFullRooms, setHideFullRooms] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -127,6 +129,9 @@ export default function SearchPage() {
     if (filters.sort && filters.sort !== 'recommended') newQuery.sort = filters.sort;
     else delete newQuery.sort;
 
+    // hideFullRooms is local state only (no URL param needed)
+    if (typeof filters.hideFullRooms === 'boolean') setHideFullRooms(filters.hideFullRooms);
+
     router.push({
       pathname: '/search',
       query: newQuery
@@ -191,6 +196,11 @@ export default function SearchPage() {
   const filteredAndSortedRooms = useMemo(() => {
     let result = [...rooms];
 
+    // Filter: Hide sold-out rooms for staff
+    if (hideFullRooms) {
+      result = result.filter(r => r.isAvailable !== false);
+    }
+
     // Filter by Price
     if (qMinPrice !== undefined && qMinPrice !== '') {
       const min = parseInt(qMinPrice);
@@ -215,16 +225,24 @@ export default function SearchPage() {
       });
     }
 
-    // Sort
-    if (qSort === 'price_asc') {
-      result.sort((a, b) => (a.basePrice || 0) - (b.basePrice || 0));
-    } else if (qSort === 'price_desc') {
-      result.sort((a, b) => (b.basePrice || 0) - (a.basePrice || 0));
-    }
+    // Sort: Put available rooms first, then sold-out
+    result.sort((a, b) => {
+      const aAvail = a.isAvailable !== false ? 0 : 1;
+      const bAvail = b.isAvailable !== false ? 0 : 1;
+      if (aAvail !== bAvail) return aAvail - bAvail;
+      // Secondary sort
+      if (qSort === 'price_asc') return (a.basePrice || 0) - (b.basePrice || 0);
+      if (qSort === 'price_desc') return (b.basePrice || 0) - (a.basePrice || 0);
+      return 0;
+    });
 
     return result;
-  }, [rooms, qMinPrice, qMaxPrice, qAmenities, qSort]);
+  }, [rooms, hideFullRooms, qMinPrice, qMaxPrice, qAmenities, qSort]);
   // ---------------------------------------
+
+  // --- CALENDAR HELPERS ---
+  const availableCount = useMemo(() => rooms.filter(r => r.isAvailable !== false).length, [rooms]);
+  const soldOutCount = useMemo(() => rooms.filter(r => r.isAvailable === false).length, [rooms]);
 
   return (
     <Layout navbarProps={{ brandName: hotel?.name, logo: hotel?.logoUrl, facebookUrl: hotel?.facebookUrl, instagramUrl: hotel?.instagramUrl, twitterUrl: hotel?.twitterUrl, footerDescription: hotel?.footerDescription }}>
@@ -266,49 +284,108 @@ export default function SearchPage() {
                         minPrice: qMinPrice || '',
                         maxPrice: qMaxPrice || '',
                         amenities: qAmenities ? (Array.isArray(qAmenities) ? qAmenities : qAmenities.split(',')) : [],
-                        sort: qSort || 'recommended'
+                        sort: qSort || 'recommended',
+                        hideFullRooms
                       }}
                       onFilterChange={handleFilterChange}
                     />
                   </div>
                 </div>
 
-                {/* Rooms List */}
-                <div id="rooms-section" className="flex-1 space-y-8">
-                  <h3 className="text-2xl font-display font-bold text-theme-text mb-6 flex items-center gap-3">
-                    {t('search.availableRooms')}
-                    <span className="text-sm font-sans font-medium text-theme-accent bg-theme-bg px-3 py-1 rounded-full border border-theme-border">{filteredAndSortedRooms.length} {t('search.found')}</span>
-                  </h3>
+                {/* Rooms Section: view toggle + calendar/list */}
+                <div id="rooms-section" className="flex-1">
+                  {/* Header: title + badges + view toggle */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                    <h3 className="text-2xl font-display font-bold text-theme-text flex flex-wrap items-center gap-2">
+                      {t('search.availableRooms')}
+                      <span className="text-sm font-sans font-medium text-theme-accent bg-theme-bg px-3 py-1 rounded-full border border-theme-border">
+                        {filteredAndSortedRooms.length} {t('search.found')}
+                      </span>
+                      {hideFullRooms && soldOutCount > 0 && (
+                        <span className="text-xs font-sans font-medium text-theme-muted bg-theme-bg px-2.5 py-1 rounded-full border border-theme-border flex items-center gap-1">
+                          <EyeOff size={11} /> {soldOutCount} ซ่อน
+                        </span>
+                      )}
+                    </h3>
+                    {/* List / Calendar toggle */}
+                    <div className="flex items-center gap-1 bg-theme-bg p-1 rounded-xl border border-theme-border flex-shrink-0 self-start sm:self-auto">
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                          viewMode === 'list'
+                            ? 'bg-theme-card shadow text-theme-accent border border-theme-border'
+                            : 'text-theme-muted hover:text-theme-text'
+                        }`}
+                      >
+                        <LayoutList size={15} /> List
+                      </button>
+                      <button
+                        onClick={() => setViewMode('calendar')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                          viewMode === 'calendar'
+                            ? 'bg-theme-card shadow text-theme-accent border border-theme-border'
+                            : 'text-theme-muted hover:text-theme-text'
+                        }`}
+                      >
+                        <CalendarDays size={15} /> Calendar
+                      </button>
+                    </div>
+                  </div>
 
-                  {filteredAndSortedRooms.length > 0 ? (
-                    <div className="flex flex-col gap-8">
-                      {filteredAndSortedRooms.map((room, index) => (
-                        <motion.div
-                          key={room.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <RoomCard
-                            roomType={room}
-                            ratePlans={room.ratePlans}
-                            onSelect={handleSelect}
-                            selectedCounts={Object.values(cart).reduce((acc, item) => {
-                              acc[item.ratePlan.id] = item.quantity;
-                              return acc;
-                            }, {})}
-                          />
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-theme-card rounded-3xl p-16 text-center border-2 border-dashed border-theme-border">
-                      <Calendar className="w-16 h-16 text-theme-muted mx-auto mb-4 opacity-50" />
-                      <h4 className="text-xl font-display font-bold text-theme-text mb-2">{t('search.noRoomsTitle')}</h4>
-                      <p className="text-theme-muted max-w-md mx-auto">{t('search.noRoomsDesc')}</p>
-                    </div>
-                  )}
+                  <AnimatePresence mode="wait">
+                    {viewMode === 'calendar' ? (
+                      <motion.div key="calendar" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                        <AvailabilityCalendar
+                          checkIn={checkIn}
+                          checkOut={checkOut}
+                          rooms={rooms}
+                          router={router}
+                          query={router.query}
+                        />
+                      </motion.div>
+                    ) : filteredAndSortedRooms.length > 0 ? (
+                      <motion.div key="list" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="flex flex-col gap-8">
+                        {filteredAndSortedRooms.map((room, index) => (
+                          <motion.div
+                            key={room.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.08 }}
+                          >
+                            <RoomCard
+                              roomType={room}
+                              ratePlans={room.ratePlans}
+                              onSelect={handleSelect}
+                              selectedCounts={Object.values(cart).reduce((acc, item) => {
+                                acc[item.ratePlan.id] = item.quantity;
+                                return acc;
+                              }, {})}
+                            />
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    ) : (
+                      <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-theme-card rounded-3xl p-16 text-center border-2 border-dashed border-theme-border">
+                        {hideFullRooms && soldOutCount > 0 ? (
+                          <>
+                            <EyeOff className="w-16 h-16 text-theme-muted mx-auto mb-4 opacity-40" />
+                            <h4 className="text-xl font-display font-bold text-theme-text mb-2">ทุกห้องเต็มแล้ว</h4>
+                            <p className="text-theme-muted max-w-md mx-auto mb-6">ลอง<strong>ปิด</strong> "Available Rooms Only" เพื่อดูห้องทั้งหมด หรือเปลี่ยนวันที่</p>
+                            <button onClick={() => setHideFullRooms(false)} className="px-5 py-2.5 bg-theme-accent text-white rounded-xl font-bold text-sm hover:opacity-90 transition">
+                              แสดงห้องทั้งหมด
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="w-16 h-16 text-theme-muted mx-auto mb-4 opacity-50" />
+                            <h4 className="text-xl font-display font-bold text-theme-text mb-2">{t('search.noRoomsTitle')}</h4>
+                            <p className="text-theme-muted max-w-md mx-auto">{t('search.noRoomsDesc')}</p>
+                          </>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
@@ -412,4 +489,171 @@ export default function SearchPage() {
       )}
     </Layout>
   )
+}
+
+// ─── Availability Calendar ────────────────────────────────────────────────────
+// A month-grid calendar for staff to quickly navigate and pick check-in dates.
+// Clicking a day updates checkIn/checkOut in the URL. No extra API calls needed.
+
+function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
+  const today = new Date();
+  const selectedIn = new Date(checkIn);
+  const selectedOut = new Date(checkOut);
+
+  const [calMonth, setCalMonth] = useState(() => {
+    const d = new Date(checkIn);
+    d.setDate(1);
+    return d;
+  });
+
+  // Compute: which days in the current month are "selected" (in the check-in/out range)
+  const isInRange = (d) => {
+    const day = new Date(d);
+    day.setHours(12, 0, 0, 0);
+    const inD = new Date(selectedIn); inD.setHours(12, 0, 0, 0);
+    const outD = new Date(selectedOut); outD.setHours(12, 0, 0, 0);
+    return day >= inD && day < outD;
+  };
+
+  const isCheckIn = (d) => new Date(d).toDateString() === selectedIn.toDateString();
+  const isCheckOut = (d) => new Date(d).toDateString() === selectedOut.toDateString();
+  const isPast = (d) => new Date(d) < new Date(today.toDateString());
+
+  // All rooms sold out = no availability (we simple-check isAvailable flag from current search)
+  const allSoldOut = rooms.length > 0 && rooms.every(r => r.isAvailable === false);
+
+  const prevMonth = () => { const d = new Date(calMonth); d.setMonth(d.getMonth() - 1); setCalMonth(d); };
+  const nextMonth = () => { const d = new Date(calMonth); d.setMonth(d.getMonth() + 1); setCalMonth(d); };
+
+  const handleDayClick = (d) => {
+    if (isPast(d)) return;
+    const offset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - offset * 60000);
+    const dateStr = local.toISOString().split('T')[0];
+    const nextDay = new Date(d);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextLocal = new Date(nextDay.getTime() - nextDay.getTimezoneOffset() * 60000);
+    const nextStr = nextLocal.toISOString().split('T')[0];
+    router.push({ pathname: '/search', query: { ...query, checkIn: dateStr, checkOut: nextStr } }, undefined, { shallow: false });
+  };
+
+  // Build calendar days array for current month view
+  const firstDay = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
+  const lastDay = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0);
+  const startPad = firstDay.getDay(); // weekday of 1st (0=Sun)
+  const days = [];
+  for (let i = 0; i < startPad; i++) days.push(null); // empty cells
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    days.push(new Date(calMonth.getFullYear(), calMonth.getMonth(), d));
+  }
+
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  return (
+    <div className="bg-theme-card rounded-3xl border border-theme-border shadow-sm overflow-hidden">
+      {/* Calendar Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border">
+        <button
+          onClick={prevMonth}
+          className="p-2 rounded-xl hover:bg-theme-bg border border-transparent hover:border-theme-border transition-all text-theme-muted hover:text-theme-text"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <div className="text-center">
+          <div className="font-display font-bold text-lg text-theme-text">
+            {calMonth.toLocaleString('th-TH', { month: 'long', year: 'numeric' })}
+          </div>
+          <div className="text-xs text-theme-muted mt-0.5">คลิกวันที่เพื่อเปลี่ยนวัน Check-in</div>
+        </div>
+        <button
+          onClick={nextMonth}
+          className="p-2 rounded-xl hover:bg-theme-bg border border-transparent hover:border-theme-border transition-all text-theme-muted hover:text-theme-text"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-4 px-6 py-3 bg-theme-bg border-b border-theme-border text-xs font-medium text-theme-muted flex-wrap">
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-theme-accent" /> Selected range</div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-500" /> Check-in</div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600" /> Past / Unavailable</div>
+      </div>
+
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 px-4 pt-4 pb-1">
+        {WEEKDAYS.map(d => (
+          <div key={d} className="text-center text-[11px] font-bold text-theme-muted uppercase tracking-wider py-1">{d}</div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div className="grid grid-cols-7 gap-1 px-4 pb-4">
+        {days.map((d, i) => {
+          if (!d) return <div key={`pad-${i}`} />;
+          const past = isPast(d);
+          const inR = isInRange(d);
+          const cIn = isCheckIn(d);
+          const cOut = isCheckOut(d);
+          const isToday = d.toDateString() === today.toDateString();
+
+          let cellClass = 'relative flex flex-col items-center justify-center aspect-square rounded-xl text-sm font-medium transition-all duration-150 ';
+          if (past) {
+            cellClass += 'text-theme-muted/40 cursor-not-allowed bg-theme-bg/50 ';
+          } else if (cIn) {
+            cellClass += 'bg-theme-accent text-white font-bold cursor-pointer shadow-md scale-105 ';
+          } else if (cOut) {
+            cellClass += 'bg-theme-accent/60 text-white font-bold cursor-pointer ';
+          } else if (inR) {
+            cellClass += 'bg-theme-accent/15 text-theme-accent font-semibold cursor-pointer hover:bg-theme-accent/25 ';
+          } else {
+            cellClass += 'text-theme-text cursor-pointer hover:bg-theme-bg hover:border hover:border-theme-accent/40 ';
+          }
+
+          return (
+            <div
+              key={d.toISOString()}
+              onClick={() => handleDayClick(d)}
+              className={cellClass}
+              title={past ? 'วันที่ผ่านไปแล้ว' : `เลือก Check-in: ${d.toLocaleDateString('th-TH')}`}
+            >
+              <span>{d.getDate()}</span>
+              {isToday && !cIn && !cOut && (
+                <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-theme-accent" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Currently selected range info */}
+      <div className="px-6 py-4 border-t border-theme-border bg-theme-bg flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2 text-sm text-theme-muted">
+          <CalendarDays size={16} className="text-theme-accent" />
+          <span>
+            <strong className="text-theme-text">{checkIn}</strong>
+            {' → '}
+            <strong className="text-theme-text">{checkOut}</strong>
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {allSoldOut ? (
+            <span className="flex items-center gap-1.5 text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">
+              ● ห้องเต็มในวันที่เลือก
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+              ● มีห้องว่าง {rooms.filter(r => r.isAvailable !== false).length} ประเภท
+            </span>
+          )}
+          <button
+            onClick={() => router.push({ pathname: '/search', query })}
+            className="text-xs font-bold text-theme-accent hover:underline"
+          >
+            ดูรายการห้อง →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

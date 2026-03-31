@@ -106,7 +106,7 @@ export default function SuperAdminSEO() {
             <div className="max-w-4xl mx-auto pb-20 p-6">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
                             <Search className="text-indigo-500" size={28} />
                             Platform SEO & Marketing
                         </h1>
@@ -328,3 +328,4 @@ Sitemap: [platform-url]/api/sitemap.xml`}
         </AdminLayout>
     );
 }
+

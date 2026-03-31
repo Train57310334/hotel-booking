@@ -72,7 +72,7 @@ export default function SuperAdminMessages() {
             <div className="flex flex-col h-[calc(100vh-100px)]">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">Platform Messages</h1>
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Platform Messages</h1>
                         <p className="text-slate-500 dark:text-slate-400">Manage all Contact Support inquiries</p>
                     </div>
                 </div>
@@ -210,3 +210,4 @@ export default function SuperAdminMessages() {
         </AdminLayout>
     )
 }
+

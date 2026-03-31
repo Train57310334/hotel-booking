@@ -18,6 +18,14 @@ export default function FolioTab({ booking, onUpdate }) {
     });
     const [addLoading, setAddLoading] = useState(false);
 
+    // Add payment form state
+    const [isAddingPayment, setIsAddingPayment] = useState(false);
+    const [newPayment, setNewPayment] = useState({
+        amount: '',
+        method: 'Cash'
+    });
+    const [paymentLoading, setPaymentLoading] = useState(false);
+
     const isAdmin = user?.roles?.includes('admin') || user?.roles?.includes('owner');
 
     useEffect(() => {
@@ -67,6 +75,38 @@ export default function FolioTab({ booking, onUpdate }) {
             toast.error('Failed to add charge', { id: tid });
         } finally {
             setAddLoading(false);
+        }
+    };
+
+    const handleRecordPayment = async (e) => {
+        e.preventDefault();
+        if (!newPayment.amount || Number(newPayment.amount) <= 0) {
+            toast.error('Please enter a valid amount');
+            return;
+        }
+
+        setPaymentLoading(true);
+        const tid = toast.loading('Recording payment...');
+        try {
+            await apiFetch(`/folio/${booking.id}/charges`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    amount: -Math.abs(Number(newPayment.amount)),
+                    description: `Payment: ${newPayment.method}`,
+                    type: 'OTHER'
+                })
+            });
+
+            toast.success('Payment recorded successfully', { id: tid });
+            setNewPayment({ amount: '', method: 'Cash' });
+            setIsAddingPayment(false);
+            fetchFolio();
+            if (onUpdate) onUpdate();
+        } catch (error) {
+            console.error('Failed to record payment:', error);
+            toast.error('Failed to record payment', { id: tid });
+        } finally {
+            setPaymentLoading(false);
         }
     };
 
@@ -128,14 +168,14 @@ export default function FolioTab({ booking, onUpdate }) {
                 </div>
                 <div>
                     <p className="text-sm font-bold text-slate-400 uppercase mb-1 flex items-center gap-1">Total Paid</p>
-                    <p className="text-xl font-bold text-emerald-600">฿{folio.totalPaid.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-blue-600">฿{folio.totalPaid.toLocaleString()}</p>
                 </div>
                 <div className="border-l md:pl-6 border-slate-200 dark:border-slate-700">
                     <p className="text-sm font-bold text-slate-400 uppercase mb-1">Outstanding</p>
-                    <p className={`text-3xl font-display font-bold ${folio.balance > 0 ? 'text-rose-600' : 'text-emerald-500'}`}>
+                    <p className={`text-3xl font-display font-bold ${folio.balance > 0 ? 'text-rose-600' : 'text-blue-500'}`}>
                         ฿{Math.max(0, folio.balance).toLocaleString()}
                     </p>
-                    {folio.balance < 0 && <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">Refund Due</span>}
+                    {folio.balance < 0 && <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">Refund Due</span>}
                 </div>
             </div>
 
@@ -259,9 +299,62 @@ export default function FolioTab({ booking, onUpdate }) {
 
                 {/* Right Column: Transactions & Payments */}
                 <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                        <CreditCard size={18} className="text-slate-400" /> Payments Ledger
-                    </h4>
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <CreditCard size={18} className="text-slate-400" /> Payments Ledger
+                        </h4>
+                        <button
+                            onClick={() => setIsAddingPayment(!isAddingPayment)}
+                            className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${isAddingPayment ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400'}`}
+                        >
+                            <Plus size={14} /> Record Payment
+                        </button>
+                    </div>
+
+                    {isAddingPayment && (
+                        <form onSubmit={handleRecordPayment} className="mb-4 bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm animate-in fade-in slide-in-from-top-2">
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">Amount Paid (THB)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            min="1"
+                                            value={newPayment.amount}
+                                            onChange={(e) => setNewPayment({ ...newPayment, amount: e.target.value })}
+                                            className="w-full text-sm p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50 block"
+                                            placeholder="500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">Method</label>
+                                        <select
+                                            value={newPayment.method}
+                                            onChange={(e) => setNewPayment({ ...newPayment, method: e.target.value })}
+                                            className="w-full text-sm p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50 block"
+                                        >
+                                            <option value="Cash">Cash</option>
+                                            <option value="Transfer">Bank Transfer</option>
+                                            <option value="Credit Card">Credit Card</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddingPayment(false)}
+                                        className="text-xs font-bold text-emerald-600 hover:text-emerald-800 px-3 py-1.5"
+                                    >Cancel</button>
+                                    <button
+                                        type="submit"
+                                        disabled={paymentLoading}
+                                        className="text-xs font-bold bg-emerald-600 text-white px-4 py-1.5 rounded-lg shadow disabled:opacity-50"
+                                    >Save Payment</button>
+                                </div>
+                            </div>
+                        </form>
+                    )}
 
                     {folio.transactions.length === 0 ? (
                         <div className="text-center p-6 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 text-sm">
@@ -272,7 +365,7 @@ export default function FolioTab({ booking, onUpdate }) {
                             {folio.transactions.map((txn, index) => (
                                 <div key={txn.id || index} className="p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-sm flex justify-between items-center">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
                                             <Banknote size={20} />
                                         </div>
                                         <div>
@@ -286,7 +379,7 @@ export default function FolioTab({ booking, onUpdate }) {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold text-emerald-600">- ฿{txn.amount.toLocaleString()}</p>
+                                        <p className="font-bold text-blue-600">- ฿{txn.amount.toLocaleString()}</p>
                                         <span className="text-[10px] uppercase font-bold text-slate-400">{txn.status}</span>
                                     </div>
                                 </div>

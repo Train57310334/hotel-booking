@@ -26,17 +26,17 @@ const plansColorMap = {
         btnShadowPopular: 'shadow-slate-500/30'
     },
     emerald: {
-        borderPopular: 'border-emerald-400',
+        borderPopular: 'border-blue-400',
         shadowPopular: 'shadow-[0_0_50px_-12px_rgba(16,185,129,0.3)]',
-        badgeBg: 'bg-gradient-to-r from-emerald-600 to-emerald-400',
-        badgeShadow: 'shadow-emerald-500/30',
-        titleText: 'text-emerald-600',
-        iconBg: 'bg-emerald-100',
-        checkBgPopular: 'bg-emerald-100',
-        checkTextPopular: 'text-emerald-600',
-        btnBgPopular: 'bg-gradient-to-r from-emerald-600 to-emerald-500',
-        btnHoverPopular: 'hover:from-emerald-500 hover:to-emerald-400',
-        btnShadowPopular: 'shadow-emerald-500/30'
+        badgeBg: 'bg-gradient-to-r from-blue-600 to-blue-400',
+        badgeShadow: 'shadow-blue-500/30',
+        titleText: 'text-blue-600',
+        iconBg: 'bg-blue-100',
+        checkBgPopular: 'bg-blue-100',
+        checkTextPopular: 'text-blue-600',
+        btnBgPopular: 'bg-gradient-to-r from-blue-600 to-blue-500',
+        btnHoverPopular: 'hover:from-blue-500 hover:to-blue-400',
+        btnShadowPopular: 'shadow-blue-500/30'
     },
     indigo: {
         borderPopular: 'border-indigo-400',
@@ -106,7 +106,7 @@ export default function Pricing({ saasSettings }) {
                     transition={{ duration: 0.5 }}
                     className="text-center max-w-2xl mx-auto mb-16"
                 >
-                    <h2 className="text-sm font-bold text-emerald-600 uppercase tracking-widest mb-3">{title}</h2>
+                    <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-3">{title}</h2>
                     <h3 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900 mb-5 tracking-tight">{subtitle}</h3>
                     <p className="text-slate-500 text-lg leading-relaxed">
                         Transparent pricing with no hidden fees. Cancel anytime.
@@ -135,7 +135,7 @@ export default function Pricing({ saasSettings }) {
                                         <div className={`absolute -top-4 left-1/2 -translate-x-1/2 ${pColor.badgeBg} text-white px-5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase shadow-lg ${pColor.badgeShadow}`}>
                                             Most Popular
                                         </div>
-                                        <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-50" />
+                                        <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-50" />
                                     </>
                                 )}
 
@@ -156,8 +156,8 @@ export default function Pricing({ saasSettings }) {
                                 <div className="flex-1 space-y-4 mb-8">
                                     {plan.features && plan.features.map((feat, i) => (
                                         <div key={i} className="flex items-start gap-3 text-sm text-slate-600 font-medium">
-                                            <div className={`mt-0.5 w-5 h-5 rounded-full ${plan.isPopular ? pColor.checkBgPopular : 'bg-emerald-50'} flex items-center justify-center shrink-0`}>
-                                                <Check size={12} className={plan.isPopular ? pColor.checkTextPopular : 'text-emerald-500'} strokeWidth={3} />
+                                            <div className={`mt-0.5 w-5 h-5 rounded-full ${plan.isPopular ? pColor.checkBgPopular : 'bg-blue-50'} flex items-center justify-center shrink-0`}>
+                                                <Check size={12} className={plan.isPopular ? pColor.checkTextPopular : 'text-blue-500'} strokeWidth={3} />
                                             </div>
                                             {feat}
                                         </div>

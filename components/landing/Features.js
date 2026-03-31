@@ -14,9 +14,9 @@ const features = [
         icon: Globe,
         title: 'Direct Booking Engine',
         description: 'Commission-free bookings directly from your website. Customizable to match your brand.',
-        color: 'text-emerald-500',
-        bg: 'bg-emerald-500/10',
-        hoverGradient: 'to-emerald-100'
+        color: 'text-blue-500',
+        bg: 'bg-blue-500/10',
+        hoverGradient: 'to-blue-100'
     },
     {
         icon: CreditCard,
@@ -60,7 +60,7 @@ export default function Features({ saasSettings }) {
         <section className="py-24 bg-slate-50 relative overflow-hidden" id="features">
             {/* Soft background decoration */}
             <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
-            <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
+            <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50" />
 
             <div className="container mx-auto px-4 max-w-6xl relative z-10">
                 <motion.div

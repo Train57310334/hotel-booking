@@ -78,7 +78,7 @@ export default function RatesAvailability() {
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h1 className="text-2xl font-bold dark:text-white flex items-center gap-3">
-                            <CalendarIcon size={24} className="text-emerald-500" />
+                            <CalendarIcon size={24} className="text-blue-500" />
                             Rates & Availability
                         </h1>
                         <p className="text-slate-500 text-sm">Manage pricing and room allotments</p>
@@ -86,13 +86,13 @@ export default function RatesAvailability() {
                     <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
                         <button
                             onClick={() => setActiveTab('plans')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'plans' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'plans' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
                         >
                             Rate Plans
                         </button>
                         <button
                             onClick={() => setActiveTab('calendar')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'calendar' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
                         >
                             Calendar View
                         </button>
@@ -188,7 +188,7 @@ function RatePlansView({ plans, roomTypes, refresh, isReception }) {
                 {!isReception && (
                     <button
                         onClick={openNew}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600"
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-bold text-sm hover:bg-blue-600"
                     >
                         <Plus size={16} /> New Plan
                     </button>
@@ -222,7 +222,7 @@ function RatePlansView({ plans, roomTypes, refresh, isReception }) {
                         </div>
                         {!isReception && (
                             <div className="flex gap-2">
-                                <button onClick={() => openEdit(plan)} className="p-2 text-slate-400 hover:text-emerald-500"><Edit size={16} /></button>
+                                <button onClick={() => openEdit(plan)} className="p-2 text-slate-400 hover:text-blue-500"><Edit size={16} /></button>
                                 <button onClick={() => handleDeleteClick(plan.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={16} /></button>
                             </div>
                         )}
@@ -269,7 +269,7 @@ function RatePlansView({ plans, roomTypes, refresh, isReception }) {
                                         name="includesBreakfast"
                                         type="checkbox"
                                         defaultChecked={editingPlan?.includesBreakfast}
-                                        className="w-5 h-5 rounded text-emerald-500"
+                                        className="w-5 h-5 rounded text-blue-500"
                                         onChange={e => {
                                             // Show/hide breakfast price input
                                             const bfInput = document.getElementById('breakfastPriceGroup')
@@ -298,7 +298,7 @@ function RatePlansView({ plans, roomTypes, refresh, isReception }) {
 
                                 <div className="flex gap-2 pt-4">
                                     <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
-                                    <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save Plan</button>
+                                    <button type="submit" className="flex-1 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600">Save Plan</button>
                                 </div>
                             </form>
                         </div>
@@ -474,7 +474,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                 {!isReception && (
                     <button
                         onClick={() => setBulkModal({ isOpen: true })}
-                        className="ml-4 px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                        className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-xl font-bold text-sm hover:bg-blue-600 shadow-lg shadow-blue-500/20 flex items-center gap-2"
                     >
                         <Edit size={16} /> Bulk Update
                     </button>
@@ -490,7 +490,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                             Date
                         </div>
                         {days.map(day => (
-                            <div key={day.toISOString()} className={`flex-1 min-w-[80px] text-center p-2 border-r border-slate-100 dark:border-slate-700 ${day.toDateString() === new Date().toDateString() ? 'bg-emerald-50 dark:bg-emerald-900/10' : ''}`}>
+                            <div key={day.toISOString()} className={`flex-1 min-w-[80px] text-center p-2 border-r border-slate-100 dark:border-slate-700 ${day.toDateString() === new Date().toDateString() ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
                                 <div className="text-[10px] text-slate-400 uppercase">{day.toLocaleString('en-US', { weekday: 'short' })}</div>
                                 <div className={`font-bold text-sm ${day.getDay() === 0 || day.getDay() === 6 ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'}`}>{day.getDate()}</div>
                             </div>
@@ -508,9 +508,9 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                                 <div
                                     key={day.toISOString()}
                                     onClick={() => handleCellClick(day)}
-                                    className="flex-1 min-w-[80px] p-3 text-center border-r border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                    className="flex-1 min-w-[80px] p-3 text-center border-r border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                                 >
-                                    <span className={`font-bold ${!inv ? 'text-emerald-500' : (inv.allotment === 0 ? 'text-red-500' : 'text-slate-700 dark:text-white')}`}>
+                                    <span className={`font-bold ${!inv ? 'text-blue-500' : (inv.allotment === 0 ? 'text-red-500' : 'text-slate-700 dark:text-white')}`}>
                                         {!inv ? '-' : inv.allotment}
                                     </span>
                                 </div>
@@ -532,7 +532,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                                     onClick={() => handleCellClick(day)}
                                     className={`flex-1 min-w-[80px] p-3 text-center border-r border-slate-100 dark:border-slate-700 cursor-pointer transition-colors ${isClosed ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
                                 >
-                                    <span className={`text-xs font-bold px-2 py-1 rounded ${isClosed ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    <span className={`text-xs font-bold px-2 py-1 rounded ${isClosed ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
                                         {isClosed ? 'Closed' : 'Open'}
                                     </span>
                                 </div>
@@ -590,12 +590,12 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                                 <input name="price" type="number" defaultValue={editModal.data.price} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
                             </div>
                             <div className="flex items-center gap-2">
-                                <input name="stopSale" type="checkbox" defaultChecked={editModal.data.stopSale} className="w-5 h-5 rounded text-emerald-500" />
+                                <input name="stopSale" type="checkbox" defaultChecked={editModal.data.stopSale} className="w-5 h-5 rounded text-blue-500" />
                                 <label className="font-bold text-slate-700 dark:text-slate-300">Stop Sale (Close Room)</label>
                             </div>
                             <div className="flex gap-2 pt-4">
                                 <button type="button" onClick={() => setEditModal({ isOpen: false, data: null })} className="flex-1 py-2 text-slate-500 font-bold">Cancel</button>
-                                <button type="submit" className="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600">Save</button>
+                                <button type="submit" className="flex-1 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600">Save</button>
                             </div>
                         </form>
                     </div>
@@ -607,7 +607,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[500px] shadow-2xl border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
                         <h3 className="font-bold text-xl mb-6 dark:text-white flex items-center gap-2">
-                            <Edit size={20} className="text-emerald-500" /> Bulk Update Rates
+                            <Edit size={20} className="text-blue-500" /> Bulk Update Rates
                         </h3>
 
                         <form onSubmit={handleBulkSubmit} className="space-y-6">
@@ -640,13 +640,13 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                             {/* Options */}
                             <div className="space-y-4">
                                 {/* Price Option */}
-                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updatePrice ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updatePrice ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
                                     <div className="flex items-center gap-3 mb-2">
                                         <input
                                             type="checkbox"
                                             checked={bulkData.updatePrice}
                                             onChange={e => setBulkData({ ...bulkData, updatePrice: e.target.checked })}
-                                            className="w-5 h-5 rounded text-emerald-500"
+                                            className="w-5 h-5 rounded text-blue-500"
                                         />
                                         <label className="font-bold text-slate-900 dark:text-white">Set Daily Price</label>
                                     </div>
@@ -662,13 +662,13 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                                 </div>
 
                                 {/* Inventory Option */}
-                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updateAllotment ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updateAllotment ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
                                     <div className="flex items-center gap-3 mb-2">
                                         <input
                                             type="checkbox"
                                             checked={bulkData.updateAllotment}
                                             onChange={e => setBulkData({ ...bulkData, updateAllotment: e.target.checked })}
-                                            className="w-5 h-5 rounded text-emerald-500"
+                                            className="w-5 h-5 rounded text-blue-500"
                                         />
                                         <label className="font-bold text-slate-900 dark:text-white">Set Allotment (Rooms)</label>
                                     </div>
@@ -684,13 +684,13 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                                 </div>
 
                                 {/* Stop Sale Option */}
-                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updateStopSale ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
+                                <div className={`p-4 rounded-xl border transition-colors ${bulkData.updateStopSale ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
                                     <div className="flex items-center gap-3 mb-2">
                                         <input
                                             type="checkbox"
                                             checked={bulkData.updateStopSale}
                                             onChange={e => setBulkData({ ...bulkData, updateStopSale: e.target.checked })}
-                                            className="w-5 h-5 rounded text-emerald-500"
+                                            className="w-5 h-5 rounded text-blue-500"
                                         />
                                         <label className="font-bold text-slate-900 dark:text-white">Status (Open/Close)</label>
                                     </div>
@@ -709,7 +709,7 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
 
                             <div className="flex gap-3 pt-4">
                                 <button type="button" onClick={() => setBulkModal({ isOpen: false })} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Cancel</button>
-                                <button type="submit" className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-colors">Apply Changes</button>
+                                <button type="submit" className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-colors">Apply Changes</button>
                             </div>
                         </form>
                     </div>
@@ -718,3 +718,4 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
         </div>
     )
 }
+

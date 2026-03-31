@@ -38,7 +38,7 @@ export default function NotificationMenu({ notifications, setNotifications, dark
 
     const getBgColor = (type, title) => {
         const lowerTitle = title.toLowerCase()
-        if (type === 'success' || lowerTitle.includes('confirmed')) return 'bg-emerald-500'
+        if (type === 'success' || lowerTitle.includes('confirmed')) return 'bg-blue-500'
         if (lowerTitle.includes('payment')) return 'bg-blue-500'
         if (lowerTitle.includes('cancel') || type === 'error') return 'bg-rose-500'
         if (type === 'warning') return 'bg-amber-500'
@@ -47,7 +47,7 @@ export default function NotificationMenu({ notifications, setNotifications, dark
 
     return (
         <Menu as="div" className="relative">
-            <Menu.Button className={`relative p-2 rounded-full transition-all duration-200 outline-none focus:ring-2 focus:ring-emerald-500/50 ${darkMode
+            <Menu.Button className={`relative p-2 rounded-full transition-all duration-200 outline-none focus:ring-2 focus:ring-blue-500/50 ${darkMode
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                 }`}>
@@ -76,7 +76,7 @@ export default function NotificationMenu({ notifications, setNotifications, dark
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllAsRead}
-                                className="text-xs text-emerald-500 font-bold hover:text-emerald-600 transition-colors uppercase tracking-wider"
+                                className="text-xs text-blue-500 font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
                             >
                                 Mark all read
                             </button>
@@ -100,17 +100,17 @@ export default function NotificationMenu({ notifications, setNotifications, dark
                                             <div
                                                 onClick={() => !n.isRead && markAsRead(n.id)}
                                                 className={`flex gap-4 p-4 transition-colors cursor-pointer ${active ? (darkMode ? 'bg-slate-700/50' : 'bg-slate-50') : ''
-                                                    } ${!n.isRead ? (darkMode ? 'bg-emerald-500/5' : 'bg-emerald-50/30') : ''}`}
+                                                    } ${!n.isRead ? (darkMode ? 'bg-blue-500/5' : 'bg-blue-50/30') : ''}`}
                                             >
                                                 <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${getBgColor(n.type, n.title)}`}>
                                                     {getIcon(n.type, n.title)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start gap-2 mb-1">
-                                                        <p className={`text-sm font-bold truncate ${darkMode ? 'text-slate-200' : 'text-slate-800'} ${!n.isRead ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
+                                                        <p className={`text-sm font-bold truncate ${darkMode ? 'text-slate-200' : 'text-slate-800'} ${!n.isRead ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                                                             {n.title}
                                                         </p>
-                                                        {!n.isRead && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5"></span>}
+                                                        {!n.isRead && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>}
                                                     </div>
                                                     <p className={`text-sm leading-relaxed mb-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                                                         {n.message}

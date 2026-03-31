@@ -91,7 +91,7 @@ export default function ForgotPasswordPage({ branding }) {
             >
               <h2 className="text-5xl font-display font-bold text-white leading-[1.15]">
                 Get back to managing <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-emerald-300">your properties.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-blue-300">your properties.</span>
               </h2>
             </motion.div>
           </div>
@@ -148,11 +148,11 @@ export default function ForgotPasswordPage({ branding }) {
                     initial={{ opacity: 0, height: 0, y: -10 }}
                     animate={{ opacity: 1, height: 'auto', y: 0 }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-emerald-50 text-emerald-700 px-5 py-4 rounded-xl text-sm flex items-start gap-3 border border-emerald-100 overflow-hidden"
+                    className="bg-blue-50 text-blue-700 px-5 py-4 rounded-xl text-sm flex items-start gap-3 border border-blue-100 overflow-hidden"
                   >
-                    <CheckCircle2 className="shrink-0 text-emerald-500 mt-0.5" size={20} />
+                    <CheckCircle2 className="shrink-0 text-blue-500 mt-0.5" size={20} />
                     <div>
-                      <p className="font-bold text-emerald-800 text-base mb-1">Check your inbox</p>
+                      <p className="font-bold text-blue-800 text-base mb-1">Check your inbox</p>
                       <p>{status.message}</p>
                     </div>
                   </motion.div>

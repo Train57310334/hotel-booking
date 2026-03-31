@@ -64,6 +64,7 @@ export default function AdminDashboard() {
     occupancyRate: 0
   })
 
+  const [dailyOps, setDailyOps] = useState({ arrivals: [], departures: [], inHouse: [], urgentCleaning: [] })
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month')
@@ -119,15 +120,17 @@ export default function AdminDashboard() {
         return;
       }
 
-      const statsData = await apiFetch(`/ bookings / admin / dashboard ? period = ${timeRange}& hotelId=${hotelId} `)
-      const query = search ? `? search = ${search}& hotelId=${hotelId} ` : ` ? hotelId = ${hotelId} `
-      const bookingsData = await apiFetch(`/ bookings / admin / all${query} `)
+      const statsData = await apiFetch(`/bookings/admin/dashboard?period=${timeRange}&hotelId=${hotelId}`)
+      const query = search ? `?search=${search}&hotelId=${hotelId}` : `?hotelId=${hotelId}`
+      const bookingsData = await apiFetch(`/bookings/admin/all${query}`)
+      const dailyOpsData = await apiFetch(`/bookings/admin/daily-operations?hotelId=${hotelId}`)
 
       // preventing re-renders if data is same (Deep Compare simple approach)
       // API returns { data: [...], meta: {...} } — unwrap the array
       const bookingsList = Array.isArray(bookingsData) ? bookingsData : (bookingsData?.data || [])
       setStats(prev => (statsData && JSON.stringify(prev) !== JSON.stringify(statsData)) ? statsData : prev)
       setBookings(prev => JSON.stringify(prev) !== JSON.stringify(bookingsList) ? bookingsList : prev)
+      setDailyOps(prev => (dailyOpsData && JSON.stringify(prev) !== JSON.stringify(dailyOpsData)) ? dailyOpsData : prev)
 
 
     } catch (error) {
@@ -192,7 +195,7 @@ export default function AdminDashboard() {
       label: 'Total Revenue',
       value: stats.totalRevenue ? `฿ ${stats.totalRevenue.toLocaleString()}` : '฿ 0',
       icon: DollarSign,
-      color: 'bg-emerald-500',
+      color: 'bg-blue-500',
       trend: '+12%',
       sub: 'Gross Income',
       tooltip: 'Sum of the room charges from all Confirmed, Checked-In, and Checked-Out bookings in the selected time period. Cancellations and Pending bookings are excluded.'
@@ -229,13 +232,19 @@ export default function AdminDashboard() {
   // Quick Onboarding Check
   const showOnboarding = stats.totalRooms === 0;
 
-  if (authLoading || (!user?.roles?.includes('platform_admin') && loading)) return (
+  if (authLoading || loading) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-400">
-      <div className="animate-pulse">Loading Dashboard...</div>
+      <div className="animate-pulse flex flex-col items-center gap-3">
+        <div className="w-8 h-8 relative flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full border-2 border-slate-200 dark:border-slate-700"></div>
+          <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+        </div>
+        <div className="text-sm font-medium">Loading Dashboard...</div>
+      </div>
     </div>
   )
 
-  if (user?.roles?.includes('platform_admin')) {
+  if (user?.roles?.includes('platform_admin') && !user?.isImpersonating) {
     return (
       <AdminLayout>
         <SuperAdminDashboard />
@@ -246,22 +255,22 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             Overview
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">Hotel Performance & Operations</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Hotel Performance & Operations</p>
         </div>
 
         {/* Time Filter */}
         <div className="relative">
           <button
             onClick={() => setFilterOpen(!filterOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors w-40 justify-between shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors w-36 justify-between shadow-sm"
           >
             <span>{periods.find(p => p.value === timeRange)?.label}</span>
-            <ChevronDown size={16} />
+            <ChevronDown size={14} />
           </button>
           {filterOpen && (
             <div className="absolute top-full mt-2 right-0 w-40 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-20">
@@ -269,7 +278,7 @@ export default function AdminDashboard() {
                 <button
                   key={p.value}
                   onClick={() => { setTimeRange(p.value); setFilterOpen(false) }}
-                  className={`w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 ${timeRange === p.value ? 'text-emerald-500' : 'text-slate-600 dark:text-slate-300'}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 ${timeRange === p.value ? 'text-blue-500' : 'text-slate-600 dark:text-slate-300'}`}
                 >
                   {p.label}
                 </button>
@@ -281,18 +290,18 @@ export default function AdminDashboard() {
 
       {/* Onboarding Widget */}
       {showOnboarding && (
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 mb-8 text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-500 to-teal-600 rounded-3xl p-8 mb-4 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Welcome to your Dashboard! <Rocket className="inline-block pb-1" size={24} /></h2>
-              <p className="text-emerald-100 mb-6 max-w-xl">
+              <p className="text-blue-100 mb-6 max-w-xl">
                 Your hotel system is almost ready. Complete these 3 steps to start accepting bookings.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button onClick={() => router.push('/admin/settings')} className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-colors shadow-lg">
+                <button onClick={() => router.push('/admin/settings')} className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg">
                   1. Upload Logo & Images
                 </button>
-                <button onClick={() => router.push('/admin/rooms')} className="bg-emerald-700/50 text-white border border-emerald-400/30 px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors">
+                <button onClick={() => router.push('/admin/rooms')} className="bg-blue-700/50 text-white border border-blue-400/30 px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">
                   2. Create Room Types
                 </button>
               </div>
@@ -304,38 +313,135 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {cards.map((item, i) => (
-          <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 rounded-xl ${item.color} flex items-center justify-center text-white shadow-lg shadow-emerald-500/10`}>
-                <item.icon size={24} />
-              </div>
-              {item.trend && (
-                <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-1 rounded-full">
-                  {item.trend}
+      {/* Today's Overview */}
+      {!showOnboarding && (
+        <div className="mb-6">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Today's Overview ⚡</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Arrivals */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-blue-500 shadow-sm flex flex-col h-48">
+              <div className="flex justify-between items-start mb-2 shrink-0">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Arrivals</p>
+                <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-2 py-0.5 rounded text-xs">
+                  {dailyOps?.arrivals?.length || 0}
                 </span>
-              )}
+              </div>
+              <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {(!dailyOps?.arrivals || dailyOps.arrivals.length === 0) ? (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">No arrivals.</div>
+                ) : dailyOps.arrivals.map(b => (
+                  <div key={b.id} onClick={() => openDetails(b)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg flex justify-between items-center group border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{b.leadName}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{b.roomType?.name}</p>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">{item.label}</p>
+
+            {/* Departures */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-amber-500 shadow-sm flex flex-col h-48">
+              <div className="flex justify-between items-start mb-2 shrink-0">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Departures</p>
+                <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold px-2 py-0.5 rounded text-xs">
+                  {dailyOps?.departures?.length || 0}
+                </span>
+              </div>
+              <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {(!dailyOps?.departures || dailyOps.departures.length === 0) ? (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">No departures.</div>
+                ) : dailyOps.departures.map(b => (
+                  <div key={b.id} onClick={() => openDetails(b)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg flex justify-between items-center group border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{b.leadName}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{b.room?.roomNumber ? `Room ${b.room.roomNumber}` : 'Unassigned'}</p>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* In-House */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-emerald-500 shadow-sm flex flex-col h-48">
+              <div className="flex justify-between items-start mb-2 shrink-0">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">In-House</p>
+                <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold px-2 py-0.5 rounded text-xs">
+                  {dailyOps?.inHouse?.length || 0}
+                </span>
+              </div>
+              <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {(!dailyOps?.inHouse || dailyOps.inHouse.length === 0) ? (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">No guests.</div>
+                ) : dailyOps.inHouse.map(b => (
+                  <div key={b.id} onClick={() => openDetails(b)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg flex justify-between items-center group border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{b.leadName}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{b.room?.roomNumber ? `Room ${b.room.roomNumber}` : 'Unassigned'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Urgent Cleaning */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-rose-500 shadow-sm flex flex-col h-48">
+              <div className="flex justify-between items-start mb-2 shrink-0">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Urgent Cleaning</p>
+                <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 font-bold px-2 py-0.5 rounded text-xs">
+                  {dailyOps?.urgentCleaning?.length || 0}
+                </span>
+              </div>
+              <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {(!dailyOps?.urgentCleaning || dailyOps.urgentCleaning.length === 0) ? (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">All rooms clean.</div>
+                ) : dailyOps.urgentCleaning.map(r => (
+                  <div key={r.id} className="p-2 rounded-lg flex justify-between items-center group border border-transparent bg-slate-50 dark:bg-slate-700/30 border-slate-100 dark:border-slate-700">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">Room {r.roomNumber}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{r.roomType?.name}</p>
+                    </div>
+                    <span className="text-[10px] font-bold bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dirty</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        {cards.map((item, i) => (
+          <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-lg ${item.color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
+              <item.icon size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">{item.label}</p>
                 {item.tooltip && <InfoTooltip content={item.tooltip} />}
               </div>
-              <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{item.value}</h3>
-              <p className="text-xs text-slate-400 mt-1">{item.sub}</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">{item.value}</h3>
+              <p className="text-[10px] text-slate-400 truncate">{item.sub}</p>
             </div>
+            {item.trend && (
+              <span className="ml-auto text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">{item.trend}</span>
+            )}
           </div>
         ))}
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Revenue Chart */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Revenue Trend</h3>
-          <div className="h-64 w-full">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Revenue Trend</h3>
+          <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.chartData} barSize={20}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
@@ -349,9 +455,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Occupancy Chart */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Occupancy Rate</h3>
-          <div className="h-64 w-full">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Occupancy Rate</h3>
+          <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={stats.occupancyChart}>
                 <defs>
@@ -372,20 +478,20 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Bookings */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h3>
-          <button onClick={() => router.push('/admin/bookings')} className="text-sm font-bold text-emerald-500 hover:text-emerald-600">View All Bookings</button>
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Activity</h3>
+          <button onClick={() => router.push('/admin/bookings')} className="text-xs font-bold text-blue-500 hover:text-blue-600">View All →</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800/50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Ref</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Guest</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Time</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Amount</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Ref</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Guest</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Time</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Status</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Amount</th>
                 <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Action</th>
               </tr>
             </thead>
@@ -396,16 +502,16 @@ export default function AdminDashboard() {
                   onClick={() => openDetails(booking)}
                   className="hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
                 >
-                  <td className="px-6 py-4 text-sm font-mono text-slate-500">#{booking.id.slice(-6).toUpperCase()}</td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-bold dark:text-white">{booking.leadName}</p>
+                  <td className="px-4 py-2.5 text-xs font-mono text-slate-500">#{booking.id.slice(-6).toUpperCase()}</td>
+                  <td className="px-4 py-2.5">
+                    <p className="text-xs font-bold dark:text-white">{booking.leadName}</p>
                     <p className="text-xs text-slate-400">{booking.roomType?.name}</p>
                   </td>
-                  <td className="px-6 py-4 text-xs text-slate-500 whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-xs text-slate-500 whitespace-nowrap">
                     {timeAgo(booking.createdAt)}
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase ${booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                  <td className="px-4 py-2.5">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400' :
                       booking.status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400' :
                         booking.status === 'checked_in' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400' :
                           'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
@@ -413,12 +519,12 @@ export default function AdminDashboard() {
                       {booking.status.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold dark:text-white">
+                  <td className="px-4 py-2.5 text-xs font-bold dark:text-white">
                     ฿{booking.totalAmount.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="p-2 text-slate-400 hover:text-emerald-500 transition-colors">
-                      <Eye size={18} />
+                  <td className="px-4 py-2.5 text-right">
+                    <button className="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
+                      <Eye size={15} />
                     </button>
                   </td>
                 </tr>
@@ -447,3 +553,4 @@ export default function AdminDashboard() {
     </AdminLayout>
   )
 }
+

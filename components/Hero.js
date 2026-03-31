@@ -7,7 +7,7 @@ export default function Hero(props) {
   // Use a default title if none provided
   const heroTitle = title || (
     <>
-      Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-300">BookingKub</span>
+      Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">BookingKub</span>
       <br /> Luxury Resort
     </>
   );

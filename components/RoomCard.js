@@ -20,10 +20,23 @@ export default function RoomCard({ roomType, ratePlans = [], onSelect, selectedC
     };
 
     return (
-        <div className="bg-theme-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-theme-border transition-all duration-300 flex flex-col w-full text-theme-text">
+        <div className={`bg-theme-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border transition-all duration-300 flex flex-col w-full text-theme-text relative ${
+            isAvailable ? 'border-theme-border' : 'border-red-200 dark:border-red-900/50'
+        }`}>
+
+            {/* Sold-out banner — shown at very top for immediate staff recognition */}
+            {!isAvailable && (
+                <div className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white text-sm font-bold">
+                    <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    SOLD OUT — ไม่มีห้องว่างในวันที่เลือก
+                    <span className="ml-auto text-xs font-normal opacity-80">{roomType.availabilityReason || 'No availability'}</span>
+                </div>
+            )}
 
             {/* TOP SECTION: Room Details (Image + Info) */}
-            <div className="flex flex-col sm:flex-row border-b border-theme-border bg-theme-bg/50">
+            <div className={`flex flex-col sm:flex-row border-b border-theme-border bg-theme-bg/50 ${
+                !isAvailable ? 'opacity-60' : ''
+            }`}>
                 {/* Image Carousel */}
                 <div className="relative w-full sm:w-2/5 aspect-[4/3] sm:aspect-auto shrink-0 overflow-hidden group">
                     {hasImages ? (

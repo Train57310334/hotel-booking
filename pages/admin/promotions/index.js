@@ -17,7 +17,7 @@ export default function Promotions() {
     const [editingId, setEditingId] = useState(null)
     const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null })
     const [form, setForm] = useState({
-        code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: ''
+        code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '', isActive: true, maxUses: ''
     })
 
     useEffect(() => {
@@ -59,14 +59,16 @@ export default function Promotions() {
             value: promo.value,
             startDate: new Date(promo.startDate).toISOString().split('T')[0],
             endDate: new Date(promo.endDate).toISOString().split('T')[0],
-            conditions: promo.conditions || ''
+            conditions: promo.conditions || '',
+            isActive: promo.isActive ?? true,
+            maxUses: promo.maxUses === null ? '' : String(promo.maxUses)
         })
         setIsModalOpen(true)
     }
 
     const openCreateModal = () => {
         setEditingId(null)
-        setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '' })
+        setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '', isActive: true, maxUses: '' })
         setIsModalOpen(true)
     }
 
@@ -80,7 +82,9 @@ export default function Promotions() {
                 value: Number(form.value),
                 startDate: new Date(form.startDate),
                 endDate: new Date(form.endDate),
-                conditions: form.conditions
+                conditions: form.conditions,
+                isActive: form.isActive,
+                maxUses: form.maxUses ? parseInt(form.maxUses, 10) : null
             }
 
             if (editingId) {
@@ -99,7 +103,7 @@ export default function Promotions() {
 
             setIsModalOpen(false)
             fetchPromotions()
-            setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '' })
+            setForm({ code: '', type: 'percent', value: '', startDate: '', endDate: '', conditions: '', isActive: true, maxUses: '' })
             setEditingId(null)
         } catch (e) {
             toast.error(editingId ? 'Failed to update' : 'Failed to create. Code might exist.')
@@ -112,7 +116,7 @@ export default function Promotions() {
                 <div>
                     {/* ... title ... */}
                     <h1 className="text-2xl font-bold dark:text-white flex items-center gap-3">
-                        <TicketPercent size={24} className="text-emerald-500" />
+                        <TicketPercent size={24} className="text-blue-500" />
                         Promotions
                     </h1>
                     <p className="text-slate-500 text-sm">Manage discount codes and campaigns</p>
@@ -120,7 +124,7 @@ export default function Promotions() {
                 {currentHotel?.hasPromotions && (
                     <button
                         onClick={openCreateModal}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-bold text-sm hover:bg-blue-600 shadow-lg shadow-blue-500/20"
                     >
                         <Plus size={16} /> New Code
                     </button>
@@ -128,7 +132,7 @@ export default function Promotions() {
             </div>
 
             {!currentHotel?.hasPromotions && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/20 p-6 rounded-2xl mb-8 flex items-start gap-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/20 p-6 rounded-2xl mb-4 flex items-start gap-4">
                     <Info className="text-amber-500 shrink-0 mt-0.5" />
                     <div>
                         <h3 className="font-bold text-amber-800 dark:text-amber-400 mb-1">Feature Not Available</h3>
@@ -157,7 +161,7 @@ export default function Promotions() {
                         <div key={promo.id} className="flex flex-col md:flex-row justify-between items-center p-4 border border-slate-100 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                             {/* ... promo details ... */}
                             <div className="flex items-center gap-4 mb-2 md:mb-0">
-                                <div className="bg-emerald-100 dark:bg-emerald-900/30 w-12 h-12 rounded-full flex items-center justify-center text-emerald-600 font-bold text-lg">
+                                <div className="bg-blue-100 dark:bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg">
                                     %
                                 </div>
                                 <div>
@@ -166,8 +170,16 @@ export default function Promotions() {
                                         <span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 uppercase">{promo.type}</span>
                                     </div>
                                     <p className="text-slate-500 text-sm">
-                                        Discount: <span className="font-bold text-emerald-500">{promo.value} {promo.type === 'percent' ? '%' : 'THB'}</span>
+                                        Discount: <span className="font-bold text-blue-500">{promo.value} {promo.type === 'percent' ? '%' : 'THB'}</span>
                                     </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${promo.isActive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                            {promo.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full dark:bg-slate-700 dark:text-slate-300">
+                                            Usage: {promo.usedCount} / {promo.maxUses || 'Unlimited'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -205,7 +217,7 @@ export default function Promotions() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl w-[450px] shadow-2xl border border-slate-100 dark:border-slate-700">
                         <h3 className="font-bold text-lg mb-4 dark:text-white flex items-center gap-2">
-                            <TicketPercent size={20} className="text-emerald-500" /> {editingId ? 'Edit Promotion' : 'New Promotion'}
+                            <TicketPercent size={20} className="text-blue-500" /> {editingId ? 'Edit Promotion' : 'New Promotion'}
                         </h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {/* ... form fields ... */}
@@ -265,6 +277,29 @@ export default function Promotions() {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                                    <select
+                                        value={form.isActive}
+                                        onChange={e => setForm({ ...form, isActive: e.target.value === 'true' })}
+                                        className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    >
+                                        <option value="true">Active</option>
+                                        <option value="false">Inactive</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Max Uses (Limit)</label>
+                                    <input
+                                        value={form.maxUses}
+                                        onChange={e => setForm({ ...form, maxUses: e.target.value })}
+                                        type="number" min="1" placeholder="Leave empty for unlimited"
+                                        className="w-full p-2.5 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Description (Optional)</label>
                                 <textarea
@@ -278,7 +313,7 @@ export default function Promotions() {
 
                             <div className="flex gap-2 pt-4">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2.5 text-slate-500 font-bold hover:bg-slate-50 rounded-xl">Cancel</button>
-                                <button type="submit" className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">{editingId ? 'Save Changes' : 'Create Code'}</button>
+                                <button type="submit" className="flex-1 py-2.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20">{editingId ? 'Save Changes' : 'Create Code'}</button>
                             </div>
                         </form>
                     </div>
@@ -296,3 +331,4 @@ export default function Promotions() {
         </AdminLayout>
     )
 }
+

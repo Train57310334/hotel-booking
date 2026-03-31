@@ -102,7 +102,7 @@ export default function DemoModal({ isOpen, onClose }) {
                                 className="flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all relative outline-none"
                             >
                                 {activeTab === 'guest' && (
-                                    <motion.div layoutId="activeTabBadge" className="absolute inset-0 bg-emerald-600 rounded-xl shadow-lg -z-10" />
+                                    <motion.div layoutId="activeTabBadge" className="absolute inset-0 bg-blue-600 rounded-xl shadow-lg -z-10" />
                                 )}
                                 <span className={activeTab === 'guest' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}>Guest View</span>
                             </button>
@@ -117,12 +117,12 @@ export default function DemoModal({ isOpen, onClose }) {
                                 >
                                     {/* Active background glow */}
                                     {activeFeature === idx && (
-                                        <div className={`absolute -inset-1 bg-gradient-to-r blur opacity-20 ${activeTab === 'admin' ? 'from-primary-500 to-blue-500' : 'from-emerald-500 to-teal-500'}`} />
+                                        <div className={`absolute -inset-1 bg-gradient-to-r blur opacity-20 ${activeTab === 'admin' ? 'from-primary-500 to-blue-500' : 'from-blue-500 to-teal-500'}`} />
                                     )}
 
                                     <div className="relative z-10">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className={`p-2.5 rounded-xl transition-colors ${activeFeature === idx ? (activeTab === 'admin' ? 'bg-primary-500 text-white' : 'bg-emerald-500 text-white') : 'bg-slate-800 text-slate-400 group-hover:text-slate-300 group-hover:bg-slate-700'}`}>
+                                            <div className={`p-2.5 rounded-xl transition-colors ${activeFeature === idx ? (activeTab === 'admin' ? 'bg-primary-500 text-white' : 'bg-blue-500 text-white') : 'bg-slate-800 text-slate-400 group-hover:text-slate-300 group-hover:bg-slate-700'}`}>
                                                 <feature.icon size={18} />
                                             </div>
                                             <span className={`font-bold transition-colors ${activeFeature === idx ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>{feature.title}</span>
@@ -143,7 +143,7 @@ export default function DemoModal({ isOpen, onClose }) {
                                 {isAutoPlay ? <Pause size={14} /> : <Play size={14} />} {isAutoPlay ? 'Pause' : 'Play'}
                             </button>
 
-                            <a href="/auth/register" className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white text-sm transition-all shadow-lg ${activeTab === 'admin' ? 'bg-primary-600 hover:bg-primary-500 hover:shadow-primary-600/25' : 'bg-emerald-600 hover:bg-emerald-500 hover:shadow-emerald-600/25'}`}>
+                            <a href="/auth/register" className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white text-sm transition-all shadow-lg ${activeTab === 'admin' ? 'bg-primary-600 hover:bg-primary-500 hover:shadow-primary-600/25' : 'bg-blue-600 hover:bg-blue-500 hover:shadow-blue-600/25'}`}>
                                 Try Free <ArrowRight size={16} />
                             </a>
                         </div>
@@ -152,7 +152,7 @@ export default function DemoModal({ isOpen, onClose }) {
                     {/* Main Content Area */}
                     <div className="flex-1 bg-[#0f172a] relative p-6 sm:p-10 flex flex-col min-h-[500px] overflow-hidden">
                         {/* Background subtle gradients */}
-                        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[100px] mix-blend-screen opacity-20 pointer-events-none transition-colors duration-1000 ${activeTab === 'admin' ? 'bg-primary-500' : 'bg-emerald-500'}`}></div>
+                        <div className={`absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[100px] mix-blend-screen opacity-20 pointer-events-none transition-colors duration-1000 ${activeTab === 'admin' ? 'bg-primary-500' : 'bg-blue-500'}`}></div>
 
                         <button onClick={onClose} className="absolute top-6 right-6 z-20 p-2.5 bg-slate-800/80 hover:bg-slate-700 text-white rounded-full backdrop-blur-md transition-colors border border-slate-700/80 hidden md:flex shadow-xl">
                             <X size={20} />
@@ -186,7 +186,7 @@ export default function DemoModal({ isOpen, onClose }) {
                                     {(() => {
                                         const ActiveIcon = features[activeFeature].icon;
                                         return (
-                                            <div className={`mt-1 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${activeTab === 'admin' ? 'bg-primary-500/20 text-primary-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                            <div className={`mt-1 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${activeTab === 'admin' ? 'bg-primary-500/20 text-primary-400' : 'bg-blue-500/20 text-blue-400'}`}>
                                                 <ActiveIcon size={20} />
                                             </div>
                                         );
@@ -215,7 +215,7 @@ export default function DemoModal({ isOpen, onClose }) {
                                             initial={{ width: "0%" }}
                                             animate={{ width: isAutoPlay ? "100%" : "100%" }}
                                             transition={isAutoPlay ? { duration: 5, ease: "linear" } : { duration: 0 }}
-                                            className={`absolute top-0 left-0 h-full ${activeTab === 'admin' ? 'bg-primary-500' : 'bg-emerald-500'}`}
+                                            className={`absolute top-0 left-0 h-full ${activeTab === 'admin' ? 'bg-primary-500' : 'bg-blue-500'}`}
                                             onAnimationComplete={() => {
                                                 // Handled in useEffect instead
                                             }}
@@ -225,7 +225,7 @@ export default function DemoModal({ isOpen, onClose }) {
                                         <div className="absolute top-0 left-0 h-full w-0" />
                                     )}
                                     {activeFeature > idx && (
-                                        <div className={`absolute top-0 left-0 h-full w-full ${activeTab === 'admin' ? 'bg-primary-500' : 'bg-emerald-500'}`} />
+                                        <div className={`absolute top-0 left-0 h-full w-full ${activeTab === 'admin' ? 'bg-primary-500' : 'bg-blue-500'}`} />
                                     )}
                                 </button>
                             ))}

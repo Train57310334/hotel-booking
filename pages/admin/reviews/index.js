@@ -75,7 +75,7 @@ export default function ReviewManagement() {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'approved': return <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-bold uppercase">Approved</span>
+            case 'approved': return <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold uppercase">Approved</span>
             case 'rejected': return <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-xs font-bold uppercase">Rejected</span>
             default: return <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold uppercase">Pending</span>
         }
@@ -91,35 +91,35 @@ export default function ReviewManagement() {
         <AdminLayout>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Review Management</h1>
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Review Management</h1>
                     <p className="text-slate-500 dark:text-slate-400">Moderate guest feedback and approvals</p>
                 </div>
             </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><MessageSquare size={24} /></div>
                         <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</span>
                     </div>
                     <p className="text-sm text-slate-500">Total Reviews</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><AlertCircle size={24} /></div>
                         <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.pending}</span>
                     </div>
                     <p className="text-sm text-slate-500">Pending Approval</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><CheckCircle size={24} /></div>
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><CheckCircle size={24} /></div>
                         <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.approved}</span>
                     </div>
                     <p className="text-sm text-slate-500">Approved Publicly</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl"><Star size={24} /></div>
                         <span className="text-2xl font-bold text-slate-900 dark:text-white">{Number(stats.averageRating).toFixed(1)}</span>
@@ -134,11 +134,11 @@ export default function ReviewManagement() {
                     <button
                         key={status}
                         onClick={() => setFilter(status)}
-                        className={`px-4 py-2 font-medium text-sm transition-colors relative ${filter === status ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                        className={`px-4 py-2 font-medium text-sm transition-colors relative ${filter === status ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
                             }`}
                     >
                         {status}
-                        {filter === status && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 rounded-t-full"></span>}
+                        {filter === status && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 rounded-t-full"></span>}
                     </button>
                 ))}
             </div>
@@ -152,6 +152,7 @@ export default function ReviewManagement() {
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Guest</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Rating</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Comment</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Source</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>
                             </tr>
@@ -164,26 +165,32 @@ export default function ReviewManagement() {
                             ) : (
                                 reviews.map(review => (
                                     <tr key={review.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{review.user?.name || 'Anonymous'}</p>
+                                        <td className="px-4 py-2.5">
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{review.guestName || review.user?.name || 'Anonymous'}</p>
                                             <p className="text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-0.5">
                                                 {renderStars(review.rating)}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-4 py-2.5">
                                             <p className="text-sm text-slate-700 dark:text-slate-300 italic">"{review.comment}"</p>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-4 py-2.5">
+                                            {review.source === 'post-stay-email'
+                                                ? <span className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full text-xs font-bold">Email</span>
+                                                : <span className="bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full text-xs font-bold">Direct</span>
+                                            }
+                                        </td>
+                                        <td className="px-4 py-2.5">
                                             {getStatusBadge(review.status)}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => handleStatusUpdate(review.id, 'approved')}
-                                                    className={`p-2 rounded-lg transition-colors ${review.status === 'approved' ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
+                                                    className={`p-2 rounded-lg transition-colors ${review.status === 'approved' ? 'bg-blue-100 text-blue-600 cursor-default' : 'text-blue-600 bg-blue-50 hover:bg-blue-100'}`}
                                                     title="Approve"
                                                     disabled={review.status === 'approved'}
                                                 >
@@ -226,3 +233,4 @@ export default function ReviewManagement() {
         </AdminLayout>
     )
 }
+

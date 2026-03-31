@@ -42,7 +42,7 @@ export default function WidgetGenerator() {
         <AdminLayout>
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                         WordPress Widget Generator
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400">
@@ -58,7 +58,7 @@ export default function WidgetGenerator() {
                         </div>
 
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">1</div>
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">1</div>
                             Download Plugin
                         </h2>
 
@@ -68,7 +68,7 @@ export default function WidgetGenerator() {
 
                         <button
                             onClick={handleDownload}
-                            className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                            className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                         >
                             <Download size={20} />
                             Download Plugin (.zip)
@@ -86,7 +86,7 @@ export default function WidgetGenerator() {
                             <li>Go to <strong>Plugins &gt; Add New</strong> and click <strong>Upload Plugin</strong>.</li>
                             <li>Upload and activate the <code>kb-hotel-booking.zip</code> file.</li>
                             <li>Go to <strong>Settings &gt; Hotel Booking Widget</strong>.</li>
-                            <li>Enter your Hotel ID: <code className="bg-slate-100 px-2 py-1 rounded text-emerald-600 font-bold">{currentHotel.id}</code></li>
+                            <li>Enter your Hotel ID: <code className="bg-slate-100 px-2 py-1 rounded text-blue-600 font-bold">{currentHotel.id}</code></li>
                             <li>Click <strong>Save Settings</strong>.</li>
                         </ol>
                     </div>
@@ -110,7 +110,7 @@ export default function WidgetGenerator() {
                                     className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
                                     title="Copy to clipboard"
                                 >
-                                    {copied ? <CheckCircle size={20} className="text-emerald-500" /> : <Copy size={20} />}
+                                    {copied ? <CheckCircle size={20} className="text-blue-500" /> : <Copy size={20} />}
                                 </button>
                             </div>
                         </div>
@@ -120,3 +120,4 @@ export default function WidgetGenerator() {
         </AdminLayout>
     );
 }
+

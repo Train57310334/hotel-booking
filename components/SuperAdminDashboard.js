@@ -69,7 +69,7 @@ export default function SuperAdminDashboard() {
             label: 'Active Tenants',
             value: stats?.totalHotels || 0,
             icon: Building2,
-            color: 'bg-emerald-500',
+            color: 'bg-blue-500',
             trend: '+2',
             sub: 'Registered Hotels'
         },
@@ -85,44 +85,44 @@ export default function SuperAdminDashboard() {
 
     return (
         <div className="animate-fade-in-up">
-            <div className="mb-8">
-                <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">
+            <div className="mb-6">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                     Platform Overview
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                     High-level metrics across the entire SaaS infrastructure
                 </p>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {cards.map((item, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`w-12 h-12 rounded-2xl ${item.color} flex items-center justify-center text-white shadow-lg shadow-indigo-500/10`}>
-                                <item.icon size={24} />
+                    <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start mb-3">
+                            <div className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center text-white shadow-sm`}>
+                                <item.icon size={20} />
                             </div>
                             {item.trend && (
-                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-1 rounded-full">
+                                <span className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                                     {item.trend}
                                 </span>
                             )}
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{item.label}</p>
-                            <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{item.value}</h3>
-                            <p className="text-xs text-slate-400 mt-2 font-medium">{item.sub}</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium mb-0.5">{item.label}</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{item.value}</h3>
+                            <p className="text-[10px] text-slate-400 mt-1 font-medium">{item.sub}</p>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Charts & Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                 {/* Revenue Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">MRR Growth (Estimated)</h3>
-                    <div className="h-72 w-full">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">MRR Growth (Estimated)</h3>
+                    <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={stats?.revenueChart || []}>
                                 <defs>
@@ -132,18 +132,18 @@ export default function SuperAdminDashboard() {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(val) => `฿${(val / 1000).toFixed(0)}k`} />
-                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
-                                <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorMrr)" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={(val) => `฿${(val / 1000).toFixed(0)}k`} />
+                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: '12px' }} />
+                                <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorMrr)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Plan Distribution */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Subscriptions</h3>
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Subscriptions</h3>
                     <div className="space-y-6">
                         <div>
                             <div className="flex justify-between items-center mb-2">
@@ -157,10 +157,10 @@ export default function SuperAdminDashboard() {
                         <div>
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-sm font-bold text-slate-600 dark:text-slate-300">PRO</span>
-                                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{stats?.planCounts?.PRO || 0}</span>
+                                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{stats?.planCounts?.PRO || 0}</span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5">
-                                <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: `${((stats?.planCounts?.PRO || 0) / (stats?.totalHotels || 1)) * 100}%` }}></div>
+                                <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${((stats?.planCounts?.PRO || 0) / (stats?.totalHotels || 1)) * 100}%` }}></div>
                             </div>
                         </div>
                         <div>

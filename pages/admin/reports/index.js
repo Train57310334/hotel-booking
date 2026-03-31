@@ -33,8 +33,8 @@ export default function ReportsPage() {
             <div className="p-6 max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            {activeTab === 'general' ? <FileText className="text-emerald-500" /> : <Moon className="text-indigo-500" />}
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                            {activeTab === 'general' ? <FileText className="text-blue-500" /> : <Moon className="text-indigo-500" />}
                             {activeTab === 'general' ? 'Financial Reports' : 'Night Audit Logs'}
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400">
@@ -45,7 +45,7 @@ export default function ReportsPage() {
                     <div className="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-100 dark:border-slate-700">
                         <button
                             onClick={() => setActiveTab('general')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'general' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'general' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
                                 }`}
                         >
                             General
@@ -161,7 +161,7 @@ function GeneralReports({ hotelId }) {
                             <div className="fixed inset-0 z-30" onClick={() => setIsExportMenuOpen(false)} />
                             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden z-40 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <button onClick={() => handleExport('excel')} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors">
-                                    <FileText size={16} className="text-emerald-500" /> Excel (.xlsx)
+                                    <FileText size={16} className="text-blue-500" /> Excel (.xlsx)
                                 </button>
                                 <button onClick={() => handleExport('csv')} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors border-t border-slate-100 dark:border-slate-700">
                                     <FileText size={16} className="text-indigo-500" /> CSV Summary
@@ -174,7 +174,7 @@ function GeneralReports({ hotelId }) {
                     <input type="date" value={dateRange.from} onChange={e => setDateRange({ ...dateRange, from: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
                     <span className="text-slate-400">-</span>
                     <input type="date" value={dateRange.to} onChange={e => setDateRange({ ...dateRange, to: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
-                    <button onClick={fetchData} className="text-emerald-600 font-bold text-xs px-2 hover:bg-emerald-50 rounded">Refresh</button>
+                    <button onClick={fetchData} className="text-blue-600 font-bold text-xs px-2 hover:bg-blue-50 rounded">Refresh</button>
                 </div>
             </div>
 
@@ -190,7 +190,7 @@ function GeneralReports({ hotelId }) {
                 </div>
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                     <p className="text-slate-500 text-xs font-bold uppercase mb-1">Net Profit</p>
-                    <p className={`text-3xl font-bold ${summary.totalProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>฿{summary.totalProfit.toLocaleString()}</p>
+                    <p className={`text-3xl font-bold ${summary.totalProfit >= 0 ? 'text-blue-600' : 'text-rose-500'}`}>฿{summary.totalProfit.toLocaleString()}</p>
                 </div>
             </div>
 
@@ -281,7 +281,7 @@ function NightAuditReports() {
                     <div className="flex items-center gap-2 mb-2 text-slate-500">
                         <TrendingUp size={16} /> <span className="text-xs font-bold uppercase">Avg RevPAR</span>
                     </div>
-                    <div className="text-2xl font-bold text-emerald-600">
+                    <div className="text-2xl font-bold text-blue-600">
                         ฿{stats.length > 0 ? Math.round(stats.reduce((a, b) => a + b.revPar, 0) / stats.length).toLocaleString() : 0}
                     </div>
                 </div>
@@ -336,7 +336,7 @@ function NightAuditReports() {
                                     <td className="p-3 text-center dark:text-white">{s.occupiedRooms}</td>
                                     <td className="p-3 text-center font-bold text-indigo-600">{s.occupancyRate.toFixed(1)}%</td>
                                     <td className="p-3 text-right dark:text-white">฿{s.adr.toLocaleString()}</td>
-                                    <td className="p-3 text-right font-bold text-emerald-600">฿{s.revPar.toLocaleString()}</td>
+                                    <td className="p-3 text-right font-bold text-blue-600">฿{s.revPar.toLocaleString()}</td>
                                     <td className="p-3 text-right dark:text-white">฿{s.totalRevenue.toLocaleString()}</td>
                                 </tr>
                             ))}
@@ -421,4 +421,5 @@ function AddExpenseModal({ isOpen, onClose, onSuccess }) {
         </div>
     )
 }
+
 

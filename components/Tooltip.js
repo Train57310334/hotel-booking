@@ -15,7 +15,7 @@ export default function Tooltip({ children, content, width = 'w-64' }) {
 export function InfoTooltip({ content }) {
     return (
         <Tooltip content={content}>
-            <Info size={16} className="text-slate-400 hover:text-emerald-500 cursor-help transition-colors" />
+            <Info size={16} className="text-slate-400 hover:text-blue-500 cursor-help transition-colors" />
         </Tooltip>
     )
 }

@@ -250,8 +250,8 @@ export default function CheckoutPaymentPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 mt-8">
-                                <div className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-1">Total Amount</div>
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 mt-8">
+                                <div className="text-blue-400 text-sm font-bold uppercase tracking-wider mb-1">Total Amount</div>
                                 <div className="text-4xl font-display font-black text-white">฿{booking.totalAmount?.toLocaleString()}</div>
                             </div>
                         </div>

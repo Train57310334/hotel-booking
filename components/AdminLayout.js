@@ -31,7 +31,10 @@ import {
     Info,
     Search,
     BarChart2,
-    Mail
+    Mail,
+    Share2,
+    Wallet,
+    Activity
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
@@ -44,6 +47,7 @@ import NotificationMenu from './NotificationMenu'
 import { useSocket } from '@/hooks/useSocket'
 import { useRoleAccess } from '@/hooks/useRoleAccess'
 import { toast } from 'react-hot-toast'
+import { apiFetch } from '@/lib/api'
 
 export default function AdminLayout({ children }) {
     const router = useRouter()
@@ -60,6 +64,16 @@ export default function AdminLayout({ children }) {
     const [hotelSwitcherOpen, setHotelSwitcherOpen] = useState(false)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const [notifications, setNotifications] = useState([])
+    const [unreadMessages, setUnreadMessages] = useState(0)
+
+    // Fetch unread messages count
+    useEffect(() => {
+        if (currentHotel?.id) {
+            apiFetch(`/messages/unread-count?hotelId=${currentHotel.id}`)
+                .then(res => setUnreadMessages(res.count || 0))
+                .catch(() => {})
+        }
+    }, [currentHotel?.id, router.pathname])
 
     // Determine current guide content
     const currentGuide = guideData[router.pathname] || defaultGuide
@@ -92,7 +106,7 @@ export default function AdminLayout({ children }) {
 
         const handleRoomStatusChanged = (data) => {
             toast(`Room ${data.roomNumber} marked as ${data.status}`, {
-                icon: <SprayCan size={16} className="text-emerald-500" />,
+                icon: <SprayCan size={16} className="text-blue-600" />,
                 position: 'top-right',
             });
         };
@@ -200,20 +214,29 @@ export default function AdminLayout({ children }) {
     }
 
     const menuItems = [
-        { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-        { name: 'Calendar', icon: CalendarDays, href: '/admin/calendar' },
-        { name: 'Booking', icon: CalendarDays, href: '/admin/bookings' },
-        { name: 'Housekeeping', icon: SprayCan, href: '/admin/housekeeping' },
-        { name: 'Guest', icon: UserCircle, href: '/admin/guests' },
-        { name: 'Room', icon: BedDouble, href: '/admin/rooms' },
-        { name: 'Rates & Avail.', icon: Filter, href: '/admin/rates' },
-        { name: 'Promotions', icon: TicketPercent, href: '/admin/promotions' },
-        { name: 'Reviews', icon: Star, href: '/admin/reviews' },
-        { name: 'Reports', icon: TrendingUp, href: '/admin/reports' },
-        { name: 'Payments', icon: CreditCard, href: '/admin/payments' },
-        { name: 'Staff Management', icon: Users, href: '/admin/staff' },
-        { name: 'Message', icon: MessageSquare, href: '/admin/messages' },
-        { name: 'Analytics & SEO', icon: BarChart2, href: '/admin/reports/analytics' },
+        { name: 'Dashboard', icon: LayoutDashboard, href: '/admin', group: 'Front Desk' },
+        { name: 'Calendar', icon: CalendarDays, href: '/admin/calendar', group: 'Front Desk' },
+        { name: 'Booking', icon: CalendarDays, href: '/admin/bookings', group: 'Front Desk' },
+        { name: 'Guest', icon: UserCircle, href: '/admin/guests', group: 'Front Desk' },
+        { name: 'Message', icon: MessageSquare, href: '/admin/messages', group: 'Front Desk' },
+
+        { name: 'Room', icon: BedDouble, href: '/admin/rooms', group: 'Operations' },
+        { name: 'Housekeeping', icon: SprayCan, href: '/admin/housekeeping', group: 'Operations' },
+        { name: 'Staff Management', icon: Users, href: '/admin/staff', group: 'Operations' },
+        ...(isAdmin || role === 'owner' ? [{ name: 'Audit Logs', icon: Settings, href: '/admin/reports/audit-logs', group: 'Operations' }] : []),
+
+        { name: 'Rates & Avail.', icon: Filter, href: '/admin/rates', group: 'Revenue & Marketing' },
+        { name: 'Yield Management', icon: Zap, href: '/admin/rates/yield', group: 'Revenue & Marketing' },
+        { name: 'Promotions', icon: TicketPercent, href: '/admin/promotions', group: 'Revenue & Marketing' },
+        { name: 'Reviews', icon: Star, href: '/admin/reviews', group: 'Revenue & Marketing' },
+        { name: 'Analytics & SEO', icon: BarChart2, href: '/admin/reports/analytics', group: 'Revenue & Marketing' },
+        { name: 'Channels', icon: Share2, href: '/admin/channels', group: 'Revenue & Marketing' },
+
+        { name: 'Payments', icon: CreditCard, href: '/admin/payments', group: 'Finance & Analytics' },
+        { name: 'Reports', icon: TrendingUp, href: '/admin/reports', group: 'Finance & Analytics' },
+        { name: 'Night Audit', icon: Moon, href: '/admin/reports/night-audit', group: 'Finance & Analytics' },
+        { name: 'Accounting & P/L', icon: Wallet, href: '/admin/reports/accounting', group: 'Finance & Analytics' },
+
         { name: 'My Account', icon: UserCircle, href: '/admin/account', section: 'bottom' },
         { name: 'Subscription', icon: Crown, href: '/admin/subscription', section: 'bottom' },
         { name: 'Widget Gen.', icon: Globe, href: '/admin/settings/widget', section: 'bottom' },
@@ -230,18 +253,19 @@ export default function AdminLayout({ children }) {
         { name: 'SEO & Marketing', icon: Search, href: '/admin/super/seo' },
         { name: 'Platform Email', icon: Mail, href: '/admin/super/notifications' },
         { name: 'Platform Billing', icon: CreditCard, href: '/admin/super/billing' },
+        { name: 'System Logs', icon: Activity, href: '/admin/reports/audit-logs' },
     ]
 
     if (loading) {
         return (
             <div className={`flex min-h-screen items-center justify-center font-sans ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
         )
     }
 
     return (
-        <div className={`flex font-sans text-sm transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`} style={{ zoom: 0.9, minHeight: '115vh' }}>
+        <div className={`flex font-sans antialiased text-[13px] md:text-sm min-h-screen transition-colors duration-200 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-800'}`}>
             <UpgradeModal isOpen={isUpgradeModalOpen} onClose={closeUpgradeModal} />
 
             {/* Mobile Menu Overlay */}
@@ -251,18 +275,18 @@ export default function AdminLayout({ children }) {
 
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 z-50 w-56 transform transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-                } bg-slate-900 text-white flex flex-col`}>
+                } bg-[#06033a] text-white flex flex-col`}>
                 <div className="h-16 flex items-center justify-between px-6">
                     {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) ? (
                         <div className="relative">
                             <button
                                 onClick={() => allHotels?.length > 1 && setHotelSwitcherOpen(!hotelSwitcherOpen)}
-                                className="flex items-center gap-3 w-full text-left focus:outline-none hover:bg-slate-800 p-2 rounded-lg transition-colors -ml-2"
+                                className="flex items-center gap-3 w-full text-left focus:outline-none hover:bg-white/10 p-2 rounded-lg transition-colors -ml-2"
                             >
                                 {currentHotel?.logoUrl ? (
                                     <img src={currentHotel.logoUrl} alt={currentHotel.name} className="h-8 w-8 rounded object-contain bg-white shrink-0" />
                                 ) : (
-                                    <div className="bg-emerald-500 rounded-lg p-1.5 shrink-0 flex items-center justify-center">
+                                    <div className="bg-blue-600 rounded-lg p-1.5 shrink-0 flex items-center justify-center">
                                         <img src="/logo.png" alt="BookingKub" className="h-5 w-5 object-contain brightness-0 invert" />
                                     </div>
                                 )}
@@ -284,7 +308,7 @@ export default function AdminLayout({ children }) {
                                                     switchHotel(h.id);
                                                     setHotelSwitcherOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-700 transition-colors ${currentHotel?.id === h.id ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}
+                                                className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-700 transition-colors ${currentHotel?.id === h.id ? 'text-blue-400 font-bold' : 'text-slate-300'}`}
                                             >
                                                 {h.name}
                                             </button>
@@ -306,65 +330,90 @@ export default function AdminLayout({ children }) {
 
                 <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-2">
                     {/* Primary Navigation */}
-                    {(!isPlatformAdmin || user?.isImpersonating) && menuItems.filter(i => !i.section).filter(item => {
-                        // Use hasAccess hook mapped to menu item names
-                        const featureMap = {
-                            'Dashboard': 'dashboard',
-                            'Calendar': 'calendar',
-                            'Booking': 'bookings',
-                            'Housekeeping': 'housekeeping',
-                            'Guest': 'guests',
-                            'Room': 'rooms',
-                            'Rates & Avail.': 'rates',
-                            'Promotions': 'promotions',
-                            'Reviews': 'reviews',
-                            'Reports': 'reports',
-                            'Payments': 'payments',
-                            'Staff Management': 'staff',
-                            'Message': 'messages',
-                            'Analytics & SEO': 'reports'
-                        };
-                        return hasAccess(featureMap[item.name]);
-                    }).map((item) => {
-                        const isActive = router.pathname.startsWith(item.href) &&
-                            (item.href !== '/admin' || router.pathname === '/admin');
+                    {(!isPlatformAdmin || user?.isImpersonating) && (() => {
+                        const allowedItems = menuItems.filter(i => !i.section).filter(item => {
+                            const featureMap = {
+                                'Dashboard': 'dashboard',
+                                'Calendar': 'calendar',
+                                'Booking': 'bookings',
+                                'Housekeeping': 'housekeeping',
+                                'Guest': 'guests',
+                                'Room': 'rooms',
+                                'Rates & Avail.': 'rates',
+                                'Promotions': 'promotions',
+                                'Reviews': 'reviews',
+                                'Reports': 'reports',
+                                'Payments': 'payments',
+                                'Staff Management': 'staff',
+                                'Message': 'messages',
+                                'Analytics & SEO': 'reports'
+                            };
+                            return hasAccess(featureMap[item.name]);
+                        });
 
-                        // 🔒 Feature Locks based on Plan
-                        const isLocked = (item.name === 'Promotions' && !currentHotel?.hasPromotions) ||
-                            (item.name === 'Payments' && !currentHotel?.hasOnlinePayment);
+                        const categories = ['Front Desk', 'Operations', 'Revenue & Marketing', 'Finance & Analytics'];
 
-                        if (isLocked) {
+                        return categories.map(cat => {
+                            const catItems = allowedItems.filter(i => i.group === cat);
+                            if (catItems.length === 0) return null;
+
                             return (
-                                <button
-                                    key={item.name}
-                                    onClick={openUpgradeModal}
-                                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all font-medium mb-1 text-slate-400 hover:text-white hover:bg-slate-800 text-left cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <item.icon size={18} />
-                                        {item.name}
-                                    </div>
-                                    <div title="Upgrade to PRO to unlock" className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
-                                        <Lock size={14} />
-                                    </div>
-                                </button>
-                            )
-                        }
+                                <div key={cat} className="mb-4">
+                                    <div className="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{cat}</div>
+                                    {catItems.map((item) => {
+                                        const isActive = router.pathname.startsWith(item.href) &&
+                                            (item.href !== '/admin' || router.pathname === '/admin');
 
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${isActive
-                                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                                    }`}
-                            >
-                                <item.icon size={18} />
-                                {item.name}
-                            </Link>
-                        )
-                    })}
+                                        // 🔒 Feature Locks based on Plan
+                                        const isLocked = (item.name === 'Promotions' && !currentHotel?.hasPromotions) ||
+                                            (item.name === 'Payments' && !currentHotel?.hasOnlinePayment);
+
+                                        if (isLocked) {
+                                            return (
+                                                <button
+                                                    key={item.name}
+                                                    onClick={openUpgradeModal}
+                                                    className="group w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-lg transition-all duration-300 mb-0.5 text-white/60 hover:text-white hover:bg-white/5 text-left cursor-pointer"
+                                                >
+                                                    <div className="flex items-center gap-3 transition-transform duration-300 group-hover:translate-x-1">
+                                                        <item.icon size={18} className="text-white/50 group-hover:text-blue-400 transition-colors" />
+                                                        {item.name}
+                                                    </div>
+                                                    <div title="Upgrade to PRO to unlock" className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
+                                                        <Lock size={14} />
+                                                    </div>
+                                                </button>
+                                            )
+                                        }
+
+                                        return (
+                                            <Link
+                                                key={item.name}
+                                                href={item.href}
+                                                className={`group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300 text-[13px] font-medium mb-0.5 overflow-hidden ${isActive
+                                                    ? 'bg-gradient-to-r from-blue-600/20 to-transparent text-white font-semibold'
+                                                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]" />}
+                                                    <div className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>
+                                                        <item.icon size={18} className={`transition-colors ${isActive ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
+                                                    </div>
+                                                    <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{item.name}</span>
+                                                </div>
+                                                {item.name === 'Message' && unreadMessages > 0 && (
+                                                    <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                                                        {unreadMessages}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        )
+                                    })}
+                                </div>
+                            )
+                        });
+                    })()}
 
                     <div className="my-4 border-t border-slate-800" />
 
@@ -382,13 +431,16 @@ export default function AdminLayout({ children }) {
                                     <Link
                                         key={item.name}
                                         href={item.href}
-                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${isActive
-                                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                                            : 'text-indigo-400/70 hover:text-indigo-100 hover:bg-slate-800'
+                                        className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 text-[13px] font-medium mb-0.5 overflow-hidden ${isActive
+                                            ? 'bg-gradient-to-r from-blue-600/20 to-transparent text-white font-semibold'
+                                            : 'text-white/60 hover:text-white hover:bg-white/5'
                                             }`}
                                     >
-                                        <item.icon size={18} />
-                                        {item.name}
+                                        {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]" />}
+                                        <div className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>
+                                            <item.icon size={18} className={`transition-colors ${isActive ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
+                                        </div>
+                                        <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{item.name}</span>
                                     </Link>
                                 )
                             })}
@@ -396,39 +448,33 @@ export default function AdminLayout({ children }) {
                         </div>
                     )}
 
-                    {/* Plan Badge */}
+                    {/* Plan Badge - Minimal Vercel/Twilio style */}
                     {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) && (
-                        <div className="px-3 mb-6">
-                            <div className={`rounded-xl p-4 border relative overflow-hidden group ${currentHotel?.package === 'PRO'
-                                ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-500/50'
-                                : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'
+                        <div className="px-3 mb-6 mt-4">
+                            <div className={`rounded-lg p-3 border ${currentHotel?.package === 'PRO'
+                                ? 'bg-blue-900/10 border-blue-500/20'
+                                : 'bg-white/5 border-white/5'
                                 }`}>
-                                {currentHotel?.package === 'PRO' && (
-                                    <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/20 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-                                )}
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Current Plan</h4>
-                                <div className="flex justify-between items-center mb-3">
-                                    <span className={`text-lg font-bold ${currentHotel?.package === 'PRO' ? 'text-indigo-300' : 'text-white'}`}>
-                                        {currentHotel?.package || 'LITE'}
-                                    </span>
-                                    <span className={`text-xs px-2 py-0.5 rounded ${currentHotel?.package === 'PRO'
-                                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                        : 'bg-slate-700 text-slate-300'
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">Plan</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${currentHotel?.package === 'PRO'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'bg-white/10 text-white/60'
                                         }`}>
-                                        {currentHotel?.package === 'PRO' ? 'Active' : 'Free'}
+                                        {currentHotel?.package || 'LITE'}
                                     </span>
                                 </div>
                                 {currentHotel?.package !== 'PRO' && currentHotel?.package !== 'ENTERPRISE' && (
                                     <button
                                         onClick={openUpgradeModal}
-                                        className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded flex items-center justify-center gap-1.5 transition-colors"
                                     >
-                                        <Zap size={14} className="fill-current" /> Upgrade
+                                        <Zap size={12} className="fill-current" /> Upgrade to Pro
                                     </button>
                                 )}
                                 {currentHotel?.package === 'PRO' && currentHotel?.subscriptionEnd && (
-                                    <div className="text-[10px] text-slate-400 text-center">
-                                        Expires: {new Date(currentHotel.subscriptionEnd).toLocaleDateString()}
+                                    <div className="text-[10px] text-white/40 mt-1">
+                                        Renews: {new Date(currentHotel.subscriptionEnd).toLocaleDateString()}
                                     </div>
                                 )}
                             </div>
@@ -454,13 +500,16 @@ export default function AdminLayout({ children }) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium mb-1 ${isActive
-                                        ? 'text-emerald-400 bg-slate-800'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                    className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 text-[13px] font-medium mb-0.5 overflow-hidden ${isActive
+                                        ? 'bg-gradient-to-r from-blue-600/20 to-transparent text-white font-semibold'
+                                        : 'text-white/60 hover:text-white hover:bg-white/5'
                                         }`}
                                 >
-                                    <item.icon size={18} />
-                                    {item.name}
+                                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]" />}
+                                    <div className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>
+                                        <item.icon size={18} className={`transition-colors ${isActive ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
+                                    </div>
+                                    <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{item.name}</span>
                                 </Link>
                             )
                         })}
@@ -468,13 +517,16 @@ export default function AdminLayout({ children }) {
                         {isPlatformAdmin && !user?.isImpersonating && (
                             <Link
                                 href="/admin/account"
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium mb-1 ${router.pathname.startsWith('/admin/account')
-                                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 text-[13px] font-medium mb-0.5 overflow-hidden ${router.pathname.startsWith('/admin/account')
+                                    ? 'bg-gradient-to-r from-blue-600/20 to-transparent text-white font-semibold'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5'
                                     }`}
                             >
-                                <UserCircle size={18} />
-                                My Account
+                                {router.pathname.startsWith('/admin/account') && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]" />}
+                                <div className={`transition-transform duration-300 ${!router.pathname.startsWith('/admin/account') ? 'group-hover:translate-x-1' : ''}`}>
+                                    <UserCircle size={18} className={`transition-colors ${router.pathname.startsWith('/admin/account') ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
+                                </div>
+                                <span className={`transition-transform duration-300 ${!router.pathname.startsWith('/admin/account') ? 'group-hover:translate-x-1' : ''}`}>My Account</span>
                             </Link>
                         )}
                     </div>
@@ -488,7 +540,7 @@ export default function AdminLayout({ children }) {
                         </div>
                         <button
                             onClick={toggleTheme}
-                            className={`w-8 h-5 rounded-full relative transition-colors duration-200 ease-in-out ${darkMode ? 'bg-emerald-500' : 'bg-slate-600'}`}
+                            className={`w-8 h-5 rounded-full relative transition-colors duration-200 ease-in-out ${darkMode ? 'bg-blue-600' : 'bg-slate-600'}`}
                         >
                             <span
                                 className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 ease-in-out ${darkMode ? 'translate-x-3' : 'translate-x-0'}`}
@@ -501,7 +553,7 @@ export default function AdminLayout({ children }) {
             {/* Main Content */}
             <div className="flex-1 md:ml-56 flex flex-col min-w-0 transition-all duration-200">
                 {/* Top Header */}
-                <header className={`h-16 border-b flex items-center justify-between px-4 sticky top-0 z-40 backdrop-blur-md ${darkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-white/80 border-slate-100'
+                <header className={`h-14 border-b flex items-center justify-between px-6 sticky top-0 z-40 backdrop-blur-md ${darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/95 border-slate-200'
                     }`}>
                     <div className="flex items-center gap-4">
                         <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-slate-500">
@@ -509,8 +561,8 @@ export default function AdminLayout({ children }) {
                         </button>
 
                         {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) && (
-                            <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
-                                <Globe size={16} />
+                            <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors">
+                                <Globe size={15} />
                                 View Website
                             </a>
                         )}
@@ -518,9 +570,9 @@ export default function AdminLayout({ children }) {
                         {/* Help / Guide Button */}
                         <button
                             onClick={() => setGuideOpen(true)}
-                            className="hidden lg:flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
+                            className="hidden lg:flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
                         >
-                            <HelpCircle size={18} />
+                            <HelpCircle size={15} />
                             Guide
                         </button>
 
@@ -543,7 +595,7 @@ export default function AdminLayout({ children }) {
                                     <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{user?.name || 'Admin'}</div>
                                     <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Admin</div>
                                 </div>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shadow-lg shadow-emerald-500/20 ${user?.avatarUrl ? 'bg-white' : 'bg-gradient-to-tr from-emerald-500 to-teal-500 text-white text-sm font-bold'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shadow-lg shadow-blue-600/20 ${user?.avatarUrl ? 'bg-white' : 'bg-gradient-to-tr from-blue-600 to-blue-400 text-white text-sm font-bold'}`}>
                                     {user?.avatarUrl ? (
                                         <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
                                     ) : (
@@ -579,7 +631,7 @@ export default function AdminLayout({ children }) {
                     </div>
                 </header>
 
-                <main className="flex-1 p-2 md:p-4 overflow-x-hidden">
+                <main className="flex-1 p-4 md:p-6 lg:px-8 lg:py-6 w-full max-w-[1600px] mx-auto overflow-x-hidden">
                     {children}
                 </main>
             </div>

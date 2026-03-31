@@ -113,7 +113,7 @@ export default function SuperHotels() {
             <div className="max-w-7xl mx-auto pb-20 p-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Tenants & Hotels</h1>
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Tenants & Hotels</h1>
                         <p className="text-slate-500 dark:text-slate-400">View and manage all hotel subscriptions across the BookingKub platform</p>
                     </div>
 
@@ -132,7 +132,7 @@ export default function SuperHotels() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
                         <div className="bg-indigo-50 dark:bg-indigo-500/10 p-3 rounded-xl text-indigo-600 dark:text-indigo-400">
                             <Building2 size={24} />
                         </div>
@@ -142,8 +142,8 @@ export default function SuperHotels() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
-                        <div className="bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-xl text-emerald-600 dark:text-emerald-400">
+                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                        <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-xl text-blue-600 dark:text-blue-400">
                             <Activity size={24} />
                         </div>
                         <div>
@@ -217,14 +217,14 @@ export default function SuperHotels() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => handleImpersonate(hotel.id)}
-                                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                                                     title="View Dashboard"
                                                 >
                                                     <ShieldAlert size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleSuspendClick(hotel.id, hotel.isSuspended)}
-                                                    className={`p-2 rounded-lg transition-colors ${hotel.isSuspended ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10'}`}
+                                                    className={`p-2 rounded-lg transition-colors ${hotel.isSuspended ? 'text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10'}`}
                                                     title={hotel.isSuspended ? "Unsuspend Hotel" : "Suspend Hotel"}
                                                 >
                                                     <Power size={18} />
@@ -258,3 +258,4 @@ export default function SuperHotels() {
         </AdminLayout>
     );
 }
+

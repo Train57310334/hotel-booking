@@ -28,7 +28,7 @@ export default function ModernTheme({ hotel }) {
     const defaultParams = `checkIn=${new Date().toISOString().split('T')[0]}&checkOut=${new Date(Date.now() + 86400000).toISOString().split('T')[0]}&guests=1`;
 
     return (
-        <div className="bg-slate-950 min-h-screen text-slate-50 font-sans selection:bg-emerald-500/30">
+        <div className="bg-slate-950 min-h-screen text-slate-50 font-sans selection:bg-blue-500/30">
             {/* Header / Navbar Replacement for Modern Theme */}
             <header className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 py-4 transition-all">
                 <div className="container mx-auto px-6 flex justify-between items-center">
@@ -36,13 +36,13 @@ export default function ModernTheme({ hotel }) {
                         {hotel.logoUrl ? (
                             <img src={hotel.logoUrl} alt={hotel.name} className="h-10 w-auto" />
                         ) : (
-                            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-xl text-slate-950">
+                            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center font-bold text-xl text-slate-950">
                                 {hotel.name.charAt(0)}
                             </div>
                         )}
                         <span className="font-bold text-xl hidden sm:block tracking-tight text-white">{hotel.name}</span>
                     </div>
-                    <Link href={`/search?${defaultParams}`} className="bg-white text-slate-950 hover:bg-emerald-400 hover:text-slate-950 px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5">
+                    <Link href={`/search?${defaultParams}`} className="bg-white text-slate-950 hover:bg-blue-400 hover:text-slate-950 px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(52,211,153,0.3)] hover:-translate-y-0.5">
                         Book Now
                     </Link>
                 </div>
@@ -62,7 +62,7 @@ export default function ModernTheme({ hotel }) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1, ease: "easeOut" }}
                     >
-                        <span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-emerald-400 text-xs font-bold tracking-widest uppercase mb-6">
+                        <span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-blue-400 text-xs font-bold tracking-widest uppercase mb-6">
                             Luxury Redefined
                         </span>
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-6 leading-[1.1] text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/40">
@@ -89,7 +89,7 @@ export default function ModernTheme({ hotel }) {
 
                 <motion.div style={{ opacity }} className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 animate-bounce">
                     <div className="w-8 h-12 rounded-full border-2 border-white/20 flex justify-center p-2">
-                        <div className="w-1 h-3 bg-emerald-400 rounded-full animate-scroll" />
+                        <div className="w-1 h-3 bg-blue-400 rounded-full animate-scroll" />
                     </div>
                 </motion.div>
             </div>
@@ -112,7 +112,7 @@ export default function ModernTheme({ hotel }) {
                                 transition={{ delay: i * 0.1 }}
                                 className="p-8 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group cursor-pointer"
                             >
-                                <div className="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                     <item.icon size={28} />
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
@@ -131,7 +131,7 @@ export default function ModernTheme({ hotel }) {
                             <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight mb-4">Exceptional Stays</h2>
                             <p className="text-slate-400 text-lg max-w-xl">Discover our carefully curated collection of rooms and suites designed for the ultimate comfort.</p>
                         </div>
-                        <Link href={`/search?${defaultParams}`} className="flex items-center gap-2 text-emerald-400 font-bold hover:text-emerald-300 transition-colors group">
+                        <Link href={`/search?${defaultParams}`} className="flex items-center gap-2 text-blue-400 font-bold hover:text-blue-300 transition-colors group">
                             Explore All Rooms <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
@@ -164,7 +164,7 @@ export default function ModernTheme({ hotel }) {
                                                     <span>Up to {room.maxAdults} Guests</span>
                                                 </div>
                                             </div>
-                                            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-colors">
+                                            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 group-hover:bg-blue-500 group-hover:border-blue-500 transition-colors">
                                                 <ChevronRight />
                                             </div>
                                         </div>
@@ -180,15 +180,15 @@ export default function ModernTheme({ hotel }) {
             <footer className="bg-slate-950 pt-32 pb-12 border-t border-white/5">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">Ready for an elevated experience?</h2>
-                    <Link href={`/search?${defaultParams}`} className="inline-block bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-bold text-lg px-12 py-5 rounded-full shadow-[0_0_40px_rgba(52,211,153,0.3)] hover:scale-105 hover:shadow-[0_0_60px_rgba(52,211,153,0.5)] transition-all">
+                    <Link href={`/search?${defaultParams}`} className="inline-block bg-gradient-to-r from-blue-400 to-teal-400 text-slate-950 font-bold text-lg px-12 py-5 rounded-full shadow-[0_0_40px_rgba(52,211,153,0.3)] hover:scale-105 hover:shadow-[0_0_60px_rgba(52,211,153,0.5)] transition-all">
                         Reserve Your Stay
                     </Link>
 
                     <div className="mt-32 pt-8 border-t border-white/10 text-slate-500 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
                         <p>© {new Date().getFullYear()} {hotel.name}. All rights reserved.</p>
                         <div className="flex gap-6">
-                            {hotel.facebookUrl && <a href={hotel.facebookUrl} className="hover:text-emerald-400 transition-colors">Facebook</a>}
-                            {hotel.instagramUrl && <a href={hotel.instagramUrl} className="hover:text-emerald-400 transition-colors">Instagram</a>}
+                            {hotel.facebookUrl && <a href={hotel.facebookUrl} className="hover:text-blue-400 transition-colors">Facebook</a>}
+                            {hotel.instagramUrl && <a href={hotel.instagramUrl} className="hover:text-blue-400 transition-colors">Instagram</a>}
                         </div>
                     </div>
                 </div>

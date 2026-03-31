@@ -1,185 +1,207 @@
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { Printer, ArrowLeft, Download } from 'lucide-react';
 import Head from 'next/head';
-import { apiFetch, API_BASE } from '@/lib/api';
-import { Printer, Phone, Mail } from 'lucide-react';
 
 export default function InvoicePage() {
     const router = useRouter();
-    const { id, email } = router.query;
-    const [booking, setBooking] = useState(null);
+    const { id } = router.query;
+    const { user, loading: authLoading } = useAuth();
+    const [invoiceData, setInvoiceData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!id) return;
+        if (!id || authLoading) return;
 
-        const fetchBooking = async () => {
+        if (!user) {
+            router.push('/auth/login?redirect=' + encodeURIComponent(router.asPath));
+            return;
+        }
+
+        const fetchInvoice = async () => {
             try {
-                let data;
-                // If email is provided, use the guest lookup endpoint
-                if (email) {
-                    const res = await fetch(`${API_BASE}/bookings/guest/find?id=${id}&email=${encodeURIComponent(email)}`);
-                    if (!res.ok) throw new Error('Unauthorized or not found');
-                    data = await res.json();
-                } else {
-                    // Otherwise, rely on authenticated apiFetch
-                    data = await apiFetch(`/bookings/${id}`);
-                }
-                setBooking(data);
+                const data = await apiFetch(`/bookings/${id}/invoice`);
+                setInvoiceData(data);
             } catch (err) {
+                console.error("Failed to load invoice:", err);
                 setError(err.message || 'Failed to load invoice');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchBooking();
-    }, [id, email]);
+        fetchInvoice();
+    }, [id, user, authLoading, router]);
 
-    if (loading) {
-        return <div className="min-h-screen flex text-slate-500 items-center justify-center">Loading Invoice...</div>;
+    const handlePrint = () => {
+        window.print();
+    };
+
+    if (loading || authLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
     }
 
-    if (error || !booking) {
-        return <div className="min-h-screen flex items-center justify-center text-red-600 font-medium">Error: {error}</div>;
+    if (error || !invoiceData) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-500">
+                <p className="text-xl font-bold text-slate-800 mb-2">Oops!</p>
+                <p>{error || 'Invoice not found'}</p>
+                <button onClick={() => router.back()} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Go Back</button>
+            </div>
+        );
     }
 
-    const { hotel, roomType, payment } = booking;
-    const nights = Math.ceil((new Date(booking.checkOut) - new Date(booking.checkIn)) / (1000 * 60 * 60 * 24));
+    const { invoiceId, date, hotel, guest, stay, lineItems, summary } = invoiceData;
 
     return (
-        <div className="min-h-screen bg-slate-100 print:bg-white font-sans text-slate-900">
+        <div className="min-h-screen bg-slate-100 print:bg-white pb-20">
             <Head>
-                <title>Invoice - {booking.id.toUpperCase()}</title>
+                <title>Invoice - {invoiceId}</title>
             </Head>
 
-            {/* Floating Print Button (Hidden in Print Mode) */}
-            <div className="fixed bottom-8 right-8 print:hidden">
-                <button
-                    onClick={() => window.print()}
-                    className="bg-primary-600 text-white p-4 rounded-full shadow-lg hover:bg-primary-700 transition-colors flex items-center"
+            {/* Non-Printable Header Actions */}
+            <div className="max-w-4xl mx-auto px-4 py-8 print:hidden flex justify-between items-center">
+                <button 
+                    onClick={() => window.close()}
+                    className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-medium transition-colors"
                 >
-                    <Printer className="w-6 h-6" />
+                    <ArrowLeft size={18} /> Close Window
                 </button>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 transition-all"
+                    >
+                        <Printer size={18} /> Print Invoice
+                    </button>
+                </div>
             </div>
 
-            {/* A4 Page Container */}
-            <div className="max-w-4xl mx-auto my-8 bg-white p-12 shadow-sm rounded-sm print:m-0 print:p-0 print:shadow-none print:rounded-none">
-
-                {/* Header */}
-                <div className="flex justify-between items-start border-b border-slate-200 pb-8 mb-8">
-                    <div className="flex items-center space-x-4">
-                        {hotel.logoUrl ? (
-                            <img src={hotel.logoUrl} alt={hotel.name} className="h-16 w-16 object-cover rounded-lg" />
-                        ) : hotel.imageUrl ? (
-                            <img src={hotel.imageUrl} alt={hotel.name} className="h-16 w-16 object-cover rounded-lg" />
+            {/* Printable A4 Container */}
+            <div className="max-w-4xl mx-auto bg-white shadow-xl print:shadow-none print:max-w-full overflow-hidden sm:rounded-2xl">
+                
+                {/* Header Section */}
+                <div className="p-8 md:p-12 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start gap-8">
+                    <div>
+                        {hotel?.logoUrl ? (
+                            <img src={hotel.logoUrl} alt={hotel.name} className="h-16 w-auto object-contain mb-4" />
                         ) : (
-                            <div className="h-16 w-16 bg-slate-200 rounded-lg flex items-center justify-center font-bold text-slate-400">IMG</div>
+                            <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">{hotel?.name || 'BookingKub'}</h1>
                         )}
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-900">{hotel.name}</h1>
-                            <p className="text-sm text-slate-500 max-w-xs mt-1">{hotel.address} {hotel.city} {hotel.country}</p>
-                            <div className="mt-2 text-sm text-slate-500">
-                                {hotel.contactPhone && <span className="mr-4 flex items-center gap-2"><Phone size={14} /> {hotel.contactPhone}</span>}
-                                {hotel.contactEmail && <span className="flex items-center gap-2"><Mail size={14} /> {hotel.contactEmail}</span>}
+                        <p className="text-sm text-slate-500 max-w-[250px] leading-relaxed">
+                            {hotel?.address || 'Hotel Address Not Provided'}
+                        </p>
+                        <p className="text-sm text-slate-500 mt-1">
+                            {hotel?.phone && <span>Tel: {hotel.phone} </span>}
+                            {hotel?.taxId && <span>• Tax ID: {hotel.taxId}</span>}
+                        </p>
+                        <p className="text-sm text-slate-500 mt-1">
+                            {hotel?.email && <span>Email: {hotel.email}</span>}
+                        </p>
+                    </div>
+
+                    <div className=" md:text-right">
+                        <h2 className="text-4xl font-black text-indigo-600 tracking-tighter mb-2 uppercase">INVOICE</h2>
+                        <div className="flex flex-col gap-1 text-sm md:items-end">
+                            <div className="flex justify-between md:justify-end gap-8">
+                                <span className="text-slate-500 font-medium">Invoice No:</span>
+                                <span className="font-bold text-slate-900 border-b border-dashed border-slate-300">{invoiceId}</span>
+                            </div>
+                            <div className="flex justify-between md:justify-end gap-8">
+                                <span className="text-slate-500 font-medium">Date:</span>
+                                <span className="font-bold text-slate-900">{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                             </div>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <h2 className="text-3xl font-black text-slate-200 uppercase tracking-widest">Invoice</h2>
-                        <p className="font-bold text-slate-900 mt-2">#{booking.id.slice(0, 8).toUpperCase()}</p>
-                        <p className="text-sm text-slate-500 mt-1">Date: {new Date().toLocaleDateString()}</p>
-                    </div>
                 </div>
 
-                {/* Bill To & Booking Info */}
-                <div className="grid grid-cols-2 gap-12 mb-12">
+                {/* Details Section */}
+                <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-12 border-b border-slate-100 bg-slate-50/50">
                     <div>
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Billed To</h3>
-                        <p className="font-bold text-slate-900 text-lg">{booking.leadName}</p>
-                        <p className="text-slate-600">{booking.leadEmail}</p>
-                        <p className="text-slate-600">{booking.leadPhone}</p>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Billed To</h3>
+                        <p className="text-lg font-bold text-slate-900 mb-1">{guest.name}</p>
+                        <p className="text-sm text-slate-600 mb-1">{guest.email}</p>
+                        <p className="text-sm text-slate-600">{guest.phone}</p>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span className="block text-slate-500">Check-In</span>
-                                <span className="font-bold text-slate-900">{new Date(booking.checkIn).toLocaleDateString()}</span>
-                            </div>
-                            <div>
-                                <span className="block text-slate-500">Check-Out</span>
-                                <span className="font-bold text-slate-900">{new Date(booking.checkOut).toLocaleDateString()}</span>
-                            </div>
-                            <div>
-                                <span className="block text-slate-500">Guests</span>
-                                <span className="font-bold text-slate-900">{booking.guestsAdult}A, {booking.guestsChild}C</span>
-                            </div>
-                            <div>
-                                <span className="block text-slate-500">Payment Status</span>
-                                <span className="font-bold text-emerald-600 uppercase">{booking.status === 'pending' ? 'UNPAID' : 'PAID'}</span>
-                            </div>
+                    <div className="md:text-right">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Stay Details</h3>
+                        <div className="flex flex-col gap-2 md:items-end">
+                            <p className="text-sm"><span className="text-slate-500">Check-in:</span> <span className="font-bold">{new Date(stay.checkIn).toLocaleDateString('en-GB')}</span></p>
+                            <p className="text-sm"><span className="text-slate-500">Check-out:</span> <span className="font-bold">{new Date(stay.checkOut).toLocaleDateString('en-GB')}</span></p>
+                            <p className="text-sm"><span className="text-slate-500">Guests:</span> <span className="font-bold">{stay.guests}</span></p>
+                            <p className="text-sm"><span className="text-slate-500">Room:</span> <span className="font-bold">{stay.roomNumber} ({stay.nights} Nights)</span></p>
                         </div>
                     </div>
                 </div>
 
                 {/* Line Items */}
-                <div className="mb-12">
-                    <table className="w-full text-left border-collapse">
+                <div className="p-8 md:p-12">
+                    <table className="w-full">
                         <thead>
-                            <tr className="border-b-2 border-slate-900 text-sm tracking-wider uppercase">
-                                <th className="py-3 text-slate-500">Description</th>
-                                <th className="py-3 text-slate-500 text-center">Nights</th>
-                                <th className="py-3 text-slate-500 text-right">Total</th>
+                            <tr className="border-b-2 border-slate-200">
+                                <th className="py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Description</th>
+                                <th className="py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Qty</th>
+                                <th className="py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            <tr>
-                                <td className="py-4">
-                                    <p className="font-bold text-slate-900">Accommodation</p>
-                                    <p className="text-sm text-slate-500">{roomType.name}</p>
-                                </td>
-                                <td className="py-4 text-center text-slate-900 font-medium">{nights}</td>
-                                <td className="py-4 text-right font-bold text-slate-900">฿{booking.totalAmount.toLocaleString()}</td>
-                            </tr>
-                            {booking.folioCharges && booking.folioCharges.map((charge, idx) => (
-                                <tr key={idx}>
-                                    <td className="py-4">
-                                        <p className="font-bold text-slate-900">{charge.description}</p>
+                            {lineItems.map((item, idx) => (
+                                <tr key={idx} className="group">
+                                    <td className="py-5 font-medium text-slate-800">{item.description}</td>
+                                    <td className="py-5 text-center text-slate-600">{item.quantity}</td>
+                                    <td className="py-5 text-right font-bold text-slate-900">
+                                        ฿{item.amount.toLocaleString()}
                                     </td>
-                                    <td className="py-4 text-center text-slate-900 font-medium">-</td>
-                                    <td className="py-4 text-right font-bold text-slate-900">฿{charge.amount.toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
 
-                {/* Totals */}
-                <div className="flex justify-end">
-                    <div className="w-1/2 bg-slate-50 rounded-lg p-6 border border-slate-100">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-slate-500">Subtotal</span>
-                            <span className="font-medium">฿{booking.totalAmount.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-slate-500">Tax</span>
-                            <span className="font-medium uppercase text-xs tracking-wider">Included</span>
-                        </div>
-                        <div className="flex justify-between items-center border-t border-slate-200 pt-4">
-                            <span className="text-lg font-bold text-slate-900">Total Due</span>
-                            <span className="text-2xl font-black text-slate-900">฿{booking.totalAmount.toLocaleString()}</span>
+                    {/* Totals Section */}
+                    <div className="mt-8 flex justify-end">
+                        <div className="w-full md:w-1/2 rounded-2xl bg-slate-50 p-6 border border-slate-100">
+                            <div className="flex justify-between items-center mb-3 text-slate-600">
+                                <span className="text-sm font-medium">Subtotal</span>
+                                <span className="font-bold">฿{(summary.subtotal || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center mb-4 text-slate-600">
+                                <span className="text-sm font-medium">Tax & Fees (7% VAT)</span>
+                                <span className="font-bold">฿{(summary.tax || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="pt-4 border-t-2 border-slate-200 flex justify-between items-center">
+                                <span className="text-base font-bold text-slate-900 uppercase">Grand Total</span>
+                                <span className="text-3xl font-black text-indigo-600 tracking-tight">฿{(summary.total || 0).toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="mt-16 pt-8 border-t border-slate-200 text-center text-sm text-slate-500">
-                    <p>Thank you for choosing {hotel.name}!</p>
-                    <p className="mt-1">Generated by BookingKub system.</p>
+                {/* Footer Section */}
+                <div className="p-8 md:p-12 text-center text-sm text-slate-500 border-t border-slate-100 bg-slate-50">
+                    <p className="font-medium text-slate-700 mb-1">Thank you for your business!</p>
+                    <p>If you have any questions concerning this invoice, please contact the hotel directly.</p>
                 </div>
-
             </div>
+
+            {/* Print Styles injected locally */}
+            <style jsx global>{`
+                @media print {
+                    @page { margin: 0; size: auto; }
+                    body {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                        background-color: white !important;
+                    }
+                    nav, header, aside, .sidebar { display: none !important; }
+                }
+            `}</style>
         </div>
     );
 }
