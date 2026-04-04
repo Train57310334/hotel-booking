@@ -576,8 +576,8 @@ function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
       {/* Legend */}
       <div className="flex items-center gap-4 px-6 py-3 bg-theme-bg border-b border-theme-border text-xs font-medium text-theme-muted flex-wrap">
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-theme-accent" /> Selected range</div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-500" /> Check-in</div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600" /> Past / Unavailable</div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-theme-accent/50" /> Check-in</div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-theme-border" /> Past / Unavailable</div>
       </div>
 
       {/* Weekday headers */}
@@ -642,7 +642,7 @@ function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
               ● ห้องเต็มในวันที่เลือก
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-theme-accent bg-theme-accent/10 px-3 py-1.5 rounded-full border border-theme-accent/20">
               ● มีห้องว่าง {rooms.filter(r => r.isAvailable !== false).length} ประเภท
             </span>
           )}

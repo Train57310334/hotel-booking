@@ -275,7 +275,7 @@ export default function AdminLayout({ children }) {
 
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 z-50 w-56 transform transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-                } bg-[#06033a] text-white flex flex-col`}>
+                } bg-[#0f172a] text-white flex flex-col`}>
                 <div className="h-16 flex items-center justify-between px-6">
                     {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) ? (
                         <div className="relative">

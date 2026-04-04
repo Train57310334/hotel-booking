@@ -9,39 +9,38 @@
 
 /* Base Theme Configurations */
 .theme-classic {
-  --theme-bg: #f8fafc;
-  --theme-text: #0f172a;
+  --theme-bg: #f8f7f5;
+  --theme-text: #1a1a2e;
   --theme-card: #ffffff;
-  --theme-card-hover: #f1f5f9;
-  --theme-border: #e2e8f0;
-  --theme-accent: #10b981;
-  --theme-accent-hover: #059669;
-  --theme-muted: #64748b;
+  --theme-card-hover: #f3f4f6;
+  --theme-border: #e4e4e7;
+  --theme-accent: #1d4ed8;
+  --theme-accent-hover: #1e40af;
+  --theme-muted: #6b7280;
   --font-theme: 'Plus Jakarta Sans', sans-serif;
 }
 
 .theme-modern {
-  --theme-bg: #020617;
-  --theme-text: #f8fafc;
-  --theme-card: rgba(255, 255, 255, 0.05);
-  --theme-card-hover: rgba(255, 255, 255, 0.1);
-  --theme-border: rgba(255, 255, 255, 0.1);
-  --theme-accent: #34d399;
-  --theme-accent-hover: #10b981;
+  --theme-bg: #080b14;
+  --theme-text: #f1f5f9;
+  --theme-card: rgba(255, 255, 255, 0.06);
+  --theme-card-hover: rgba(255, 255, 255, 0.11);
+  --theme-border: rgba(148, 163, 184, 0.12);
+  --theme-accent: #818cf8;
+  --theme-accent-hover: #6366f1;
   --theme-muted: #94a3b8;
   --font-theme: 'Outfit', sans-serif;
 }
 
 .theme-boutique {
-  --theme-bg: #FAF9F6;
-  --theme-text: #451a03;
-  --theme-card: rgba(255, 255, 255, 0.8);
-  --theme-card-hover: rgba(255, 255, 255, 0.95);
-  --theme-border: rgba(120, 53, 15, 0.15);
-  /* Slightly darker border */
-  --theme-accent: #d97706;
-  --theme-accent-hover: #b45309;
-  --theme-muted: #78350f;
+  --theme-bg: #fdfaf6;
+  --theme-text: #2d1b0e;
+  --theme-card: rgba(255, 255, 255, 0.85);
+  --theme-card-hover: rgba(255, 255, 255, 0.98);
+  --theme-border: rgba(180, 130, 90, 0.18);
+  --theme-accent: #a0522d;
+  --theme-accent-hover: #8b3e1f;
+  --theme-muted: #7c5c44;
   --font-theme: 'Playfair Display', serif;
 }
 
@@ -75,8 +74,30 @@ h6 {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600;
 }
 
+.text-gradient-theme {
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .btn-primary {
   @apply bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/20 transition-all duration-200 hover:-translate-y-[1px] font-medium rounded-lg px-6 py-2.5;
+}
+
+.btn-theme {
+  background-color: var(--theme-accent);
+  color: white;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--theme-accent) 50%, transparent);
+}
+
+.btn-theme:hover {
+  background-color: var(--theme-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--theme-accent) 60%, transparent);
 }
 
 /* Custom Scrollbar */

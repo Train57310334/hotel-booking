@@ -94,9 +94,13 @@ export default function AdminDashboard() {
       if (!user) {
         router.push('/auth/login')
       } else if (!user.roles?.includes('platform_admin')) {
-        fetchData() // Initial
-        const interval = setInterval(() => fetchData(searchQuery, true), 30000) // Background Silent Refresh (30s)
+        // Only fetch hotel dashboard data for non-super-admins
+        fetchData()
+        const interval = setInterval(() => fetchData(searchQuery, true), 30000)
         return () => clearInterval(interval)
+      } else {
+        // Super Admin: no hotel data needed, stop loading immediately
+        setLoading(false)
       }
     }
   }, [user, authLoading, timeRange])
@@ -108,6 +112,9 @@ export default function AdminDashboard() {
 
   const fetchData = async (search = '', isBackground = false) => {
     try {
+      // Super Admin uses their own dashboard — skip hotel-scoped data fetch
+      if (user?.roles?.includes('platform_admin')) return;
+
       // Only show spinner on initial load (not background refresh or search typing)
       if (!isBackground && !bookings.length && !search) setLoading(true)
 
@@ -232,6 +239,15 @@ export default function AdminDashboard() {
   // Quick Onboarding Check
   const showOnboarding = stats.totalRooms === 0;
 
+  // ── Super Admin check FIRST (before any loading screen) ──────────────────
+  if (!authLoading && user?.roles?.includes('platform_admin') && !user?.isImpersonating) {
+    return (
+      <AdminLayout>
+        <SuperAdminDashboard />
+      </AdminLayout>
+    );
+  }
+
   if (authLoading || loading) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-400">
       <div className="animate-pulse flex flex-col items-center gap-3">
@@ -243,14 +259,6 @@ export default function AdminDashboard() {
       </div>
     </div>
   )
-
-  if (user?.roles?.includes('platform_admin') && !user?.isImpersonating) {
-    return (
-      <AdminLayout>
-        <SuperAdminDashboard />
-      </AdminLayout>
-    );
-  }
 
   return (
     <AdminLayout>

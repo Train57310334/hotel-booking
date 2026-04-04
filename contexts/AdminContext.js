@@ -21,27 +21,26 @@ export function AdminProvider({ children }) {
     useEffect(() => {
         if (!user) return;
 
-        const assignedHotelId = user.roleAssignments?.[0]?.hotelId;
+        const isPlatformAdmin = user.roles?.includes('platform_admin');
+        const isImpersonating = user.isImpersonating;
 
-        if (assignedHotelId) {
-            // 1. Regular Admin/Owner: Fetch assigned hotel
-            apiFetch(`/hotels/${assignedHotelId}`)
-                .then(data => setCurrentHotel(data))
-                .catch(e => console.error("Failed to fetch hotel specific data", e));
-        } else if (user.roles?.includes('platform_admin')) {
-            // 2. Super Admin (Platform)
+        if (isPlatformAdmin && !isImpersonating) {
+            // 1. Super Admin (normal login): load all hotels for the switcher
+            // but do NOT auto-select any hotel — they have their own Super Admin dashboard
             apiFetch('/hotels')
                 .then(data => {
                     setAllHotels(data || []);
-                    // Default to first hotel if not already set or invalid
-                    if (data && data.length > 0) {
-                        setCurrentHotel(prev => {
-                            if (prev && data.find(h => h.id === prev.id)) return prev;
-                            return data[0];
-                        });
-                    }
+                    setCurrentHotel(null); // Explicitly clear any lingering hotel state
                 })
                 .catch(e => console.error("Failed to fetch hotels for platform admin", e));
+        } else {
+            // 2. Regular Hotel Admin / Impersonating Super Admin: load their assigned hotel
+            const assignedHotelId = user.roleAssignments?.[0]?.hotelId;
+            if (assignedHotelId) {
+                apiFetch(`/hotels/${assignedHotelId}`)
+                    .then(data => setCurrentHotel(data))
+                    .catch(e => console.error("Failed to fetch hotel specific data", e));
+            }
         }
     }, [user])
 
@@ -52,6 +51,9 @@ export function AdminProvider({ children }) {
 
     const refreshHotelData = async () => {
         if (!user) return;
+        const isPlatformAdmin = user.roles?.includes('platform_admin');
+        const isImpersonating = user.isImpersonating;
+        if (isPlatformAdmin && !isImpersonating) return; // Super Admin has no single hotel to refresh
         const assignedHotelId = user.roleAssignments?.[0]?.hotelId;
         if (assignedHotelId) {
             try {

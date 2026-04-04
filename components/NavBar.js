@@ -183,20 +183,20 @@ export default function NavBar(props) {
             {user ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-full bg-theme-accent/15 text-theme-accent flex items-center justify-center font-bold">
                     {user.name?.[0]}
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">{user.name}</p>
-                    <p className="text-xs text-slate-500">{user.email}</p>
+                    <p className="font-bold text-theme-text">{user.name}</p>
+                    <p className="text-xs text-theme-muted">{user.email}</p>
                   </div>
                 </div>
                 {(user.roles?.includes('hotel_admin') || user.roles?.includes('platform_admin') || user.roleAssignments?.length > 0) ? (
-                  <Link href="/admin" className="block text-center w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/admin" className="block text-center w-full py-3 rounded-xl border border-theme-border text-theme-text font-bold hover:bg-theme-card-hover" onClick={() => setMobileMenuOpen(false)}>
                     Go to Admin Dashboard
                   </Link>
                 ) : (
-                  <Link href="/account/dashboard" className="block text-center w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/account/dashboard" className="block text-center w-full py-3 rounded-xl border border-theme-border text-theme-text font-bold hover:bg-theme-card-hover" onClick={() => setMobileMenuOpen(false)}>
                     Go to My Dashboard
                   </Link>
                 )}
@@ -206,10 +206,10 @@ export default function NavBar(props) {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                <Link href="/auth/login" className="w-full py-3 rounded-xl border border-slate-200 font-bold text-slate-600 text-center hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/auth/login" className="w-full py-3 rounded-xl border border-theme-border font-bold text-theme-text text-center hover:bg-theme-card-hover" onClick={() => setMobileMenuOpen(false)}>
                   Sign In
                 </Link>
-                <Link href="/auth/register" className="btn-primary w-full py-3 rounded-xl text-center justify-center" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/auth/register" className="btn-theme w-full py-3 rounded-xl text-center flex items-center justify-center" onClick={() => setMobileMenuOpen(false)}>
                   {props.mode === 'saas' ? 'Start Free' : 'Create Account'}
                 </Link>
               </div>

@@ -14,12 +14,15 @@ import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
 
 // ── Status / HK configs ────────────────────────────────────────────────────────
+// bar: full Tailwind classes — must be literal strings for Tailwind JIT
+// edge: left accent stripe for fast visual scanning
+// abbr: short text label shown on the bar
 const STATUS_CONFIG = {
-    pending:     { label: 'Pending',      dot: 'bg-amber-400',   bar: 'bg-amber-500 border-amber-600' },
-    confirmed:   { label: 'Confirmed',    dot: 'bg-sky-400',     bar: 'bg-sky-500 border-sky-600' },
-    checked_in:  { label: 'Checked In',   dot: 'bg-emerald-500', bar: 'bg-emerald-600 border-emerald-700' },
-    checked_out: { label: 'Checked Out',  dot: 'bg-slate-400',   bar: 'bg-slate-400 border-slate-500' },
-    cancelled:   { label: 'Cancelled',    dot: 'bg-red-400',     bar: 'bg-red-400 border-red-500 opacity-50' },
+    pending:     { label: 'Pending',     dot: 'bg-amber-400',   bar: 'bg-amber-100  border-amber-300',    edge: 'bg-amber-500', textColor: 'text-amber-800',  abbr: 'P'   },
+    confirmed:   { label: 'Confirmed',   dot: 'bg-blue-400',    bar: 'bg-blue-500   border-blue-600',     edge: 'bg-blue-800',  textColor: 'text-white',      abbr: 'C'   },
+    checked_in:  { label: 'In House',    dot: 'bg-teal-400',    bar: 'bg-teal-500   border-teal-600',     edge: 'bg-teal-800',  textColor: 'text-white',      abbr: 'IN'  },
+    checked_out: { label: 'Checked Out', dot: 'bg-slate-400',   bar: 'bg-slate-200  border-slate-300',    edge: 'bg-slate-400', textColor: 'text-slate-600',  abbr: 'OUT' },
+    cancelled:   { label: 'Cancelled',   dot: 'bg-rose-400',    bar: 'bg-rose-100   border-rose-200',     edge: 'bg-rose-400',  textColor: 'text-rose-700',   abbr: 'X'   },
 }
 
 const HK_CONFIG = {
@@ -348,8 +351,8 @@ export default function Calendar() {
                         onClick={() => setShowAvailableOnly(v => !v)}
                         className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
                             showAvailableOnly
-                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
-                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400'
                         }`}
                     >
                         {showAvailableOnly ? <Eye size={12} /> : <EyeOff size={12} />}
@@ -404,7 +407,7 @@ export default function Calendar() {
 
                     {/* New Booking */}
                     <button onClick={() => setCreateModal({ isOpen: true, initialData: {} })}
-                        className="ml-auto flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors shadow-sm">
+                        className="ml-auto flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm">
                         <Plus size={13} />
                         <span className="hidden sm:inline">New Booking</span>
                         <span className="sm:hidden">New</span>
@@ -649,6 +652,13 @@ export default function Calendar() {
                                                         const cfg = STATUS_CONFIG[booking.status] || STATUS_CONFIG.confirmed
                                                         const isPaid = booking.payment?.status === 'authorized' || booking.payment?.status === 'captured'
 
+                                                        // OTA bookings get a diagonal stripe pattern overlay
+                                                        const isOTA = booking.source === 'OTA'
+                                                        const barBase = isOTA
+                                                            ? 'bg-violet-500 border-violet-700'
+                                                            : cfg.bar
+                                                        const textCls = isOTA ? 'text-white' : (cfg.textColor || 'text-white')
+
                                                         return (
                                                             <div
                                                                 key={booking.id}
@@ -665,25 +675,25 @@ export default function Calendar() {
                                                                     setHoveredBooking(booking)
                                                                 }}
                                                                 onMouseLeave={() => setHoveredBooking(null)}
-                                                                className={`absolute top-1 bottom-1 rounded border overflow-hidden active:cursor-grabbing hover:brightness-105 hover:shadow-md transition-all z-10 text-white ${booking.source === 'OTA' ? 'bg-slate-500 border-slate-600 bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,0.15)_4px,rgba(0,0,0,0.15)_8px)]' : cfg.bar} ${draggedBooking?.id === booking.id ? 'opacity-40 scale-[0.98]' : 'cursor-grab flex'}`}
+                                                                className={`absolute top-1 bottom-1 rounded-md border overflow-hidden active:cursor-grabbing hover:brightness-110 hover:shadow-lg transition-all z-10 ${barBase} ${draggedBooking?.id === booking.id ? 'opacity-40 scale-[0.98]' : 'cursor-grab flex'} ${isOTA ? 'ring-1 ring-violet-300/50' : ''}`}
                                                                 style={{
                                                                     left: `calc(${ROOM_COL}px + (100% - ${ROOM_COL}px) * ${startOffset / days.length})`,
                                                                     width: `calc((100% - ${ROOM_COL}px) * ${duration / days.length})`,
                                                                     minWidth: 20
                                                                 }}
                                                             >
-                                                                <div className="w-3 bg-black/10 flex items-center justify-center flex-shrink-0 cursor-grab opacity-50 hover:opacity-100 h-full border-r border-white/10 group-hover:bg-black/20 transition-all">
-                                                                    <GripVertical size={10} className="text-white" />
-                                                                </div>
-                                                                <div className="flex flex-col justify-center px-1.5 overflow-hidden flex-1 h-full shadow-inner shadow-white/10">
+                                                                {/* Left edge accent stripe — quick status scan */}
+                                                                <div className={`w-1.5 h-full flex-shrink-0 ${cfg.edge || 'bg-black/20'} opacity-80`} />
+
+                                                                <div className={`flex flex-col justify-center px-1 overflow-hidden flex-1 h-full ${textCls}`}>
                                                                     <div className="text-[10px] font-bold truncate leading-none mb-0.5 flex items-center gap-1">
-                                                                        {booking.source === 'OTA' && <Share2 size={8} className="text-slate-200 flex-shrink-0" title="OTA Booking" />}
+                                                                        <span className={`text-[8px] font-black opacity-70 flex-shrink-0 leading-none`}>{isOTA ? 'OTA' : cfg.abbr}</span>
                                                                         {booking.isWebCheckedIn && <Zap size={8} className="text-yellow-300 drop-shadow flex-shrink-0" title="Web Checked-in" />}
-                                                                        {booking.leadName || 'Guest'}
+                                                                        <span className="truncate">{booking.leadName || 'Guest'}</span>
                                                                     </div>
-                                                                    <div className="flex items-center gap-1 text-[8px] opacity-90 mt-px">
-                                                                        <User size={8} className="drop-shadow-sm" /> {booking.guestsAdult + booking.guestsChild}
-                                                                        {isPaid && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 border border-white ml-auto shadow-sm" title="Paid" />}
+                                                                    <div className={`flex items-center gap-1 text-[8px] opacity-75 mt-px`}>
+                                                                        <User size={8} /> {booking.guestsAdult + booking.guestsChild}
+                                                                        {isPaid && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 border border-white/50 ml-auto shadow-sm" title="Paid" />}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -700,12 +710,19 @@ export default function Calendar() {
                 </div>
 
                 {/* ── Legend strip ── */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400 pb-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] pb-1">
                     {Object.entries(STATUS_CONFIG).map(([k, c]) => (
-                        <span key={k} className="flex items-center gap-1"><span className={`w-2 h-2 rounded-full inline-block ${c.dot}`}/>{c.label}</span>
+                        <span key={k} className={`flex items-center gap-1 px-2 py-0.5 rounded-full border font-bold ${c.bar} ${c.textColor}`}>
+                            <span className="text-[8px] font-black opacity-70">{c.abbr}</span>
+                            {c.label}
+                        </span>
                     ))}
-                    <span className="hidden md:flex items-center gap-1 ml-auto"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"/> Free cell</span>
-                    <span className="hidden md:flex items-center gap-1 text-[9px] text-slate-400">Click empty cell to add booking</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full border font-bold bg-violet-500 border-violet-700 text-white">
+                        <span className="text-[8px] font-black opacity-70">OTA</span> Channel
+                    </span>
+                    <span className="hidden md:flex items-center gap-1 ml-auto text-slate-400">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"/> Free · Click to add
+                    </span>
                 </div>
                     </>
                 )}
