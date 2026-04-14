@@ -25,7 +25,7 @@ const plansColorMap = {
         btnHoverPopular: 'hover:from-slate-500 hover:to-slate-400',
         btnShadowPopular: 'shadow-slate-500/30'
     },
-    emerald: {
+    teal: {
         borderPopular: 'border-blue-400',
         shadowPopular: 'shadow-[0_0_50px_-12px_rgba(16,185,129,0.3)]',
         badgeBg: 'bg-gradient-to-r from-blue-600 to-blue-400',

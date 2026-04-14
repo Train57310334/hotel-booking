@@ -1,8 +1,8 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
-import { apiFetch } from '@/lib/api'
+import { apiFetch, API_BASE } from '@/lib/api'
 import { useAdmin } from '@/contexts/AdminContext'
-import { Plus, Trash2, TrendingUp, TrendingDown, DollarSign, Wallet, Activity, CalendarDays } from 'lucide-react'
+import { Plus, Trash2, TrendingUp, TrendingDown, DollarSign, Wallet, Activity, CalendarDays, Download, FileText, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ConfirmationModal from '@/components/ConfirmationModal'
 
@@ -23,6 +23,7 @@ export default function AccountingDashboard() {
         }
     })
 
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
     const [newExpense, setNewExpense] = useState({ title: '', amount: '', category: 'Utilities', date: new Date().toISOString().split('T')[0] })
     const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null })
@@ -82,6 +83,35 @@ export default function AccountingDashboard() {
 
     const formatCurrency = (val) => new Intl.NumberFormat('en-TH', { style: 'currency', currency: 'THB' }).format(val || 0)
 
+    const handleExport = async (format) => {
+        setIsExportMenuOpen(false)
+        const toastId = toast.loading(`Generating ${format.toUpperCase()} report...`)
+        try {
+            const token = localStorage.getItem('token')
+            const query = `?hotelId=${currentHotel?.id}&from=${dateRange.start}&to=${dateRange.end}`
+
+            const res = await fetch(`${API_BASE}/reports/export/${format}${query}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            if (!res.ok) throw new Error('Export failed')
+
+            const blob = await res.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `accounting_export_${dateRange.start}_to_${dateRange.end}.${format === 'excel' ? 'xlsx' : 'csv'}`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+
+            toast.success('Report downloaded!', { id: toastId })
+        } catch (e) {
+            console.error(e)
+            toast.error('Failed to download report', { id: toastId })
+        }
+    }
+
     return (
         <AdminLayout>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -90,21 +120,46 @@ export default function AccountingDashboard() {
                     <p className="text-slate-500 dark:text-slate-400">Track revenues, expenses, and net profit</p>
                 </div>
                 
-                <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <CalendarDays size={18} className="text-slate-400 ml-2" />
-                    <input 
-                        type="date" 
-                        value={dateRange.start}
-                        onChange={(e) => setDateRange(p => ({ ...p, start: e.target.value }))}
-                        className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer dark:text-white"
-                    />
-                    <span className="text-slate-400">to</span>
-                    <input 
-                        type="date" 
-                        value={dateRange.end}
-                        onChange={(e) => setDateRange(p => ({ ...p, end: e.target.value }))}
-                        className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer dark:text-white"
-                    />
+                <div className="flex justify-end gap-2 h-10">
+                    <div className="relative h-full">
+                        <button
+                            onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 h-full rounded-lg font-bold text-xs transition-colors"
+                        >
+                            <Download size={14} /> Export <ChevronDown size={14} className={`transition-transform ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isExportMenuOpen && (
+                            <>
+                                <div className="fixed inset-0 z-30" onClick={() => setIsExportMenuOpen(false)} />
+                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden z-40 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <button onClick={() => handleExport('excel')} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors">
+                                        <FileText size={16} className="text-blue-500" /> Excel (.xlsx)
+                                    </button>
+                                    <button onClick={() => handleExport('csv')} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors border-t border-slate-100 dark:border-slate-700">
+                                        <FileText size={16} className="text-indigo-500" /> CSV Summary
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                
+                    <div className="flex items-center gap-3 bg-white dark:bg-slate-800 px-3 h-full rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <CalendarDays size={18} className="text-slate-400" />
+                        <input 
+                            type="date" 
+                            value={dateRange.start}
+                            onChange={(e) => setDateRange(p => ({ ...p, start: e.target.value }))}
+                            className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer dark:text-white"
+                        />
+                        <span className="text-slate-400">to</span>
+                        <input 
+                            type="date" 
+                            value={dateRange.end}
+                            onChange={(e) => setDateRange(p => ({ ...p, end: e.target.value }))}
+                            className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer dark:text-white"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -115,7 +170,7 @@ export default function AccountingDashboard() {
                     {/* KPI Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 dark:bg-emerald-900/20 rounded-full transition-transform group-hover:scale-150"></div>
+                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-full transition-transform group-hover:scale-150"></div>
                             <div className="relative z-10">
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total Revenue</p>
                                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.summary.totalRevenue)}</h3>
@@ -158,7 +213,7 @@ export default function AccountingDashboard() {
                                             {/* Tooltip */}
                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-xs p-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap shadow-xl">
                                                 <p className="font-bold border-b border-slate-700 pb-1 mb-1">{d.date}</p>
-                                                <p className="text-emerald-400">Rev: {formatCurrency(d.revenue)}</p>
+                                                <p className="text-blue-400">Rev: {formatCurrency(d.revenue)}</p>
                                                 <p className="text-rose-400">Exp: {formatCurrency(d.expense)}</p>
                                                 <p className="font-bold text-blue-300 pt-1 mt-1 border-t border-slate-700">Net: {formatCurrency(d.profit)}</p>
                                             </div>

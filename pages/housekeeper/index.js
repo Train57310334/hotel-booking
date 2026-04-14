@@ -13,13 +13,13 @@ const STATUS = {
   DIRTY:    { label: 'Dirty',        color: 'bg-red-500',    text: 'text-red-600',    badge: 'bg-red-50 border-red-200 text-red-700' },
   CLEANING: { label: 'Cleaning',     color: 'bg-amber-500',  text: 'text-amber-600',  badge: 'bg-amber-50 border-amber-200 text-amber-700' },
   CLEAN:    { label: 'Clean',        color: 'bg-blue-500',   text: 'text-blue-600',   badge: 'bg-blue-50 border-blue-200 text-blue-700' },
-  INSPECTED:{ label: 'Ready',        color: 'bg-emerald-500',text: 'text-emerald-600',badge: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+  INSPECTED:{ label: 'Ready',        color: 'bg-teal-500',text: 'text-teal-600',badge: 'bg-teal-50 border-teal-200 text-teal-700' },
   OOO:      { label: 'Out of Order', color: 'bg-slate-500',  text: 'text-slate-600',  badge: 'bg-slate-100 border-slate-300 text-slate-700' },
 };
 
 const NEXT_STATUS = { DIRTY: 'CLEANING', CLEANING: 'CLEAN', CLEAN: 'INSPECTED' };
 const NEXT_LABEL  = { DIRTY: 'Start Cleaning', CLEANING: 'Mark as Clean', CLEAN: 'Mark Ready' };
-const NEXT_COLOR  = { DIRTY: 'bg-amber-500 hover:bg-amber-600', CLEANING: 'bg-blue-500 hover:bg-blue-600', CLEAN: 'bg-emerald-500 hover:bg-emerald-600' };
+const NEXT_COLOR  = { DIRTY: 'bg-amber-500 hover:bg-amber-600', CLEANING: 'bg-blue-500 hover:bg-blue-600', CLEAN: 'bg-teal-500 hover:bg-teal-600' };
 
 const CATEGORIES = ['Plumbing', 'Electrical', 'Furniture', 'A/C & Heating', 'Bathroom', 'Other'];
 
@@ -144,7 +144,7 @@ export default function HousekeeperApp() {
 
   // ─── Login Screen ─────────────────────────────────────────────────────────
   if (!token) return (
-    <div className="min-h-screen bg-[#06033a] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
       <Toaster />
       <div className="w-full max-w-sm bg-white rounded-3xl p-8 shadow-2xl">
         <div className="text-center mb-6">
@@ -206,10 +206,10 @@ export default function HousekeeperApp() {
       <Toaster position="top-center" />
 
       {/* Header */}
-      <div className="bg-[#06033a] text-white px-4 py-4 flex items-center justify-between sticky top-0 z-10">
+      <div className="bg-[#0f172a] text-white px-4 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
           <p className="text-xs text-slate-300">Good {new Date().getHours() < 12 ? 'Morning' : 'Afternoon'}</p>
-          <h1 className="text-lg font-bold">{myName || 'Housekeeper'} 👋</h1>
+          <h1 className="text-lg font-bold">{myName || 'Housekeeper'}</h1>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs bg-white/10 px-2.5 py-1 rounded-full">

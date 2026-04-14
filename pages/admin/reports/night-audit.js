@@ -13,7 +13,7 @@ const pct = (n) => `${Number(n || 0).toFixed(1)}%`;
 
 const STATUS_BADGE = {
     confirmed:    'bg-blue-50 text-blue-700 border-blue-200',
-    checked_in:   'bg-emerald-50 text-emerald-700 border-emerald-200',
+    checked_in:   'bg-teal-50 text-teal-700 border-teal-200',
     checked_out:  'bg-slate-100 text-slate-600 border-slate-200',
     cancelled:    'bg-red-50 text-red-600 border-red-200',
 };
@@ -100,7 +100,7 @@ export default function NightAuditPage() {
 
                 {/* Audit Status Banner */}
                 {data?.hasRun ? (
-                    <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-2xl px-5 py-3 mb-6 text-sm font-medium">
+                    <div className="flex items-center gap-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-500/30 text-teal-700 dark:text-teal-400 rounded-2xl px-5 py-3 mb-6 text-sm font-medium">
                         <CheckCircle2 size={18} />
                         Night Audit has been run for today. KPIs are locked in.
                     </div>
@@ -117,7 +117,7 @@ export default function NightAuditPage() {
                         {[
                             { label: 'Occupied Rooms', value: `${data.kpis.occupiedCount} / ${data.kpis.totalRooms}`, icon: BedDouble, color: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-500/20' },
                             { label: 'Occupancy Rate', value: pct(data.kpis.occupancyRate), icon: TrendingUp, color: 'text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-500/20' },
-                            { label: "Today's Revenue", value: fmt(data.kpis.totalRevenue), icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-500/20' },
+                            { label: "Today's Revenue", value: fmt(data.kpis.totalRevenue), icon: TrendingUp, color: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-500/20' },
                             { label: 'ADR', value: fmt(data.kpis.adr), icon: TrendingUp, color: 'text-violet-600 bg-violet-50 border-violet-100 dark:bg-violet-900/20 dark:border-violet-500/20' },
                             { label: 'RevPAR', value: fmt(data.kpis.revPar), icon: TrendingUp, color: 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-900/20 dark:border-rose-500/20' },
                             { label: 'Total Rooms', value: data.kpis.totalRooms, icon: BedDouble, color: 'text-slate-600 bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-slate-700' },

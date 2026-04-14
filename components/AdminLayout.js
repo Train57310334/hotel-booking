@@ -340,15 +340,33 @@ export default function AdminLayout({ children }) {
                                 'Guest': 'guests',
                                 'Room': 'rooms',
                                 'Rates & Avail.': 'rates',
+                                'Yield Management': 'rates', // same permission group
+                                'Channels': 'rates',
                                 'Promotions': 'promotions',
                                 'Reviews': 'reviews',
                                 'Reports': 'reports',
+                                'Night Audit': 'reports',
+                                'Accounting & P/L': 'reports',
                                 'Payments': 'payments',
                                 'Staff Management': 'staff',
+                                'Audit Logs': 'staff',
                                 'Message': 'messages',
                                 'Analytics & SEO': 'reports'
                             };
-                            return hasAccess(featureMap[item.name]);
+                            
+                            if (!hasAccess(featureMap[item.name])) return false;
+
+                            // 🚀 Hide Advanced Modules for LITE package to keep sidebar clean for small hotels
+                            const isLite = !currentHotel?.package || currentHotel?.package === 'LITE';
+                            if (isLite) {
+                                const advancedFeatures = [
+                                    'Yield Management', 'Channels', 'Promotions', 'Payments',
+                                    'Analytics & SEO', 'Audit Logs', 'Night Audit', 'Accounting & P/L'
+                                ];
+                                if (advancedFeatures.includes(item.name)) return false;
+                            }
+
+                            return true;
                         });
 
                         const categories = ['Front Desk', 'Operations', 'Revenue & Marketing', 'Finance & Analytics'];
@@ -364,9 +382,10 @@ export default function AdminLayout({ children }) {
                                         const isActive = router.pathname.startsWith(item.href) &&
                                             (item.href !== '/admin' || router.pathname === '/admin');
 
-                                        // 🔒 Feature Locks based on Plan
+                                        // 🔒 Feature Locks based on Plan (For PRO users who might not have certain add-ons turned on)
                                         const isLocked = (item.name === 'Promotions' && !currentHotel?.hasPromotions) ||
-                                            (item.name === 'Payments' && !currentHotel?.hasOnlinePayment);
+                                            (item.name === 'Payments' && !currentHotel?.hasOnlinePayment) ||
+                                            (item.name === 'Analytics & SEO' && !currentHotel?.hasAdvancedAnalytics);
 
                                         if (isLocked) {
                                             return (
@@ -379,7 +398,7 @@ export default function AdminLayout({ children }) {
                                                         <item.icon size={18} className="text-white/50 group-hover:text-blue-400 transition-colors" />
                                                         {item.name}
                                                     </div>
-                                                    <div title="Upgrade to PRO to unlock" className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
+                                                    <div title="Unlock this feature" className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
                                                         <Lock size={14} />
                                                     </div>
                                                 </button>
@@ -528,6 +547,20 @@ export default function AdminLayout({ children }) {
                                 </div>
                                 <span className={`transition-transform duration-300 ${!router.pathname.startsWith('/admin/account') ? 'group-hover:translate-x-1' : ''}`}>My Account</span>
                             </Link>
+                        )}
+                        
+                        {/* Explore Advanced Features for LITE to replace the hidden advanced menus */}
+                        {(!isPlatformAdmin || user?.isImpersonating) && (!currentHotel?.package || currentHotel?.package === 'LITE') && (
+                            <button
+                                onClick={openUpgradeModal}
+                                className="w-full group flex items-center justify-between mt-2 px-3 py-2 rounded-lg transition-all duration-300 text-[13px] font-bold text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 text-left"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Star size={18} />
+                                    Explore Advanced
+                                </div>
+                                <Lock size={14} className="opacity-50" />
+                            </button>
                         )}
                     </div>
                 </nav>

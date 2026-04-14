@@ -138,7 +138,7 @@ export default function ChannelManagerPage() {
                             <div key={rt.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${rt.isConnected ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${rt.isConnected ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
                                             {rt.isConnected ? <Wifi size={16} /> : <WifiOff size={16} />}
                                         </div>
                                         <div>
@@ -148,7 +148,7 @@ export default function ChannelManagerPage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${rt.isConnected ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'}`}>
+                                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${rt.isConnected ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-slate-100 text-slate-500'}`}>
                                         {rt.isConnected ? 'Connected' : 'Not Connected'}
                                     </span>
                                 </div>

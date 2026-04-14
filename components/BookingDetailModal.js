@@ -94,8 +94,8 @@ export default function BookingDetailModal({ booking: initialBooking, onClose, o
                                 {booking.status.replace('_', ' ')}
                             </span>
                             {booking.isWebCheckedIn && (
-                                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/30">
-                                    ✅ Pre-Registered
+                                <span className="text-[10px] font-bold bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 px-2 py-1 rounded-full border border-teal-200 dark:border-teal-500/30 flex items-center gap-1">
+                                    <ClipboardCheck size={12} /> Pre-Registered
                                 </span>
                             )}
                         </h3>

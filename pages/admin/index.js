@@ -30,7 +30,8 @@ import {
   ChevronRight,
   X,
   LogIn,
-  Rocket
+  Rocket,
+  Zap
 } from 'lucide-react'
 import {
   BarChart,
@@ -203,7 +204,7 @@ export default function AdminDashboard() {
       value: stats.totalRevenue ? `฿ ${stats.totalRevenue.toLocaleString()}` : '฿ 0',
       icon: DollarSign,
       color: 'bg-blue-500',
-      trend: '+12%',
+      trend: null,
       sub: 'Gross Income',
       tooltip: 'Sum of the room charges from all Confirmed, Checked-In, and Checked-Out bookings in the selected time period. Cancellations and Pending bookings are excluded.'
     },
@@ -212,8 +213,8 @@ export default function AdminDashboard() {
       value: stats.totalBookings || '0',
       icon: CalendarIcon,
       color: 'bg-blue-500',
-      trend: '+5',
-      sub: 'Pending Confirmation',
+      trend: null,
+      sub: 'In this period',
       tooltip: 'Total number of booking reservations created in this period, across all statuses (Pending, Confirmed, Checked In, Checked Out). Does not include cancellations.'
     },
     {
@@ -324,7 +325,7 @@ export default function AdminDashboard() {
       {/* Today's Overview */}
       {!showOnboarding && (
         <div className="mb-6">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Today's Overview ⚡</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-1.5">Today's Overview <Zap size={14} className="text-amber-500" /></h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             
             {/* Arrivals */}
@@ -374,10 +375,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* In-House */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-emerald-500 shadow-sm flex flex-col h-48">
+            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-teal-500 shadow-sm flex flex-col h-48">
               <div className="flex justify-between items-start mb-2 shrink-0">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">In-House</p>
-                <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold px-2 py-0.5 rounded text-xs">
+                <span className="bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 font-bold px-2 py-0.5 rounded text-xs">
                   {dailyOps?.inHouse?.length || 0}
                 </span>
               </div>
@@ -456,7 +457,7 @@ export default function AdminDashboard() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(val) => `${(val / 1000).toFixed(0)}k`} />
                 <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
-                <Bar dataKey="value" radius={[4, 4, 4, 4]} fill="#10b981" />
+                <Bar dataKey="value" radius={[4, 4, 4, 4]} fill="#2563eb" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -489,7 +490,7 @@ export default function AdminDashboard() {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Activity</h3>
-          <button onClick={() => router.push('/admin/bookings')} className="text-xs font-bold text-blue-500 hover:text-blue-600">View All →</button>
+          <button onClick={() => router.push('/admin/bookings')} className="text-xs font-bold text-blue-500 hover:text-blue-600 flex items-center gap-0.5">View All <ChevronRight size={12} /></button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">

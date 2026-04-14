@@ -56,7 +56,7 @@ export default function ReviewPage() {
     };
 
     const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
-    const ratingColors = ['', 'text-red-500', 'text-orange-500', 'text-amber-500', 'text-blue-500', 'text-emerald-500'];
+    const ratingColors = ['', 'text-red-500', 'text-orange-500', 'text-amber-500', 'text-blue-500', 'text-teal-500'];
 
     return (
         <>
@@ -180,8 +180,8 @@ export default function ReviewPage() {
                                             fontSize: '14px',
                                             margin: 0,
                                             color: hover
-                                                ? ['','#ef4444','#f97316','#f59e0b','#3b82f6','#10b981'][hover]
-                                                : ['','#ef4444','#f97316','#f59e0b','#3b82f6','#10b981'][rating]
+                                                ? ['','#ef4444','#f97316','#f59e0b','#3b82f6','#14b8a6'][hover]
+                                                : ['','#ef4444','#f97316','#f59e0b','#3b82f6','#14b8a6'][rating]
                                         }}>
                                             {ratingLabels[hover || rating]}
                                         </p>

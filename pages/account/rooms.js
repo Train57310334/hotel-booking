@@ -16,7 +16,7 @@ export default function RoomManagement() {
                 <div>
                     <h1 className="text-2xl font-display font-bold text-slate-900">Room Management</h1>
                 </div>
-                <button className="btn-primary flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm bg-[#10b981] hover:bg-[#059669] border-none shadow-none">
+                <button className="btn-primary flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm bg-blue-600 hover:bg-blue-700 border-none shadow-none text-white">
                     <Plus size={18} />
                     Add New Room
                 </button>

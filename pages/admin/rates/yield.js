@@ -138,7 +138,7 @@ export default function YieldManagement() {
                                         <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={() => handleToggleActive(rule.id, rule.isActive)}
-                                                className={`p-1.5 rounded-lg transition-colors ${rule.isActive ? 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-400 bg-slate-100 hover:bg-slate-200'}`}
+                                                className={`p-1.5 rounded-lg transition-colors ${rule.isActive ? 'text-teal-500 bg-teal-50 hover:bg-teal-100' : 'text-slate-400 bg-slate-100 hover:bg-slate-200'}`}
                                                 title={rule.isActive ? "Deactivate" : "Activate"}
                                             >
                                                 {rule.isActive ? <Power size={16} /> : <PowerOff size={16} />}
@@ -162,9 +162,9 @@ export default function YieldManagement() {
                                             <TrendingUp size={16} />
                                         </div>
 
-                                        <div className={`p-3 rounded-xl ${rule.adjustmentOp === 'INCREASE' ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-rose-50 dark:bg-rose-900/20'}`}>
+                                        <div className={`p-3 rounded-xl ${rule.adjustmentOp === 'INCREASE' ? 'bg-teal-50 dark:bg-teal-900/20' : 'bg-rose-50 dark:bg-rose-900/20'}`}>
                                             <span className="text-xs font-bold uppercase tracking-wider block mb-1 opacity-60">Then</span>
-                                            <p className={`text-sm font-bold ${rule.adjustmentOp === 'INCREASE' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                            <p className={`text-sm font-bold ${rule.adjustmentOp === 'INCREASE' ? 'text-teal-600 dark:text-teal-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                                 {rule.adjustmentOp === 'INCREASE' ? 'Increase' : 'Decrease'} base rate by {rule.adjustmentValue}{rule.adjustmentType === 'PERCENTAGE' ? '%' : ' THB'}
                                             </p>
                                         </div>
@@ -238,13 +238,13 @@ export default function YieldManagement() {
                                 </div>
                             </div>
 
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
-                                <h3 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-3 flex items-center gap-2"><TrendingUp size={16}/> ACTION (THEN)</h3>
+                            <div className="bg-teal-50 dark:bg-teal-900/20 p-5 rounded-2xl border border-teal-100 dark:border-teal-800/50">
+                                <h3 className="text-sm font-bold text-teal-800 dark:text-teal-300 mb-3 flex items-center gap-2"><TrendingUp size={16}/> ACTION (THEN)</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <select 
                                         value={newRule.adjustmentOp}
                                         onChange={e => setNewRule({...newRule, adjustmentOp: e.target.value})}
-                                        className="px-3 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-600 bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 font-bold"
+                                        className="px-3 py-2.5 rounded-xl border border-teal-200 dark:border-teal-600 bg-white dark:bg-slate-700 text-teal-700 dark:text-teal-300 font-bold"
                                     >
                                         <option value="INCREASE">Increase Rate By</option>
                                         <option value="DECREASE">Decrease Rate By</option>

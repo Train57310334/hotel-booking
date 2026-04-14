@@ -8,7 +8,7 @@ import { useRoleAccess } from '@/hooks/useRoleAccess';
 
 // Helper to determine icon based on action
 function getActionIcon(action) {
-    if (action.includes('BOOKING_CREATED')) return <CalendarDays size={18} className="text-emerald-500" />;
+    if (action.includes('BOOKING_CREATED')) return <CalendarDays size={18} className="text-teal-500" />;
     if (action.includes('BOOKING_CANCELLED')) return <Trash2 size={18} className="text-red-500" />;
     if (action.includes('BOOKING_STATUS_UPDATED')) return <Edit size={18} className="text-blue-500" />;
     if (action.includes('PAYMENT')) return <CreditCard size={18} className="text-indigo-500" />;
@@ -18,7 +18,7 @@ function getActionIcon(action) {
 
 // Helper to color code the action tag
 function getActionColor(action) {
-    if (action.includes('CREATE') || action.includes('ADD')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300';
+    if (action.includes('CREATE') || action.includes('ADD')) return 'bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-300';
     if (action.includes('CANCEL') || action.includes('REMOVE') || action.includes('DELETE')) return 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300';
     if (action.includes('UPDATE') || action.includes('EDIT')) return 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300';
     return 'bg-slate-100 text-slate-800 dark:bg-slate-500/20 dark:text-slate-300';

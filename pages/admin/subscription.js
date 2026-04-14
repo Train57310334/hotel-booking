@@ -144,10 +144,10 @@ export default function SubscriptionPage() {
                             const isLoading = loadingPlan === plan.id
 
                             // To handle Tailwind dynamic classes robustly we map them explicitly here
-                            const bgColors = { slate: 'bg-slate-500', emerald: 'bg-blue-500', indigo: 'bg-indigo-500' }
-                            const textColors = { slate: 'text-slate-500', emerald: 'text-blue-500', indigo: 'text-indigo-500' }
-                            const borderColors = { slate: 'border-slate-500', emerald: 'border-blue-500', indigo: 'border-indigo-500' }
-                            const shadowColors = { slate: 'shadow-slate-500/20', emerald: 'shadow-blue-500/20', indigo: 'shadow-indigo-500/20' }
+                            const bgColors = { slate: 'bg-slate-500', teal: 'bg-teal-500', indigo: 'bg-indigo-500' }
+                            const textColors = { slate: 'text-slate-500', teal: 'text-teal-500', indigo: 'text-indigo-500' }
+                            const borderColors = { slate: 'border-slate-500', teal: 'border-teal-500', indigo: 'border-indigo-500' }
+                            const shadowColors = { slate: 'shadow-slate-500/20', teal: 'shadow-teal-500/20', indigo: 'shadow-indigo-500/20' }
 
                             let wrapperClasses = 'relative overflow-hidden rounded-3xl border-2 transition-all p-8 flex flex-col bg-white dark:bg-slate-800'
                             if (isActive) {

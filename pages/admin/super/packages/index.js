@@ -13,7 +13,7 @@ const availableIcons = [
     { name: 'Crown', component: Crown },
 ]
 
-const availableColors = ['slate', 'emerald', 'indigo', 'rose', 'amber', 'purple', 'blue']
+const availableColors = ['slate', 'teal', 'indigo', 'rose', 'amber', 'purple', 'blue']
 
 export default function PlatformPackages() {
     const [plans, setPlans] = useState([])
@@ -48,7 +48,7 @@ export default function PlatformPackages() {
             features: [],
             missingFeatures: [],
             isPopular: false,
-            color: 'emerald',
+            color: 'teal',
             icon: 'Package',
             maxRooms: 5,
             maxRoomTypes: 2,

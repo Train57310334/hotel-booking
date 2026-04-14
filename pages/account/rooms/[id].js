@@ -17,7 +17,7 @@ export default function RoomDetail() {
                     <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">
                         This Month <ChevronDown size={16} className="text-slate-400" />
                     </button>
-                    <button className="px-5 py-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl text-sm font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-0.5">
+                    <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-0.5">
                         Download <Download size={18} />
                     </button>
                 </div>

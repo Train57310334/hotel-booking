@@ -56,7 +56,7 @@ function ToastItem({ toast, onClose }) {
 
     const getStyles = (type) => {
         switch (type) {
-            case 'success': return 'bg-white border-l-4 border-emerald-500 text-slate-800 dark:bg-slate-800 dark:text-white'
+            case 'success': return 'bg-white border-l-4 border-teal-500 text-slate-800 dark:bg-slate-800 dark:text-white'
             case 'error': return 'bg-white border-l-4 border-rose-500 text-slate-800 dark:bg-slate-800 dark:text-white'
             case 'warning': return 'bg-white border-l-4 border-amber-500 text-slate-800 dark:bg-slate-800 dark:text-white'
             default: return 'bg-white border-l-4 border-blue-500 text-slate-800 dark:bg-slate-800 dark:text-white'
@@ -65,7 +65,7 @@ function ToastItem({ toast, onClose }) {
 
     const getIcon = (type) => {
         switch (type) {
-            case 'success': return <CheckCircle size={20} className="text-emerald-500" />
+            case 'success': return <CheckCircle size={20} className="text-teal-500" />
             case 'error': return <AlertCircle size={20} className="text-rose-500" />
             case 'warning': return <AlertCircle size={20} className="text-amber-500" />
             default: return <Info size={20} className="text-blue-500" />

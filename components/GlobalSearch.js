@@ -96,11 +96,22 @@ export default function GlobalSearch() {
         setIsOpen(false)
     }
 
-    const handleBookingClick = (id) => {
-        // Go to bookings page and filter by this ID
-        if (setContextSearch) setContextSearch(id)
-        router.push('/admin/bookings')
+    const handleBookingClick = (booking) => {
+        // If already on calendar page, jump to the booking's check-in date
+        if (router.pathname === '/admin/calendar') {
+            const checkInDate = new Date(booking.checkIn)
+            checkInDate.setHours(0,0,0,0)
+            router.push({
+                pathname: '/admin/calendar',
+                query: { date: checkInDate.toISOString(), highlight: booking.leadName }
+            }, undefined, { shallow: true })
+        } else {
+            // Go to bookings page and filter by this ID
+            if (setContextSearch) setContextSearch(booking.id)
+            router.push('/admin/bookings')
+        }
         setIsOpen(false)
+        setQuery('')
     }
 
     const handleRoomClick = (roomNumber) => {
@@ -188,7 +199,7 @@ export default function GlobalSearch() {
                                     {results.bookings.map(booking => (
                                         <button
                                             key={booking.id}
-                                            onClick={() => handleBookingClick(booking.id)}
+                                            onClick={() => handleBookingClick(booking)}
                                             className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
                                         >
                                             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">

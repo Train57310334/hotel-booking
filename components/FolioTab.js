@@ -305,34 +305,34 @@ export default function FolioTab({ booking, onUpdate }) {
                         </h4>
                         <button
                             onClick={() => setIsAddingPayment(!isAddingPayment)}
-                            className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${isAddingPayment ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400'}`}
+                            className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${isAddingPayment ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400'}`}
                         >
                             <Plus size={14} /> Record Payment
                         </button>
                     </div>
 
                     {isAddingPayment && (
-                        <form onSubmit={handleRecordPayment} className="mb-4 bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm animate-in fade-in slide-in-from-top-2">
+                        <form onSubmit={handleRecordPayment} className="mb-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-500/20 shadow-sm animate-in fade-in slide-in-from-top-2">
                             <div className="space-y-3">
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">Amount Paid (THB)</label>
+                                        <label className="block text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">Amount Paid (THB)</label>
                                         <input
                                             type="number"
                                             required
                                             min="1"
                                             value={newPayment.amount}
                                             onChange={(e) => setNewPayment({ ...newPayment, amount: e.target.value })}
-                                            className="w-full text-sm p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50 block"
+                                            className="w-full text-sm p-2 rounded-lg border border-blue-200 dark:border-blue-500/30 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/50 block"
                                             placeholder="500"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">Method</label>
+                                        <label className="block text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">Method</label>
                                         <select
                                             value={newPayment.method}
                                             onChange={(e) => setNewPayment({ ...newPayment, method: e.target.value })}
-                                            className="w-full text-sm p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50 block"
+                                            className="w-full text-sm p-2 rounded-lg border border-blue-200 dark:border-blue-500/30 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/50 block"
                                         >
                                             <option value="Cash">Cash</option>
                                             <option value="Transfer">Bank Transfer</option>
@@ -344,12 +344,12 @@ export default function FolioTab({ booking, onUpdate }) {
                                     <button
                                         type="button"
                                         onClick={() => setIsAddingPayment(false)}
-                                        className="text-xs font-bold text-emerald-600 hover:text-emerald-800 px-3 py-1.5"
+                                        className="text-xs font-bold text-blue-600 hover:text-blue-800 px-3 py-1.5"
                                     >Cancel</button>
                                     <button
                                         type="submit"
                                         disabled={paymentLoading}
-                                        className="text-xs font-bold bg-emerald-600 text-white px-4 py-1.5 rounded-lg shadow disabled:opacity-50"
+                                        className="text-xs font-bold bg-blue-600 text-white px-4 py-1.5 rounded-lg shadow disabled:opacity-50"
                                     >Save Payment</button>
                                 </div>
                             </div>

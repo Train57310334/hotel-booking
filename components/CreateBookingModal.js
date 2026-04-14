@@ -42,6 +42,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
     const [errors, setErrors] = useState({ checkIn: false, checkOut: false });
     const [appliedPromo, setAppliedPromo] = useState(null);
     const [validatingPromo, setValidatingPromo] = useState(false);
+    const [calculatingPrice, setCalculatingPrice] = useState(false);
 
     const checkInRef = useRef(null);
     const checkOutRef = useRef(null);
@@ -64,24 +65,38 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
     const selectedType = data.find(t => t.id === form.roomTypeId)
     const availablePlans = allPlans.filter(p => !p.roomTypeId || (selectedType && p.roomTypeId === selectedType.id))
 
-    // Auto-calculate total amount
+    // Auto-calculate total amount via backend Yield/Pricing Engine
     useEffect(() => {
         if (form.checkIn && form.checkOut && selectedType) {
             const start = new Date(form.checkIn);
             const end = new Date(form.checkOut);
             const days = (end - start) / (1000 * 60 * 60 * 24);
 
-            let price = selectedType.basePrice || 1000;
-            // TODO: Fetch dynamic price from backend /rates/calculate for accurate pricing with overrides
-
-            const validDays = days > 0 ? days : 0;
-            let total = price * validDays;
-            
-            if (appliedPromo) {
-                total -= appliedPromo.discountAmount;
+            if (days > 0) {
+                setCalculatingPrice(true);
+                apiFetch('/pricing/calculate', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        hotelId: currentHotel?.id,
+                        roomTypeId: selectedType.id,
+                        ratePlanId: form.ratePlanId || undefined,
+                        checkIn: form.checkIn,
+                        checkOut: form.checkOut,
+                        promoCode: appliedPromo ? appliedPromo.code : undefined
+                    })
+                })
+                .then(res => {
+                    setForm(prev => ({ ...prev, totalAmount: res.total }));
+                })
+                .catch(err => {
+                    console.error("Pricing Error:", err);
+                    // Fallback if backend fails
+                    let fallbackTotal = (selectedType.basePrice || 1000) * days;
+                    if (appliedPromo) fallbackTotal -= appliedPromo.discountAmount;
+                    setForm(prev => ({ ...prev, totalAmount: Math.max(0, fallbackTotal) }));
+                })
+                .finally(() => setCalculatingPrice(false));
             }
-
-            setForm(prev => ({ ...prev, totalAmount: Math.max(0, total) }));
         }
     }, [form.checkIn, form.checkOut, form.ratePlanId, selectedType, appliedPromo]);
 
@@ -315,10 +330,12 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                             <LabelWithTooltip label="Total Amount" text="Calculated price based on nights & rate minus discounts" />
                             <div className="flex items-center">
                                 <span className="p-2 border border-r-0 rounded-l-lg bg-slate-50 dark:bg-slate-800 dark:border-slate-600 text-slate-500 font-bold">฿</span>
-                                <input required type="number" className="w-full p-2 rounded-r-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white font-bold"
+                                <input required type="number" className="w-full p-2 rounded-r-lg border dark:bg-slate-700 dark:border-slate-600 dark:text-white font-bold disabled:opacity-75 disabled:bg-slate-50 dark:disabled:bg-slate-800"
                                     value={form.totalAmount}
+                                    disabled={calculatingPrice}
                                     onChange={e => setForm({ ...form, totalAmount: e.target.value })} />
                             </div>
+                            {calculatingPrice && <p className="text-[10px] text-blue-500 mt-1 animate-pulse">Calculating overrides & taxes...</p>}
                         </div>
                     </div>
 

@@ -326,7 +326,7 @@ export default function HousekeepingDashboard() {
                     <div className="space-y-3">
                         {openReports.length === 0 && (
                             <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-                                <CheckCheck size={40} className="mx-auto mb-3 text-emerald-400" />
+                                <CheckCheck size={40} className="mx-auto mb-3 text-teal-400" />
                                 <p className="font-bold text-slate-700 dark:text-white">No Open Issues</p>
                                 <p className="text-sm text-slate-400 mt-1">All maintenance reports have been resolved.</p>
                             </div>
@@ -355,7 +355,7 @@ export default function HousekeepingDashboard() {
                                 </div>
                                 <button
                                     onClick={() => handleResolve(report.id)}
-                                    className="shrink-0 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                                    className="shrink-0 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
                                 >
                                     <CheckCheck size={12} /> Resolve
                                 </button>

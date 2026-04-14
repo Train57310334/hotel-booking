@@ -28,7 +28,7 @@ const QUICK_REPLIES = [
 const STATUS_BADGE = {
     unread: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
     read: 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
-    replied: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+    replied: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
     archived: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
 }
 
@@ -42,7 +42,7 @@ function timeAgo(dateStr) {
 
 function Avatar({ name, size = 'md', className = '' }) {
     const s = size === 'sm' ? 'w-7 h-7 text-xs' : 'w-10 h-10 text-sm'
-    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-pink-500', 'bg-amber-500', 'bg-cyan-500']
+    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-teal-500', 'bg-pink-500', 'bg-amber-500', 'bg-cyan-500']
     const color = colors[(name?.charCodeAt(0) || 0) % colors.length]
     return (
         <div className={`${s} ${color} rounded-full flex items-center justify-center font-bold text-white shrink-0 ${className}`}>
@@ -264,7 +264,7 @@ export default function MessageCenter() {
                                                     </span>
                                                 </div>
                                                 {msg.replies?.length > 0 && (
-                                                    <p className="text-xs text-emerald-500 mt-1 flex items-center gap-1">
+                                                    <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
                                                         <CheckCheck size={11} /> {msg.replies.length} {msg.replies.length === 1 ? 'reply' : 'replies'}
                                                     </p>
                                                 )}

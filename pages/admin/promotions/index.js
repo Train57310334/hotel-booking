@@ -173,7 +173,7 @@ export default function Promotions() {
                                         Discount: <span className="font-bold text-blue-500">{promo.value} {promo.type === 'percent' ? '%' : 'THB'}</span>
                                     </p>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${promo.isActive ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${promo.isActive ? 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
                                             {promo.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                         <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full dark:bg-slate-700 dark:text-slate-300">

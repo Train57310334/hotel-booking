@@ -1,7 +1,7 @@
 
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
-import { apiFetch } from '@/lib/api'
+import { apiFetch, API_BASE } from '@/lib/api'
 import { DollarSign, Plus, Trash2, Calendar, FileText, TrendingUp, TrendingDown, Moon, Activity, BedDouble, Download, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -121,7 +121,7 @@ function GeneralReports({ hotelId }) {
             const query = `?hotelId=${hotelId}&from=${dateRange.from}&to=${dateRange.to}`
 
             // Hit the backend export endpoint
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/reports/export/${format}${query}`, {
+            const res = await fetch(`${API_BASE}/reports/export/${format}${query}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
@@ -200,14 +200,14 @@ function GeneralReports({ hotelId }) {
                     <AreaChart data={chartData}>
                         <defs>
                             <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
-                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <XAxis dataKey="date" stroke="#94a3b8" fontSize={10} tickFormatter={d => new Date(d).toLocaleDateString()} />
                         <YAxis stroke="#94a3b8" fontSize={10} />
                         <Tooltip />
-                        <Area type="monotone" dataKey="revenue" stroke="#10b981" fill="url(#colorRev)" strokeWidth={2} />
+                        <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fill="url(#colorRev)" strokeWidth={2} />
                         <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="none" strokeWidth={2} />
                     </AreaChart>
                 </ResponsiveContainer>
@@ -306,7 +306,7 @@ function NightAuditReports() {
                         <YAxis yAxisId="right" orientation="right" fontSize={10} unit="%" />
                         <Tooltip />
                         <Legend />
-                        <Bar yAxisId="left" dataKey="adr" name="ADR (Price)" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+                        <Bar yAxisId="left" dataKey="adr" name="ADR (Price)" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
                         <Line yAxisId="right" type="monotone" dataKey="occupancyRate" name="Occupancy %" stroke="#6366f1" strokeWidth={3} dot={{ r: 4 }} />
                     </ComposedChart>
                 </ResponsiveContainer>

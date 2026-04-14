@@ -224,7 +224,7 @@ export default function ConfirmationPage() {
                 {isPaid && !booking.isWebCheckedIn && (
                   <button
                     onClick={() => window.open(`/checkin/${id}`, '_blank')}
-                    className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 group transition-all"
+                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 group transition-all"
                   >
                     <Smartphone size={20} className="group-hover:scale-110 transition-transform"/> Start Web Check-in
                   </button>

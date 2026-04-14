@@ -390,8 +390,8 @@ export default function GuestWebCheckin() {
                         {/* STEP 3: SUCCESS */}
                         {step === 3 && (
                             <div className="text-center py-8 animate-in zoom-in-95 fade-in duration-500">
-                                <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-iner border-4 border-white dark:border-slate-800 relative">
-                                    <div className="absolute inset-0 rounded-full border border-emerald-500 animate-ping opacity-20"></div>
+                                <div className="w-24 h-24 bg-blue-100 dark:bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-iner border-4 border-white dark:border-slate-800 relative">
+                                    <div className="absolute inset-0 rounded-full border border-blue-500 animate-ping opacity-20"></div>
                                     <CheckCircle size={48} />
                                 </div>
                                 <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-3">You're All Set!</h2>
