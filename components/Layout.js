@@ -1,10 +1,21 @@
 import NavBar from '@/components/NavBar'
 import Link from 'next/link'
+import Head from 'next/head'
 import { Github, Twitter, Instagram, Heart } from 'lucide-react'
 
-export default function Layout({ children, navbarProps, hideFooter = false, hideNavbar = false }) {
+export default function Layout({ children, navbarProps, seoProps, hideFooter = false, hideNavbar = false }) {
     return (
         <div className="min-h-screen flex flex-col w-full text-theme-text bg-theme-bg font-theme">
+            <Head>
+                <title>{seoProps?.title || navbarProps?.brandName || 'BookingKub'}</title>
+                <meta name="description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
+                {seoProps?.keywords && <meta name="keywords" content={seoProps.keywords} />}
+                <meta property="og:title" content={seoProps?.title || navbarProps?.brandName || 'BookingKub'} />
+                <meta property="og:description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
+                {(seoProps?.image || navbarProps?.logo) && <meta property="og:image" content={seoProps?.image || navbarProps?.logo} />}
+                {seoProps?.canonicalUrl && <link rel="canonical" href={seoProps.canonicalUrl} />}
+                {seoProps?.robotsIndex === false && <meta name="robots" content="noindex,nofollow" />}
+            </Head>
             {!hideNavbar && <NavBar {...navbarProps} />}
             <main className="flex-1 w-full">
                 {children}

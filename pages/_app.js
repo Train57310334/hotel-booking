@@ -6,7 +6,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext'
 import Head from 'next/head'
 import Script from 'next/script'
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { Toaster } from 'react-hot-toast'
 
@@ -156,8 +156,16 @@ export default function MyApp({ Component, pageProps }) {
       .catch(() => { })
   }, [])
 
+  // Track which hotelId we already fetched to avoid redundant requests
+  // when the component re-renders without the hotelId actually changing
+  // (e.g., user navigates between pages under the same hotel context).
+  const lastFetchedHotelId = useRef(null)
+
   useEffect(() => {
-    if (!hotelId) { setHotel(null); return; }
+    if (!hotelId) { setHotel(null); lastFetchedHotelId.current = null; return; }
+    // Skip if we already have data for this hotelId
+    if (hotelId === lastFetchedHotelId.current) return;
+    lastFetchedHotelId.current = hotelId;
     fetch(`${API_BASE}/hotels/${hotelId}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setHotel(data) })

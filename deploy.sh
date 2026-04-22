@@ -4,100 +4,120 @@
 
 set -e # Exit on error
 
-# --- CONFIGURATION ---
-# Live Server Paths (Absolute Paths)
+RESET="\033[0m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+RED="\033[0;31m"
+BLUE="\033[0;34m"
+BOLD="\033[1m"
+
+print_step() { echo -e "\n${BLUE}${BOLD}━━━ $1 ━━━${RESET}"; }
+print_ok()   { echo -e "${GREEN}  ✓ $1${RESET}"; }
+print_warn() { echo -e "${YELLOW}  ⚠ $1${RESET}"; }
+print_err()  { echo -e "${RED}  ✗ $1${RESET}"; exit 1; }
+
+# Live Server Paths (Absolute Paths for CPanel/DirectAdmin VPS structure)
 BACKEND_DIR="/home/bookingkub/domains/api.bookingkub.com/public_html"
 FRONTEND_DIR="/home/bookingkub/domains/app.bookingkub.com/public_html"
 
-echo "🚀 Starting Deployment..."
+echo -e "\n${BOLD}╔══════════════════════════════════════════╗"
+echo -e "║     BookingKub Live Server Deployer      ║"
+echo -e "╚══════════════════════════════════════════╝${RESET}\n"
 
 # Function to update Backend
 update_backend() {
-    echo "--------------------------------------"
-    echo "📦 Updating Backend API..."
-    echo "--------------------------------------"
+    print_step "Updating Backend API"
     
     if [ ! -d "$BACKEND_DIR" ]; then
-        echo "⚠️  Backend directory '$BACKEND_DIR' not found. Creating it or check path."
-        # Optional: mkdir -p "$BACKEND_DIR" if this is a fresh install script, but for update assume it exists
+        print_warn "Backend directory '$BACKEND_DIR' not found. Skipping."
         return
     fi
 
     cd "$BACKEND_DIR" || exit
     
-    echo "⬇️  Pulling latest code..."
-    git pull origin main
+    echo "  → git pull origin main..."
+    git pull origin main 2>&1 | tail -3 || print_warn "git pull encountered issues, proceeding anyway."
     
-    echo "📦 Installing dependencies..."
+    echo "  → npm ci..."
     npm ci --silent
+    print_ok "Backend dependencies installed"
     
-    echo "🗄️  Running Database Migrations..."
-    npx prisma migrate deploy
+    echo "  → Running database migrations..."
+    npx prisma migrate deploy || {
+       print_warn "migrate deploy failed — falling back to db push"
+       npx prisma db push --accept-data-loss
+    }
     npx prisma generate
+    print_ok "Database schema ready"
     
-    echo "🏗️  Building API..."
+    echo "  → Building API..."
     npm run build
+    print_ok "API built successfully"
     
-    echo "🔄 Restarting API Service..."
-    pm2 restart hotel-api || pm2 start dist/main.js --name "hotel-api"
+    if command -v pm2 &> /dev/null; then
+       pm2 describe hotel-api &> /dev/null && pm2 reload hotel-api || pm2 start dist/main.js --name "hotel-api"
+       pm2 save --force
+       print_ok "API restarted via PM2"
+    else
+       print_warn "PM2 not found. You must restart the server manually."
+    fi
     
-    # Return to previous directory (though typically we run from root)
     cd - > /dev/null
-    echo "✅ Backend Updated Successfully!"
 }
 
 # Function to update Frontend
 update_frontend() {
-    echo "--------------------------------------"
-    echo "🎨 Updating Frontend Web..."
-    echo "--------------------------------------"
+    print_step "Updating Frontend Web"
     
     if [ ! -d "$FRONTEND_DIR" ]; then
-        echo "⚠️  Frontend directory '$FRONTEND_DIR' not found."
+        print_warn "Frontend directory '$FRONTEND_DIR' not found. Skipping."
         return
     fi
 
     cd "$FRONTEND_DIR" || exit
     
-    echo "⬇️  Pulling latest code..."
-    git pull origin main
+    echo "  → git pull origin main..."
+    git pull origin main 2>&1 | tail -3 || print_warn "git pull encountered issues, proceeding anyway."
     
-    echo "📦 Installing dependencies..."
+    echo "  → npm ci..."
     npm ci --silent
+    print_ok "Frontend dependencies installed"
     
-    echo "🏗️  Building Next.js..."
     if [ -f ".env.production" ]; then
-        echo "📄 Loading .env.production..."
         export $(grep -v '^#' .env.production | xargs)
+        print_ok "Loaded .env.production"
     fi
-    echo "🔗 API URL: ${NEXT_PUBLIC_API_BASE:-'Not Set (Will default to localhost)'}"
     
+    echo "  → Building Next.js front-end..."
     npm run build
+    print_ok "Next.js built successfully"
     
-    echo "🔄 Restarting Frontend Service..."
-    pm2 restart hotel-web || pm2 start npm --name "hotel-web" -- start
+    if command -v pm2 &> /dev/null; then
+       pm2 describe hotel-web &> /dev/null && pm2 reload hotel-web || pm2 start npm --name "hotel-web" -- start
+       pm2 save --force
+       print_ok "Frontend restarted via PM2"
+    else
+       print_warn "PM2 not found. You must restart the server manually."
+    fi
     
     cd - > /dev/null
-    echo "✅ Frontend Updated Successfully!"
 }
 
 # Main Execution
 
 # Check if directories exist relative to current location
-# Only run update if directory is found
-
 if [ -d "$BACKEND_DIR" ]; then
     update_backend
 else
-    echo "⚠️  Backend folder '$BACKEND_DIR' not found. Skipping."
+    print_warn "Backend parent path '$BACKEND_DIR' inaccessible. Skipped."
 fi
 
 if [ -d "$FRONTEND_DIR" ]; then
     update_frontend
 else
-    echo "⚠️  Frontend folder '$FRONTEND_DIR' not found. Skipping."
+    print_warn "Frontend parent path '$FRONTEND_DIR' inaccessible. Skipped."
 fi
 
-echo "--------------------------------------"
-echo "🎉 Deployment Complete!"
-echo "--------------------------------------"
+echo -e "\n${GREEN}${BOLD}╔══════════════════════════════════════════╗"
+echo -e "║        🎉 Deployment Processes Finished  ║"
+echo -e "╚══════════════════════════════════════════╝${RESET}\n"

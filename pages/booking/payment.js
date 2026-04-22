@@ -688,6 +688,12 @@ export default function PaymentPage() {
                       <span className="font-bold">- ฿{appliedPromo.discountAmount?.toLocaleString()}</span>
                     </div>
                   )}
+                  {bookingData?.taxesAndFees > 0 && (
+                    <div className="flex justify-between text-sm text-slate-500 px-2 animate-in fade-in">
+                      <span>{t('payment.taxesAndFees') || 'Taxes & Fees'}</span>
+                      <span className="font-bold text-slate-700">฿{bookingData.taxesAndFees.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-end bg-gradient-to-br from-primary-50 to-blue-50 p-5 rounded-2xl border border-primary-100/50 shadow-inner mt-6 relative z-10">

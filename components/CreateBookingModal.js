@@ -34,7 +34,6 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
         leadPhone: '',
         totalAmount: 0,
         paymentMethod: '',
-        paymentMethod: '',
         paymentStatus: 'pending',
         promotionCode: '',
         hotelId: currentHotel?.id || ''
@@ -43,6 +42,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
     const [appliedPromo, setAppliedPromo] = useState(null);
     const [validatingPromo, setValidatingPromo] = useState(false);
     const [calculatingPrice, setCalculatingPrice] = useState(false);
+    const [pricingDetails, setPricingDetails] = useState(null);
 
     const checkInRef = useRef(null);
     const checkOutRef = useRef(null);
@@ -87,6 +87,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                 })
                 .then(res => {
                     setForm(prev => ({ ...prev, totalAmount: res.total }));
+                    setPricingDetails(res);
                 })
                 .catch(err => {
                     console.error("Pricing Error:", err);
@@ -118,6 +119,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
             if (result.valid) {
                 setAppliedPromo(result);
                 toast.success('Promo applied successfully');
+                // Trigger recalculation in the useEffect above automatically
             } else {
                 setAppliedPromo(null);
                 toast.error(result.message || 'Invalid promotion code');
@@ -283,7 +285,14 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                                 disabled={!selectedType}
                                 onChange={e => setForm({ ...form, roomId: e.target.value })}>
                                 <option value="">Select Room</option>
-                                {selectedType?.rooms?.map(r => <option key={r.id} value={r.id}>Room {r.id.slice(-4)}</option>)}
+                                {selectedType?.rooms?.length > 0
+                                    ? selectedType.rooms.map(r => (
+                                        <option key={r.id} value={r.id}>
+                                            Room {r.roomNumber || r.id.slice(-4)}{r.status ? ` — ${r.status}` : ''}
+                                        </option>
+                                    ))
+                                    : <option disabled value="">No rooms configured for this type</option>
+                                }
                             </select>
                         </div>
                     </div>
@@ -336,6 +345,36 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                                     onChange={e => setForm({ ...form, totalAmount: e.target.value })} />
                             </div>
                             {calculatingPrice && <p className="text-[10px] text-blue-500 mt-1 animate-pulse">Calculating overrides & taxes...</p>}
+                            
+                            {pricingDetails && !calculatingPrice && (
+                                <div className="mt-3 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                                    <h5 className="font-bold text-slate-700 dark:text-slate-300 mb-2 border-b border-slate-200 dark:border-slate-700 pb-1">Price Breakdown (incl. Yield)</h5>
+                                    
+                                    <div className="flex justify-between mb-1 text-slate-600 dark:text-slate-400">
+                                        <span>Base Subtotal (Dynamic Rate)</span> 
+                                        <span>฿{pricingDetails.subtotal.toLocaleString()}</span>
+                                    </div>
+                                    
+                                    {pricingDetails.discount > 0 && (
+                                        <div className="flex justify-between mb-1 text-green-600 dark:text-green-400 font-medium">
+                                            <span>Promotion Discount</span> 
+                                            <span>- ฿{pricingDetails.discount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    
+                                    {pricingDetails.taxesAndFees > 0 && (
+                                        <div className="flex justify-between mb-1 text-slate-600 dark:text-slate-400">
+                                            <span>Taxes & Fees</span> 
+                                            <span>฿{pricingDetails.taxesAndFees.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="flex justify-between mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white text-sm">
+                                        <span>Final Total</span> 
+                                        <span>฿{pricingDetails.total.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

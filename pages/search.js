@@ -245,7 +245,17 @@ export default function SearchPage() {
   const soldOutCount = useMemo(() => rooms.filter(r => r.isAvailable === false).length, [rooms]);
 
   return (
-    <Layout navbarProps={{ brandName: hotel?.name, logo: hotel?.logoUrl, facebookUrl: hotel?.facebookUrl, instagramUrl: hotel?.instagramUrl, twitterUrl: hotel?.twitterUrl, footerDescription: hotel?.footerDescription }}>
+    <Layout 
+      navbarProps={{ brandName: hotel?.name, logo: hotel?.logoUrl, facebookUrl: hotel?.facebookUrl, instagramUrl: hotel?.instagramUrl, twitterUrl: hotel?.twitterUrl, footerDescription: hotel?.footerDescription }}
+      seoProps={{
+        title: hotel?.hasSeo && hotel?.seoTitle ? hotel.seoTitle : hotel?.name ? `Book ${hotel.name} | BookingKub` : 'Find Hotels | BookingKub',
+        description: hotel?.hasSeo && hotel?.seoDescription ? hotel.seoDescription : hotel?.description || hotel?.footerDescription,
+        keywords: hotel?.hasSeo ? hotel.seoKeywords : '',
+        image: hotel?.ogImage || hotel?.images?.[0] || hotel?.imageUrl,
+        canonicalUrl: hotel?.canonicalUrl || hotel?.customDomain,
+        robotsIndex: hotel?.robotsIndex
+      }}
+    >
       <div className="container mx-auto px-4 min-h-screen pb-20 pt-28 max-w-7xl">
         {!loading && hotel ? (
           <>

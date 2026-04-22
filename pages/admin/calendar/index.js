@@ -414,198 +414,208 @@ export default function Calendar() {
         <AdminLayout>
             <div className="flex flex-col h-[calc(100vh-64px)] gap-2 relative">
 
-                {/* ── Compact Header ── */}
-                <div className="flex flex-wrap items-center gap-2">
-                    {/* Title */}
-                    <h1 className="text-lg font-bold dark:text-white flex items-center gap-2 mr-2">
-                        <CalendarIcon size={18} className="text-blue-500 shrink-0" />
-                        Booking Calendar
-                    </h1>
+                {/* ── Header Controls ── */}
+                <div className="flex flex-col gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    
+                    {/* Top Row: Core Nav & Actions */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Title */}
+                            <h1 className="text-lg font-bold dark:text-white flex items-center gap-2 mr-2">
+                                <CalendarIcon size={18} className="text-blue-500 shrink-0" />
+                                Booking Calendar
+                            </h1>
 
-                    {/* View toggle */}
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 text-xs font-bold gap-0.5">
-                        {[
-                            { key: 'day',   label: 'Day' },
-                            { key: '3day',  label: '3D' },
-                            { key: 'week',  label: 'Week' },
-                            { key: '2week', label: '2W' },
-                            { key: 'month', label: 'Month' },
-                            { key: 'availability', label: 'Availability' },
-                        ].map(({ key, label }) => (
+                            {/* View toggle */}
+                            <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 text-xs font-bold gap-0.5">
+                                {[
+                                    { key: 'day',   label: 'Day' },
+                                    { key: '3day',  label: '3D' },
+                                    { key: 'week',  label: 'Week' },
+                                    { key: '2week', label: '2W' },
+                                    { key: 'month', label: 'Month' },
+                                    { key: 'availability', label: 'Availability' },
+                                ].map(({ key, label }) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => setViewMode(key)}
+                                        className={`px-2.5 py-1 rounded-md transition-all ${
+                                            viewMode === key
+                                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                        }`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Nav: prev / label / next */}
+                            <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
+                                <button onClick={() => {
+                                    const d = new Date(currentDate)
+                                    const delta = { day: 1, '3day': 3, week: 7, '2week': 14, month: 0, availability: 0 }[viewMode]
+                                    delta ? d.setDate(d.getDate() - delta) : d.setMonth(d.getMonth() - (viewMode === 'availability' ? 6 : 1))
+                                    setCurrentDate(d)
+                                }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-r border-slate-200 dark:border-slate-700">
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button onClick={() => setCurrentDate(new Date())} className="px-3 font-bold text-sm dark:text-white select-none min-w-[140px] text-center hover:text-blue-500 transition-colors" title="Go to Today">
+                                    {viewMode === 'month'
+                                        ? currentDate.toLocaleString('th-TH', { month: 'short', year: 'numeric' })
+                                        : viewMode === 'availability'
+                                        ? (() => {
+                                            const endD = new Date(currentDate); endD.setMonth(endD.getMonth() + 5);
+                                            return `${currentDate.toLocaleString('th-TH', { month: 'short', year: 'numeric' })} – ${endD.toLocaleString('th-TH', { month: 'short', year: 'numeric' })}`;
+                                          })()
+                                        : viewMode === 'day'
+                                        ? days[0]?.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+                                        : `${days[0]?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} – ${days[days.length-1]?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                                </button>
+                                <button onClick={() => {
+                                    const d = new Date(currentDate)
+                                    const delta = { day: 1, '3day': 3, week: 7, '2week': 14, month: 0, availability: 0 }[viewMode]
+                                    delta ? d.setDate(d.getDate() + delta) : d.setMonth(d.getMonth() + (viewMode === 'availability' ? 6 : 1))
+                                    setCurrentDate(d)
+                                }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-l border-slate-200 dark:border-slate-700">
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+
+                            {/* Refresh & Compact */}
+                            <div className="flex items-center gap-1">
+                                <button onClick={manualRefresh} title="Refresh"
+                                    className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${refreshing ? 'animate-spin text-blue-500' : 'text-slate-500'}`}>
+                                    <RefreshCw size={14} />
+                                </button>
+                                
+                                <button
+                                    onClick={() => setIsCompact(!isCompact)}
+                                    className={`p-1.5 flex items-center gap-1 text-[10px] font-bold rounded-lg border transition-colors ${
+                                        isCompact ? 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
+                                    }`}
+                                    title="Toggle Compact Mode"
+                                >
+                                    {isCompact ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+                                    <span className="hidden sm:inline">{isCompact ? 'Expand' : 'Compact'}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Top Right: Actions */}
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => setCreateModal({ isOpen: true, initialData: {} })}
+                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm">
+                                <Plus size={13} />
+                                <span className="hidden sm:inline">New Booking</span>
+                                <span className="sm:hidden">New</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Bottom Row: State & Filters */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 mt-1">
+                        {/* Status Stats */}
+                        <div className="hidden md:flex items-center gap-1.5 text-[10px] font-medium">
+                            {[
+                                { label: 'In House',  value: stats.inHouse,    dot: 'bg-teal-500' },
+                                { label: 'Arrivals',  value: stats.arrivals,   dot: 'bg-sky-500' },
+                                { label: 'Depart',    value: stats.departures, dot: 'bg-violet-500' },
+                                { label: 'Pending',   value: stats.pending,    dot: stats.pending > 0 ? 'bg-amber-500' : 'bg-slate-300', warn: stats.pending > 0 },
+                            ].map(({ label, value, dot, warn }) => (
+                                <span key={label} className={`flex items-center gap-1 px-2 py-1 rounded-full border shadow-sm ${
+                                    warn ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-400'
+                                         : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
+                                }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />
+                                    <b>{value}</b> {label}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* Filters list */}
+                        <div className="flex flex-wrap items-center gap-2">
                             <button
-                                key={key}
-                                onClick={() => setViewMode(key)}
-                                className={`px-2.5 py-1 rounded-md transition-all ${
-                                    viewMode === key
-                                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                onClick={() => setShowAvailableOnly(v => !v)}
+                                className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                                    showAvailableOnly
+                                        ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400'
                                 }`}
                             >
-                                {label}
+                                {showAvailableOnly ? <Eye size={12} /> : <EyeOff size={12} />}
+                                <span className="hidden sm:inline">{showAvailableOnly ? 'Available' : 'Show Available'}</span>
                             </button>
-                        ))}
-                    </div>
 
-                    {/* Nav: prev / label / next */}
-                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-                        <button onClick={() => {
-                            const d = new Date(currentDate)
-                            const delta = { day: 1, '3day': 3, week: 7, '2week': 14, month: 0, availability: 0 }[viewMode]
-                            delta ? d.setDate(d.getDate() - delta) : d.setMonth(d.getMonth() - (viewMode === 'availability' ? 6 : 1))
-                            setCurrentDate(d)
-                        }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-r border-slate-200 dark:border-slate-700">
-                            <ChevronLeft size={16} />
-                        </button>
-                        <button onClick={() => setCurrentDate(new Date())} className="px-3 font-bold text-sm dark:text-white select-none min-w-[140px] text-center hover:text-blue-500 transition-colors" title="Go to Today">
-                            {viewMode === 'month'
-                                ? currentDate.toLocaleString('th-TH', { month: 'short', year: 'numeric' })
-                                : viewMode === 'availability'
-                                ? (() => {
-                                    const endD = new Date(currentDate); endD.setMonth(endD.getMonth() + 5);
-                                    return `${currentDate.toLocaleString('th-TH', { month: 'short', year: 'numeric' })} – ${endD.toLocaleString('th-TH', { month: 'short', year: 'numeric' })}`;
-                                  })()
-                                : viewMode === 'day'
-                                ? days[0]?.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
-                                : `${days[0]?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} – ${days[days.length-1]?.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`}
-                        </button>
-                        <button onClick={() => {
-                            const d = new Date(currentDate)
-                            const delta = { day: 1, '3day': 3, week: 7, '2week': 14, month: 0, availability: 0 }[viewMode]
-                            delta ? d.setDate(d.getDate() + delta) : d.setMonth(d.getMonth() + (viewMode === 'availability' ? 6 : 1))
-                            setCurrentDate(d)
-                        }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-l border-slate-200 dark:border-slate-700">
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
-
-                    {/* Refresh */}
-                    <div className="flex items-center gap-1">
-                        <button onClick={manualRefresh} title="Refresh"
-                            className={`p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${refreshing ? 'animate-spin text-blue-500' : 'text-slate-500'}`}>
-                            <RefreshCw size={14} />
-                        </button>
-                        
-                        <button
-                            onClick={() => setIsCompact(!isCompact)}
-                            className={`p-1.5 flex items-center gap-1 text-[10px] font-bold rounded-lg border transition-colors ${
-                                isCompact ? 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
-                            }`}
-                            title="Toggle Compact Mode"
-                        >
-                            {isCompact ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
-                            <span className="hidden sm:inline">{isCompact ? 'Expand' : 'Compact'}</span>
-                        </button>
-                    </div>
-
-                    {/* Stats inline */}
-                    <div className="hidden md:flex items-center gap-1.5 text-[10px] font-medium border-l border-slate-200 dark:border-slate-700 pl-2 ml-0.5">
-                        {[
-                            { label: 'In House',  value: stats.inHouse,    dot: 'bg-teal-500' },
-                            { label: 'Arrivals',  value: stats.arrivals,   dot: 'bg-sky-500' },
-                            { label: 'Depart',    value: stats.departures, dot: 'bg-violet-500' },
-                            { label: 'Pending',   value: stats.pending,    dot: stats.pending > 0 ? 'bg-amber-500' : 'bg-slate-300', warn: stats.pending > 0 },
-                        ].map(({ label, value, dot, warn }) => (
-                            <span key={label} className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border ${
-                                warn ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-400'
-                                     : 'bg-slate-50 border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
-                            }`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />
-                                <b>{value}</b> {label}
-                            </span>
-                        ))}
-                    </div>
-
-                    {/* Available only toggle */}
-                    <button
-                        onClick={() => setShowAvailableOnly(v => !v)}
-                        className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                            showAvailableOnly
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400'
-                        }`}
-                    >
-                        {showAvailableOnly ? <Eye size={12} /> : <EyeOff size={12} />}
-                        <span className="hidden sm:inline">{showAvailableOnly ? 'Available Only' : 'Show Available'}</span>
-                    </button>
-
-                    {/* Filter */}
-                    <div className="relative">
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border rounded-lg transition-colors ${
-                                isFilterOpen ? 'bg-blue-50 border-blue-300 text-blue-600 dark:bg-blue-900/20 dark:border-blue-500 dark:text-blue-400'
-                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white'}`}>
-                            <Filter size={12} />
-                            <span className="hidden sm:inline">Filter</span>
-                            {hasFilter && <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
-                        </button>
-                        {isFilterOpen && (
-                            <div className="absolute left-0 top-9 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 p-4 z-40">
-                                <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Booking Status</p>
-                                <div className="grid grid-cols-2 gap-1.5 mb-4">
-                                    {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                                        <button key={key}
-                                            onClick={() => {
-                                                const updated = filterConfig.status.includes(key)
-                                                    ? filterConfig.status.filter(s => s !== key)
-                                                    : [...filterConfig.status, key]
-                                                setFilterConfig({ ...filterConfig, status: updated })
-                                            }}
-                                            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                                                filterConfig.status.includes(key)
-                                                    ? 'border-transparent text-white ' + cfg.bar.split(' ')[0]
-                                                    : 'border-slate-200 dark:border-slate-600 text-slate-500 hover:border-slate-300'
-                                            }`}
+                            <div className="relative">
+                                <button onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border rounded-lg transition-colors ${
+                                        isFilterOpen ? 'bg-blue-50 border-blue-300 text-blue-600 dark:bg-blue-900/20 dark:border-blue-500 dark:text-blue-400'
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white'}`}>
+                                    <Filter size={12} />
+                                    <span className="hidden sm:inline">Filter</span>
+                                    {hasFilter && <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                                </button>
+                                {isFilterOpen && (
+                                    <div className="absolute right-0 top-9 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 p-4 z-40">
+                                        <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Booking Status</p>
+                                        <div className="grid grid-cols-2 gap-1.5 mb-4">
+                                            {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
+                                                <button key={key}
+                                                    onClick={() => {
+                                                        const updated = filterConfig.status.includes(key)
+                                                            ? filterConfig.status.filter(s => s !== key)
+                                                            : [...filterConfig.status, key]
+                                                        setFilterConfig({ ...filterConfig, status: updated })
+                                                    }}
+                                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                                                        filterConfig.status.includes(key)
+                                                            ? 'border-transparent text-white ' + cfg.bar.split(' ')[0]
+                                                            : 'border-slate-200 dark:border-slate-600 text-slate-500 hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                                                    {cfg.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Room Type</p>
+                                        <select
+                                            className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-xs"
+                                            value={filterConfig.roomTypeId}
+                                            onChange={e => setFilterConfig({ ...filterConfig, roomTypeId: e.target.value })}
                                         >
-                                            <div className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                                            {cfg.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <p className="text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Room Type</p>
-                                <select
-                                    className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-xs"
-                                    value={filterConfig.roomTypeId}
-                                    onChange={e => setFilterConfig({ ...filterConfig, roomTypeId: e.target.value })}
-                                >
-                                    <option value="All">All Room Types</option>
-                                    {roomTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                                </select>
+                                            <option value="All">All Room Types</option>
+                                            {roomTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
-                        )}
+
+                            <button
+                                onClick={() => setHkMode(!hkMode)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold border rounded-lg transition-colors ${
+                                    hkMode ? 'bg-rose-50 border-rose-300 text-rose-600 dark:bg-rose-900/30 dark:border-rose-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
+                                }`}
+                                title="Housekeeping Target List"
+                            >
+                                <Sparkles size={12} />
+                                <span className="hidden xl:inline">HK Mode</span>
+                            </button>
+
+                            <div className="relative">
+                                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Guest/Room..."
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Escape') { setSearchQuery(''); e.target.blur(); } }}
+                                    className="pl-8 pr-3 py-1.5 w-32 xl:w-48 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:text-white"
+                                />
+                            </div>
+                        </div>
                     </div>
-
-                    {/* HK Mode */}
-                    <button
-                        onClick={() => setHkMode(!hkMode)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold border rounded-lg transition-colors ${
-                            hkMode ? 'bg-rose-50 border-rose-300 text-rose-600 dark:bg-rose-900/30 dark:border-rose-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
-                        }`}
-                        title="Housekeeping Target List"
-                    >
-                        <Sparkles size={12} />
-                        <span className="hidden xl:inline">HK Mode</span>
-                    </button>
-
-                    {/* Search — local filter only. Use GlobalSearch (header) for cross-date lookup. */}
-                    <div className="relative">
-                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Filter: Guest / Room..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Escape') { setSearchQuery(''); e.target.blur(); } }}
-                            className="pl-8 pr-3 py-1.5 w-32 xl:w-48 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:text-white"
-                        />
-                    </div>
-
-                    {/* New Booking */}
-                    <button onClick={() => setCreateModal({ isOpen: true, initialData: {} })}
-                        className="ml-auto flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm">
-                        <Plus size={13} />
-                        <span className="hidden sm:inline">New Booking</span>
-                        <span className="sm:hidden">New</span>
-                    </button>
                 </div>
 
                 {/* ─── DAY STATUS BOARD ─────────────────────────────────────── */}
