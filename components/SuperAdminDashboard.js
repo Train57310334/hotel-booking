@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
     Activity,
     Building2,
-    DollarSign,
-    TrendingUp,
-    Users
+    DollarSign
 } from 'lucide-react';
 import {
     AreaChart,
     Area,
-    BarChart,
-    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -20,9 +17,17 @@ import {
 } from 'recharts';
 
 export default function SuperAdminDashboard() {
+    const { language, t } = useLanguage();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const locale = language === 'th' ? 'th-TH' : 'en-US';
+
+    const formatCurrency = (value) => new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'THB',
+        maximumFractionDigits: 0
+    }).format(value || 0);
 
     useEffect(() => {
         fetchPlatformStats();
@@ -43,7 +48,7 @@ export default function SuperAdminDashboard() {
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center text-slate-400">
-                <div className="animate-pulse">Loading Platform Metrics...</div>
+                <div className="animate-pulse">{t('admin.super.loading')}</div>
             </div>
         );
     }
@@ -51,35 +56,35 @@ export default function SuperAdminDashboard() {
     if (error) {
         return (
             <div className="p-6 bg-red-50 text-red-600 rounded-2xl border border-red-100">
-                Failed to load platform data: {error}
+                {t('admin.super.errorPrefix')} {error}
             </div>
         );
     }
 
     const cards = [
         {
-            label: 'Estimated MRR',
-            value: `฿ ${stats?.estimatedMRR?.toLocaleString() || 0}`,
+            label: t('admin.super.estimatedMrr'),
+            value: formatCurrency(stats?.estimatedMRR),
             icon: DollarSign,
             color: 'bg-indigo-500',
             trend: '+15%',
-            sub: 'Monthly Recurring Revenue'
+            sub: t('admin.super.monthlyRecurringRevenue')
         },
         {
-            label: 'Active Tenants',
+            label: t('admin.super.activeTenants'),
             value: stats?.totalHotels || 0,
             icon: Building2,
             color: 'bg-blue-500',
             trend: '+2',
-            sub: 'Registered Hotels'
+            sub: t('admin.super.registeredHotels')
         },
         {
-            label: 'Total Rooms Managed',
+            label: t('admin.super.totalRoomsManaged'),
             value: stats?.totalRooms || 0,
             icon: Activity,
             color: 'bg-rose-500',
             trend: null,
-            sub: 'Across all active properties'
+            sub: t('admin.super.acrossActiveProperties')
         },
     ];
 
@@ -87,14 +92,13 @@ export default function SuperAdminDashboard() {
         <div className="animate-fade-in-up">
             <div className="mb-6">
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
-                    Platform Overview
+                    {t('admin.super.platformOverview')}
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                    High-level metrics across the entire SaaS infrastructure
+                    {t('admin.super.subtitle')}
                 </p>
             </div>
 
-            {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {cards.map((item, i) => (
                     <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
@@ -117,11 +121,9 @@ export default function SuperAdminDashboard() {
                 ))}
             </div>
 
-            {/* Charts & Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                {/* Revenue Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">MRR Growth (Estimated)</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">{t('admin.super.mrrGrowth')}</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={stats?.revenueChart || []}>
@@ -133,7 +135,7 @@ export default function SuperAdminDashboard() {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-700" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={(val) => `฿${(val / 1000).toFixed(0)}k`} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={(val) => `${Math.round(val / 1000)}k`} />
                                 <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: '12px' }} />
                                 <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorMrr)" />
                             </AreaChart>
@@ -141,13 +143,12 @@ export default function SuperAdminDashboard() {
                     </div>
                 </div>
 
-                {/* Plan Distribution */}
                 <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Subscriptions</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">{t('admin.super.subscriptions')}</h3>
                     <div className="space-y-6">
                         <div>
                             <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">ENTERPRISE</span>
+                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{t('admin.super.plan.enterprise')}</span>
                                 <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{stats?.planCounts?.ENTERPRISE || 0}</span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5">
@@ -156,7 +157,7 @@ export default function SuperAdminDashboard() {
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">PRO</span>
+                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{t('admin.super.plan.pro')}</span>
                                 <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{stats?.planCounts?.PRO || 0}</span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5">
@@ -165,7 +166,7 @@ export default function SuperAdminDashboard() {
                         </div>
                         <div>
                             <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">LITE (Free)</span>
+                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{t('admin.super.plan.lite')}</span>
                                 <span className="text-sm font-bold text-slate-400 dark:text-slate-500">{stats?.planCounts?.LITE || 0}</span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5">

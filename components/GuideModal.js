@@ -1,7 +1,10 @@
-import { X, HelpCircle, ChevronRight } from 'lucide-react'
+import { X, HelpCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function GuideModal({ isOpen, onClose, data }) {
+    const { t } = useLanguage()
+
     if (!isOpen) return null
 
     return (
@@ -31,7 +34,7 @@ export default function GuideModal({ isOpen, onClose, data }) {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold">{data.title}</h2>
-                                <p className="text-blue-50 opacity-90 font-medium">Quick User Guide</p>
+                                <p className="text-blue-50 opacity-90 font-medium">{t('admin.guide.quickUserGuide')}</p>
                             </div>
                         </div>
                         <button
@@ -67,7 +70,7 @@ export default function GuideModal({ isOpen, onClose, data }) {
                             onClick={onClose}
                             className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
                         >
-                            Got it, thanks!
+                            {t('admin.guide.gotIt')}
                         </button>
                     </div>
                 </motion.div>

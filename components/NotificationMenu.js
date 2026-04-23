@@ -1,10 +1,12 @@
 import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
-import { Bell, Check, Calendar, CreditCard, AlertTriangle, Info, X, Clock } from 'lucide-react'
+import { Bell, Check, Calendar, AlertTriangle, Info, X, Clock } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import Link from 'next/link'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function NotificationMenu({ notifications, setNotifications, darkMode }) {
+    const { t } = useLanguage()
 
     const markAllAsRead = async () => {
         try {
@@ -70,7 +72,7 @@ export default function NotificationMenu({ notifications, setNotifications, dark
                     }`}>
                     <div className={`px-4 py-3 border-b flex justify-between items-center ${darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-50 bg-white'}`}>
                         <div className="flex items-center gap-2">
-                            <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>Notifications</h3>
+                            <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{t('admin.notifications.title')}</h3>
                             {unreadCount > 0 && <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>}
                         </div>
                         {unreadCount > 0 && (
@@ -78,7 +80,7 @@ export default function NotificationMenu({ notifications, setNotifications, dark
                                 onClick={markAllAsRead}
                                 className="text-xs text-blue-500 font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
                             >
-                                Mark all read
+                                {t('admin.notifications.markAllRead')}
                             </button>
                         )}
                     </div>
@@ -89,8 +91,8 @@ export default function NotificationMenu({ notifications, setNotifications, dark
                                 <div className={`w-12 h-12 rounded-full mb-3 flex items-center justify-center ${darkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
                                     <Bell size={20} className="text-slate-400 opacity-50" />
                                 </div>
-                                <p className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>No new notifications</p>
-                                <p className="text-xs text-slate-500 mt-1">We'll notify you when something happens.</p>
+                                <p className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{t('admin.notifications.emptyTitle')}</p>
+                                <p className="text-xs text-slate-500 mt-1">{t('admin.notifications.emptyDescription')}</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -129,7 +131,7 @@ export default function NotificationMenu({ notifications, setNotifications, dark
                     </div>
                     <div className={`p-2 border-t text-center ${darkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-50 bg-slate-50'}`}>
                         <Link href="/admin/notifications" className={`text-xs font-bold hover:underline ${darkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}>
-                            View all history
+                            {t('admin.notifications.viewHistory')}
                         </Link>
                     </div>
                 </Menu.Items>

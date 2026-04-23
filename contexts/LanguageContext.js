@@ -1,8 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import en from '../locales/en.json';
 import th from '../locales/th.json';
+import adminLocales from '../locales/admin';
 
-const dictionaries = { en, th };
+const dictionaries = {
+    en: { ...en, ...adminLocales.en },
+    th: { ...th, ...adminLocales.th }
+};
 
 const LanguageContext = createContext();
 

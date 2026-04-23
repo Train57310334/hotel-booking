@@ -10,7 +10,6 @@ import {
     MessageSquare,
     Star,
     Settings,
-    Bell,
     Moon,
     X,
     Menu,
@@ -38,6 +37,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useState, useEffect } from 'react'
 import GuideModal from './GuideModal'
 import { guideData, defaultGuide } from '@/data/guides'
@@ -49,9 +49,67 @@ import { useRoleAccess } from '@/hooks/useRoleAccess'
 import { toast } from 'react-hot-toast'
 import { apiFetch } from '@/lib/api'
 
+const menuLabelKeys = {
+    'Dashboard': 'admin.nav.dashboard',
+    'Calendar': 'admin.nav.calendar',
+    'Booking': 'admin.nav.booking',
+    'Guest': 'admin.nav.guest',
+    'Message': 'admin.nav.message',
+    'Room': 'admin.nav.room',
+    'Housekeeping': 'admin.nav.housekeeping',
+    'Staff Management': 'admin.nav.staffManagement',
+    'Audit Logs': 'admin.nav.auditLogs',
+    'Rates & Avail.': 'admin.nav.ratesAvailability',
+    'Yield Management': 'admin.nav.yieldManagement',
+    'Promotions': 'admin.nav.promotions',
+    'Reviews': 'admin.nav.reviews',
+    'Analytics & SEO': 'admin.nav.analyticsSeo',
+    'Channels': 'admin.nav.channels',
+    'Payments': 'admin.nav.payments',
+    'Reports': 'admin.nav.reports',
+    'Night Audit': 'admin.nav.nightAudit',
+    'Accounting & P/L': 'admin.nav.accounting',
+    'My Account': 'admin.nav.myAccount',
+    'Subscription': 'admin.nav.subscription',
+    'Widget Gen.': 'admin.nav.widgetGenerator',
+    'Settings': 'admin.nav.settings',
+    'Platform Overview': 'admin.superNav.platformOverview',
+    'Tenants & Hotels': 'admin.superNav.tenantsHotels',
+    'Platform Bookings': 'admin.superNav.platformBookings',
+    'Platform Packages': 'admin.superNav.platformPackages',
+    'Platform Messages': 'admin.superNav.platformMessages',
+    'Landing CMS': 'admin.superNav.landingCms',
+    'SEO & Marketing': 'admin.superNav.seoMarketing',
+    'Platform Email': 'admin.superNav.platformEmail',
+    'Platform Billing': 'admin.superNav.platformBilling',
+    'System Logs': 'admin.superNav.systemLogs'
+}
+
+const groupLabelKeys = {
+    'Front Desk': 'admin.group.frontDesk',
+    'Operations': 'admin.group.operations',
+    'Revenue & Marketing': 'admin.group.revenueMarketing',
+    'Finance & Analytics': 'admin.group.financeAnalytics'
+}
+
+const statusLabelKeys = {
+    pending: 'admin.status.pending',
+    confirmed: 'admin.status.confirmed',
+    cancelled: 'admin.status.cancelled',
+    checked_in: 'admin.status.checkedIn',
+    checked_out: 'admin.status.checkedOut',
+    no_show: 'admin.status.noShow',
+    dirty: 'admin.status.dirty',
+    clean: 'admin.status.clean',
+    cleaning: 'admin.status.cleaning',
+    inspected: 'admin.status.inspected',
+    occupied: 'admin.status.occupied'
+}
+
 export default function AdminLayout({ children }) {
     const router = useRouter()
     const { user, logout, loading } = useAuth()
+    const { language, setLanguage, t } = useLanguage()
     const [guideOpen, setGuideOpen] = useState(false)
     const {
         currentHotel, allHotels, switchHotel,
@@ -84,15 +142,19 @@ export default function AdminLayout({ children }) {
     }, [router.pathname, setSearchQuery])
 
     const { role, hasAccess, isAdmin, isPlatformAdmin } = useRoleAccess()
+    const locale = language === 'th' ? 'th-TH' : 'en-US'
+    const toggleLanguage = () => setLanguage(language === 'en' ? 'th' : 'en')
+    const translateMenuLabel = (label) => t(menuLabelKeys[label] || label)
+    const translateGroupLabel = (label) => t(groupLabelKeys[label] || label)
 
     // WebSocket Integration
-    const { socket, isConnected } = useSocket()
+    const { socket } = useSocket()
 
     useEffect(() => {
         if (!socket) return;
 
         const handleNewBooking = (booking) => {
-            toast.success(`New Booking Received!\n${booking.leadName || 'Guest'} just booked.`, {
+            toast.success(`${t('admin.toast.newBookingTitle')}\n${booking.leadName || t('admin.common.guest')} ${t('admin.toast.newBookingBody')}`, {
                 duration: 5000,
                 position: 'top-right',
             });
@@ -105,14 +167,16 @@ export default function AdminLayout({ children }) {
         };
 
         const handleRoomStatusChanged = (data) => {
-            toast(`Room ${data.roomNumber} marked as ${data.status}`, {
+            const statusLabel = t(statusLabelKeys[data.status] || data.status);
+            toast(`${t('admin.common.room')} ${data.roomNumber} ${t('admin.toast.roomMarkedAs')} ${statusLabel}`, {
                 icon: <SprayCan size={16} className="text-blue-600" />,
                 position: 'top-right',
             });
         };
 
         const handleBookingUpdated = (data) => {
-            let msg = `Booking #${data.bookingId} status updated to ${data.status}`;
+            const statusLabel = t(statusLabelKeys[data.status] || data.status);
+            let msg = `${t('admin.common.booking')} #${data.bookingId} ${t('admin.toast.statusUpdatedTo')} ${statusLabel}`;
             if (data.status === 'confirmed') toast.success(msg);
             else if (data.status === 'cancelled') toast.error(msg);
             else toast(msg, { icon: <Info size={16} className="text-blue-500" /> });
@@ -127,7 +191,7 @@ export default function AdminLayout({ children }) {
             socket.off('roomStatusChanged', handleRoomStatusChanged);
             socket.off('bookingUpdated', handleBookingUpdated);
         };
-    }, [socket]);
+    }, [socket, t]);
 
     // Fetch Notifications (Poll every 30s)
     useEffect(() => {
@@ -292,7 +356,7 @@ export default function AdminLayout({ children }) {
                                 )}
                                 <div className="overflow-hidden">
                                     <span className="block text-sm font-bold text-white truncate">{currentHotel?.name || 'BookingKub'}</span>
-                                    {allHotels?.length > 1 && <span className="text-[10px] text-slate-400 flex items-center gap-1">Switch Hotel <ChevronDown size={10} /></span>}
+                                    {allHotels?.length > 1 && <span className="text-[10px] text-slate-400 flex items-center gap-1">{t('admin.header.switchHotel')} <ChevronDown size={10} /></span>}
                                 </div>
                             </button>
 
@@ -320,7 +384,7 @@ export default function AdminLayout({ children }) {
                     ) : (
                         <div className="flex items-center gap-3 font-black text-indigo-400 tracking-wide">
                             <ShieldAlert size={20} />
-                            SUPER ADMIN
+                            {t('admin.header.superAdmin')}
                         </div>
                     )}
                     <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400">
@@ -377,7 +441,7 @@ export default function AdminLayout({ children }) {
 
                             return (
                                 <div key={cat} className="mb-4">
-                                    <div className="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{cat}</div>
+                                    <div className="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{translateGroupLabel(cat)}</div>
                                     {catItems.map((item) => {
                                         const isActive = router.pathname.startsWith(item.href) &&
                                             (item.href !== '/admin' || router.pathname === '/admin');
@@ -396,9 +460,9 @@ export default function AdminLayout({ children }) {
                                                 >
                                                     <div className="flex items-center gap-3 transition-transform duration-300 group-hover:translate-x-1">
                                                         <item.icon size={18} className="text-white/50 group-hover:text-blue-400 transition-colors" />
-                                                        {item.name}
+                                                        {translateMenuLabel(item.name)}
                                                     </div>
-                                                    <div title="Unlock this feature" className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
+                                                    <div title={t('admin.common.unlockFeature')} className="text-amber-500 bg-amber-500/10 p-1.5 rounded-md">
                                                         <Lock size={14} />
                                                     </div>
                                                 </button>
@@ -419,7 +483,7 @@ export default function AdminLayout({ children }) {
                                                     <div className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>
                                                         <item.icon size={18} className={`transition-colors ${isActive ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
                                                     </div>
-                                                    <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{item.name}</span>
+                                                    <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{translateMenuLabel(item.name)}</span>
                                                 </div>
                                                 {item.name === 'Message' && unreadMessages > 0 && (
                                                     <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
@@ -440,7 +504,7 @@ export default function AdminLayout({ children }) {
                     {user?.roles?.includes('platform_admin') && !user?.isImpersonating && (
                         <div className="mb-6">
                             <div className="px-3 mb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Platform Admin
+                                {t('admin.header.platformAdmin')}
                             </div>
                             {superMenuItems.map((item) => {
                                 const isActive = item.href === '/admin'
@@ -459,7 +523,7 @@ export default function AdminLayout({ children }) {
                                         <div className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>
                                             <item.icon size={18} className={`transition-colors ${isActive ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
                                         </div>
-                                        <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{item.name}</span>
+                                        <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{translateMenuLabel(item.name)}</span>
                                     </Link>
                                 )
                             })}
@@ -475,7 +539,7 @@ export default function AdminLayout({ children }) {
                                 : 'bg-white/5 border-white/5'
                                 }`}>
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">Plan</span>
+                                    <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider">{t('admin.plan.label')}</span>
                                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${currentHotel?.package === 'PRO'
                                         ? 'bg-blue-500/20 text-blue-400'
                                         : 'bg-white/10 text-white/60'
@@ -488,12 +552,12 @@ export default function AdminLayout({ children }) {
                                         onClick={openUpgradeModal}
                                         className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded flex items-center justify-center gap-1.5 transition-colors"
                                     >
-                                        <Zap size={12} className="fill-current" /> Upgrade to Pro
+                                        <Zap size={12} className="fill-current" /> {t('admin.plan.upgradeToPro')}
                                     </button>
                                 )}
                                 {currentHotel?.package === 'PRO' && currentHotel?.subscriptionEnd && (
                                     <div className="text-[10px] text-white/40 mt-1">
-                                        Renews: {new Date(currentHotel.subscriptionEnd).toLocaleDateString()}
+                                        {t('admin.plan.renews')}: {new Date(currentHotel.subscriptionEnd).toLocaleDateString(locale)}
                                     </div>
                                 )}
                             </div>
@@ -503,7 +567,7 @@ export default function AdminLayout({ children }) {
                     {/* Settings Section */}
                     <div>
                         {(!isPlatformAdmin || user?.isImpersonating) && hasAccess('settings') && (
-                            <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">Settings</div>
+                            <div className="text-[10px] font-bold text-slate-500 px-3 mb-2 uppercase tracking-wider">{t('admin.nav.settings')}</div>
                         )}
                         {(!isPlatformAdmin || user?.isImpersonating) && menuItems.filter(i => i.section === 'bottom').filter(item => {
                             const featureMap = {
@@ -528,7 +592,7 @@ export default function AdminLayout({ children }) {
                                     <div className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>
                                         <item.icon size={18} className={`transition-colors ${isActive ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
                                     </div>
-                                    <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{item.name}</span>
+                                    <span className={`transition-transform duration-300 ${!isActive ? 'group-hover:translate-x-1' : ''}`}>{translateMenuLabel(item.name)}</span>
                                 </Link>
                             )
                         })}
@@ -545,7 +609,7 @@ export default function AdminLayout({ children }) {
                                 <div className={`transition-transform duration-300 ${!router.pathname.startsWith('/admin/account') ? 'group-hover:translate-x-1' : ''}`}>
                                     <UserCircle size={18} className={`transition-colors ${router.pathname.startsWith('/admin/account') ? 'text-blue-400' : 'text-white/50 group-hover:text-blue-400'}`} />
                                 </div>
-                                <span className={`transition-transform duration-300 ${!router.pathname.startsWith('/admin/account') ? 'group-hover:translate-x-1' : ''}`}>My Account</span>
+                                <span className={`transition-transform duration-300 ${!router.pathname.startsWith('/admin/account') ? 'group-hover:translate-x-1' : ''}`}>{t('admin.nav.myAccount')}</span>
                             </Link>
                         )}
                         
@@ -557,7 +621,7 @@ export default function AdminLayout({ children }) {
                             >
                                 <div className="flex items-center gap-3">
                                     <Star size={18} />
-                                    Explore Advanced
+                                    {t('admin.plan.exploreAdvanced')}
                                 </div>
                                 <Lock size={14} className="opacity-50" />
                             </button>
@@ -569,7 +633,7 @@ export default function AdminLayout({ children }) {
                     <div className="bg-slate-800 rounded-lg p-1 flex items-center justify-between px-3 py-2">
                         <div className="flex items-center gap-2 text-white font-medium text-xs">
                             <Moon size={16} />
-                            <span>Dark Mode</span>
+                            <span>{t('admin.common.darkMode')}</span>
                         </div>
                         <button
                             onClick={toggleTheme}
@@ -594,9 +658,9 @@ export default function AdminLayout({ children }) {
                         </button>
 
                         {(!user?.roles?.includes('platform_admin') || user?.isImpersonating) && (
-                            <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors">
+                            <a href={currentHotel ? `/?hotelId=${currentHotel.id}` : '/'} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors">
                                 <Globe size={15} />
-                                View Website
+                                {t('admin.header.viewWebsite')}
                             </a>
                         )}
 
@@ -606,7 +670,7 @@ export default function AdminLayout({ children }) {
                             className="hidden lg:flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
                         >
                             <HelpCircle size={15} />
-                            Guide
+                            {t('admin.header.guide')}
                         </button>
 
                         <div className="w-full max-w-sm relative hidden lg:block">
@@ -615,6 +679,18 @@ export default function AdminLayout({ children }) {
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-4">
+                        <button
+                            onClick={toggleLanguage}
+                            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${darkMode
+                                ? 'border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white'
+                                : 'border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                                }`}
+                            aria-label={t('admin.header.switchLanguage')}
+                        >
+                            <Globe size={14} />
+                            {language.toUpperCase()}
+                        </button>
+
                         <div className="hidden lg:block">
                             <NotificationMenu notifications={notifications} setNotifications={setNotifications} darkMode={darkMode} />
                         </div>
@@ -625,8 +701,8 @@ export default function AdminLayout({ children }) {
                                 className="flex items-center gap-3 hover:opacity-80 transition-opacity text-left"
                             >
                                 <div className="text-right hidden md:block">
-                                    <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{user?.name || 'Admin'}</div>
-                                    <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Admin</div>
+                                    <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{user?.name || t('admin.header.adminFallback')}</div>
+                                    <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('admin.header.adminRole')}</div>
                                 </div>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shadow-lg shadow-blue-600/20 ${user?.avatarUrl ? 'bg-white' : 'bg-gradient-to-tr from-blue-600 to-blue-400 text-white text-sm font-bold'}`}>
                                     {user?.avatarUrl ? (
@@ -643,11 +719,11 @@ export default function AdminLayout({ children }) {
                                     <div className="p-1.5">
                                         <Link href="/admin/account" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-50'}`}>
                                             <UserCircle size={16} />
-                                            My Profile
+                                            {t('admin.header.myProfile')}
                                         </Link>
                                         <Link href="/admin/settings" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-50'}`}>
                                             <Settings size={16} />
-                                            Settings
+                                            {t('admin.nav.settings')}
                                         </Link>
                                         <div className={`my-1 border-t ${darkMode ? 'border-slate-700' : 'border-slate-100'}`} />
                                         <button
@@ -655,7 +731,7 @@ export default function AdminLayout({ children }) {
                                             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                                         >
                                             <LogOut size={16} />
-                                            Logout
+                                            {t('admin.header.logout')}
                                         </button>
                                     </div>
                                 </div>

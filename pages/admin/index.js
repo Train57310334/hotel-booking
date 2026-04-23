@@ -3,32 +3,21 @@ import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/router'
 import { InfoTooltip } from '@/components/Tooltip'
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import SuperAdminDashboard from '@/components/SuperAdminDashboard'
 import toast from 'react-hot-toast'
-
 import {
-  BarChart as BarChartIcon,
-  Users,
   Calendar as CalendarIcon,
   DollarSign,
-  CheckCircle,
-  LogOut,
   TrendingUp,
-  Search,
-  Filter,
-  Download,
   ChevronDown,
   Eye,
-  Trash2,
-  BedDouble,
   Home,
-  ChevronLeft,
   ChevronRight,
-  X,
   LogIn,
   Rocket,
   Zap
@@ -42,15 +31,25 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Cell
+  ResponsiveContainer
 } from 'recharts'
 
+const statusLabelKeys = {
+  pending: 'admin.status.pending',
+  confirmed: 'admin.status.confirmed',
+  cancelled: 'admin.status.cancelled',
+  checked_in: 'admin.status.checkedIn',
+  checked_out: 'admin.status.checkedOut',
+  no_show: 'admin.status.noShow',
+  dirty: 'admin.status.dirty'
+}
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth()
-  const { searchQuery, currentHotel } = useAdmin() || {}  // ✅ Always call hooks at component top level
+  const { searchQuery, currentHotel } = useAdmin() || {}
+  const { language, t } = useLanguage()
   const router = useRouter()
+  const locale = language === 'th' ? 'th-TH' : 'en-US'
 
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -81,13 +80,12 @@ export default function AdminDashboard() {
     onConfirm: () => { }
   })
 
-
   const periods = [
-    { label: 'Today', value: 'today' },
-    { label: 'This Week', value: 'week' },
-    { label: 'This Month', value: 'month' },
-    { label: 'This Year', value: 'year' },
-    { label: 'All Time', value: 'all' }
+    { label: t('admin.period.today'), value: 'today' },
+    { label: t('admin.period.thisWeek'), value: 'week' },
+    { label: t('admin.period.thisMonth'), value: 'month' },
+    { label: t('admin.period.thisYear'), value: 'year' },
+    { label: t('admin.period.allTime'), value: 'all' }
   ]
 
   useEffect(() => {
@@ -95,12 +93,10 @@ export default function AdminDashboard() {
       if (!user) {
         router.push('/auth/login')
       } else if (!user.roles?.includes('platform_admin')) {
-        // Only fetch hotel dashboard data for non-super-admins
         fetchData()
         const interval = setInterval(() => fetchData(searchQuery, true), 30000)
         return () => clearInterval(interval)
       } else {
-        // Super Admin: no hotel data needed, stop loading immediately
         setLoading(false)
       }
     }
@@ -113,19 +109,16 @@ export default function AdminDashboard() {
 
   const fetchData = async (search = '', isBackground = false) => {
     try {
-      // Super Admin uses their own dashboard — skip hotel-scoped data fetch
-      if (user?.roles?.includes('platform_admin')) return;
+      if (user?.roles?.includes('platform_admin')) return
 
-      // Only show spinner on initial load (not background refresh or search typing)
       if (!isBackground && !bookings.length && !search) setLoading(true)
 
-      // ✅ Use currentHotel from component scope — do NOT call useAdmin() inside a function
-      const hotelId = currentHotel?.id;
+      const hotelId = currentHotel?.id
 
       if (!hotelId) {
-        console.warn("No Hotel ID found in context");
-        setLoading(false);
-        return;
+        console.warn('No Hotel ID found in context')
+        setLoading(false)
+        return
       }
 
       const statsData = await apiFetch(`/bookings/admin/dashboard?period=${timeRange}&hotelId=${hotelId}`)
@@ -133,14 +126,11 @@ export default function AdminDashboard() {
       const bookingsData = await apiFetch(`/bookings/admin/all${query}`)
       const dailyOpsData = await apiFetch(`/bookings/admin/daily-operations?hotelId=${hotelId}`)
 
-      // preventing re-renders if data is same (Deep Compare simple approach)
-      // API returns { data: [...], meta: {...} } — unwrap the array
       const bookingsList = Array.isArray(bookingsData) ? bookingsData : (bookingsData?.data || [])
+
       setStats(prev => (statsData && JSON.stringify(prev) !== JSON.stringify(statsData)) ? statsData : prev)
       setBookings(prev => JSON.stringify(prev) !== JSON.stringify(bookingsList) ? bookingsList : prev)
       setDailyOps(prev => (dailyOpsData && JSON.stringify(prev) !== JSON.stringify(dailyOpsData)) ? dailyOpsData : prev)
-
-
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
     } finally {
@@ -148,24 +138,31 @@ export default function AdminDashboard() {
     }
   }
 
-  // Helpers
-  const timeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
+  const formatCurrency = (value) => new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: 'THB',
+    maximumFractionDigits: 0
+  }).format(value || 0)
 
-    let interval = Math.floor(seconds / 31536000);
-    if (interval > 1) return interval + "y ago";
-    interval = Math.floor(seconds / 2592000);
-    if (interval > 1) return interval + "mo ago";
-    interval = Math.floor(seconds / 86400);
-    if (interval >= 1) return interval + "d ago";
-    interval = Math.floor(seconds / 3600);
-    if (interval >= 1) return interval + "h ago";
-    interval = Math.floor(seconds / 60);
-    if (interval >= 1) return interval + "m ago";
-    return "Just now";
+  const timeAgo = (dateString) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const seconds = Math.floor((date - now) / 1000)
+    const relativeTime = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+
+    if (Math.abs(seconds) < 60) return t('admin.common.justNow')
+    if (Math.abs(seconds) < 3600) return relativeTime.format(Math.round(seconds / 60), 'minute')
+    if (Math.abs(seconds) < 86400) return relativeTime.format(Math.round(seconds / 3600), 'hour')
+    if (Math.abs(seconds) < 2592000) return relativeTime.format(Math.round(seconds / 86400), 'day')
+    if (Math.abs(seconds) < 31536000) return relativeTime.format(Math.round(seconds / 2592000), 'month')
+    return relativeTime.format(Math.round(seconds / 31536000), 'year')
   }
+
+  const translateStatus = (status) => t(statusLabelKeys[status] || status)
+
+  const roomLabel = (roomNumber) => roomNumber
+    ? `${t('admin.common.room')} ${roomNumber}`
+    : t('admin.common.unassigned')
 
   const openDetails = (booking) => {
     setSelectedBooking(booking)
@@ -175,78 +172,76 @@ export default function AdminDashboard() {
   const updateStatus = (id, newStatus) => {
     setConfirmModal({
       isOpen: true,
-      title: 'Update Booking Status',
-      message: `Are you sure you want to change status to "${newStatus}" ? `,
+      title: t('admin.modal.updateBookingStatus'),
+      message: `${t('admin.modal.confirmStatusChange')} "${translateStatus(newStatus)}"?`,
       type: newStatus === 'cancelled' ? 'danger' : 'warning',
       onConfirm: async () => {
         try {
-          const hotelId = user?.roleAssignments?.[0]?.hotelId;
-          const query = hotelId ? `? hotelId = ${hotelId} ` : '';
+          const hotelId = currentHotel?.id || user?.roleAssignments?.[0]?.hotelId
+          const query = hotelId ? `?hotelId=${hotelId}` : ''
 
-          await apiFetch(`/ bookings / admin / ${id}/status${query}`, {
+          await apiFetch(`/bookings/admin/${id}/status${query}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })
           })
-          fetchData(searchQuery) // Refresh dashboard
+
+          fetchData(searchQuery)
           setIsDetailOpen(false)
         } catch (error) {
-          toast.error('Update failed')
+          toast.error(t('admin.toast.updateFailed'))
         }
       }
     })
   }
 
-  // Cards Configuration
   const cards = [
     {
-      label: 'Total Revenue',
-      value: stats.totalRevenue ? `฿ ${stats.totalRevenue.toLocaleString()}` : '฿ 0',
+      label: t('admin.card.totalRevenue'),
+      value: formatCurrency(stats.totalRevenue),
       icon: DollarSign,
       color: 'bg-blue-500',
       trend: null,
-      sub: 'Gross Income',
-      tooltip: 'Sum of the room charges from all Confirmed, Checked-In, and Checked-Out bookings in the selected time period. Cancellations and Pending bookings are excluded.'
+      sub: t('admin.card.grossIncome'),
+      tooltip: t('admin.card.totalRevenueTooltip')
     },
     {
-      label: 'New Bookings',
+      label: t('admin.card.newBookings'),
       value: stats.totalBookings || '0',
       icon: CalendarIcon,
       color: 'bg-blue-500',
       trend: null,
-      sub: 'In this period',
-      tooltip: 'Total number of booking reservations created in this period, across all statuses (Pending, Confirmed, Checked In, Checked Out). Does not include cancellations.'
+      sub: t('admin.card.inThisPeriod'),
+      tooltip: t('admin.card.newBookingsTooltip')
     },
     {
-      label: 'Today\'s Activity',
+      label: t('admin.card.todaysActivity'),
       value: `${stats.checkInsToday} / ${stats.checkOutsToday}`,
       icon: LogIn,
       color: 'bg-amber-500',
       trend: null,
-      sub: 'In / Out',
-      tooltip: 'Left number = guests arriving today (Check-In). Right number = guests departing today (Check-Out). Use this to brief your front desk and housekeeping teams each morning.'
+      sub: t('admin.card.inOut'),
+      tooltip: t('admin.card.todaysActivityTooltip')
     },
     {
-      label: 'Occupancy Rate',
+      label: t('admin.card.occupancyRate'),
       value: `${stats.occupancyRate}%`,
       icon: TrendingUp,
       color: 'bg-rose-500',
-      trend: stats.occupancyRate > 80 ? 'High' : 'Normal',
-      sub: `${stats.availableRooms} Rooms Available`,
-      tooltip: 'Calculated as: Occupied Rooms ÷ Total Active Rooms × 100%. A healthy occupancy is typically 70–85%. Data updates every 30 seconds.'
+      trend: stats.occupancyRate > 80 ? t('admin.card.high') : t('admin.card.normal'),
+      sub: `${stats.availableRooms} ${t('admin.card.roomsAvailable')}`,
+      tooltip: t('admin.card.occupancyTooltip')
     },
   ]
 
-  // Quick Onboarding Check
-  const showOnboarding = stats.totalRooms === 0;
+  const showOnboarding = stats.totalRooms === 0
 
-  // ── Super Admin check FIRST (before any loading screen) ──────────────────
   if (!authLoading && user?.roles?.includes('platform_admin') && !user?.isImpersonating) {
     return (
       <AdminLayout>
         <SuperAdminDashboard />
       </AdminLayout>
-    );
+    )
   }
 
   if (authLoading || loading) return (
@@ -256,23 +251,21 @@ export default function AdminDashboard() {
           <div className="absolute inset-0 rounded-full border-2 border-slate-200 dark:border-slate-700"></div>
           <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
         </div>
-        <div className="text-sm font-medium">Loading Dashboard...</div>
+        <div className="text-sm font-medium">{t('admin.loadingDashboard')}</div>
       </div>
     </div>
   )
 
   return (
     <AdminLayout>
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            Overview
+            {t('admin.page.overview')}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Hotel Performance & Operations</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('admin.page.subtitle')}</p>
         </div>
 
-        {/* Time Filter */}
         <div className="relative">
           <button
             onClick={() => setFilterOpen(!filterOpen)}
@@ -297,21 +290,20 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Onboarding Widget */}
       {showOnboarding && (
         <div className="bg-gradient-to-r from-blue-500 to-teal-600 rounded-3xl p-8 mb-4 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Welcome to your Dashboard! <Rocket className="inline-block pb-1" size={24} /></h2>
+              <h2 className="text-2xl font-bold mb-2">{t('admin.onboarding.welcome')} <Rocket className="inline-block pb-1" size={24} /></h2>
               <p className="text-blue-100 mb-6 max-w-xl">
-                Your hotel system is almost ready. Complete these 3 steps to start accepting bookings.
+                {t('admin.onboarding.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button onClick={() => router.push('/admin/settings')} className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg">
-                  1. Upload Logo & Images
+                  {t('admin.onboarding.uploadBranding')}
                 </button>
                 <button onClick={() => router.push('/admin/rooms')} className="bg-blue-700/50 text-white border border-blue-400/30 px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                  2. Create Room Types
+                  {t('admin.onboarding.createRoomTypes')}
                 </button>
               </div>
             </div>
@@ -322,23 +314,20 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Today's Overview */}
       {!showOnboarding && (
         <div className="mb-6">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-1.5">Today's Overview <Zap size={14} className="text-amber-500" /></h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-1.5">{t('admin.todayOverview.title')} <Zap size={14} className="text-amber-500" /></h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* Arrivals */}
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-blue-500 shadow-sm flex flex-col h-48">
               <div className="flex justify-between items-start mb-2 shrink-0">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Arrivals</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.todayOverview.arrivals')}</p>
                 <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-2 py-0.5 rounded text-xs">
                   {dailyOps?.arrivals?.length || 0}
                 </span>
               </div>
               <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
                 {(!dailyOps?.arrivals || dailyOps.arrivals.length === 0) ? (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">No arrivals.</div>
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">{t('admin.todayOverview.noArrivals')}</div>
                 ) : dailyOps.arrivals.map(b => (
                   <div key={b.id} onClick={() => openDetails(b)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg flex justify-between items-center group border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
                     <div className="min-w-0">
@@ -351,22 +340,21 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Departures */}
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-amber-500 shadow-sm flex flex-col h-48">
               <div className="flex justify-between items-start mb-2 shrink-0">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Departures</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.todayOverview.departures')}</p>
                 <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold px-2 py-0.5 rounded text-xs">
                   {dailyOps?.departures?.length || 0}
                 </span>
               </div>
               <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
                 {(!dailyOps?.departures || dailyOps.departures.length === 0) ? (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">No departures.</div>
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">{t('admin.todayOverview.noDepartures')}</div>
                 ) : dailyOps.departures.map(b => (
                   <div key={b.id} onClick={() => openDetails(b)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg flex justify-between items-center group border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
                     <div className="min-w-0">
                       <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{b.leadName}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{b.room?.roomNumber ? `Room ${b.room.roomNumber}` : 'Unassigned'}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{roomLabel(b.room?.roomNumber)}</p>
                     </div>
                     <ChevronRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
@@ -374,56 +362,52 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* In-House */}
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-teal-500 shadow-sm flex flex-col h-48">
               <div className="flex justify-between items-start mb-2 shrink-0">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">In-House</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.todayOverview.inHouse')}</p>
                 <span className="bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 font-bold px-2 py-0.5 rounded text-xs">
                   {dailyOps?.inHouse?.length || 0}
                 </span>
               </div>
               <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
                 {(!dailyOps?.inHouse || dailyOps.inHouse.length === 0) ? (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">No guests.</div>
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">{t('admin.todayOverview.noGuests')}</div>
                 ) : dailyOps.inHouse.map(b => (
                   <div key={b.id} onClick={() => openDetails(b)} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg flex justify-between items-center group border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
                     <div className="min-w-0">
                       <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{b.leadName}</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{b.room?.roomNumber ? `Room ${b.room.roomNumber}` : 'Unassigned'}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{roomLabel(b.room?.roomNumber)}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Urgent Cleaning */}
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border-l-4 border-rose-500 shadow-sm flex flex-col h-48">
               <div className="flex justify-between items-start mb-2 shrink-0">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Urgent Cleaning</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.todayOverview.urgentCleaning')}</p>
                 <span className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 font-bold px-2 py-0.5 rounded text-xs">
                   {dailyOps?.urgentCleaning?.length || 0}
                 </span>
               </div>
               <div className="space-y-2 mt-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
                 {(!dailyOps?.urgentCleaning || dailyOps.urgentCleaning.length === 0) ? (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">All rooms clean.</div>
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">{t('admin.todayOverview.allRoomsClean')}</div>
                 ) : dailyOps.urgentCleaning.map(r => (
                   <div key={r.id} className="p-2 rounded-lg flex justify-between items-center group border border-transparent bg-slate-50 dark:bg-slate-700/30 border-slate-100 dark:border-slate-700">
                     <div className="min-w-0">
-                      <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">Room {r.roomNumber}</p>
+                      <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{roomLabel(r.roomNumber)}</p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{r.roomType?.name}</p>
                     </div>
-                    <span className="text-[10px] font-bold bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dirty</span>
+                    <span className="text-[10px] font-bold bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 px-1.5 py-0.5 rounded uppercase tracking-wider">{t('admin.status.dirty')}</span>
                   </div>
                 ))}
               </div>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {cards.map((item, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex items-center gap-3">
@@ -445,11 +429,9 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        {/* Revenue Chart */}
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Revenue Trend</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">{t('admin.chart.revenueTrend')}</h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.chartData} barSize={20}>
@@ -463,9 +445,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Occupancy Chart */}
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Occupancy Rate</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">{t('admin.chart.occupancyRate')}</h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={stats.occupancyChart}>
@@ -486,22 +467,21 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Recent Bookings */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Activity</h3>
-          <button onClick={() => router.push('/admin/bookings')} className="text-xs font-bold text-blue-500 hover:text-blue-600 flex items-center gap-0.5">View All <ChevronRight size={12} /></button>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('admin.recentActivity.title')}</h3>
+          <button onClick={() => router.push('/admin/bookings')} className="text-xs font-bold text-blue-500 hover:text-blue-600 flex items-center gap-0.5">{t('admin.recentActivity.viewAll')} <ChevronRight size={12} /></button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800/50">
               <tr>
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Ref</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Guest</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Time</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Status</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">Amount</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Action</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">{t('admin.recentActivity.ref')}</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">{t('admin.recentActivity.guest')}</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">{t('admin.recentActivity.time')}</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">{t('admin.recentActivity.status')}</th>
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase">{t('admin.recentActivity.amount')}</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">{t('admin.recentActivity.action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
@@ -525,11 +505,11 @@ export default function AdminDashboard() {
                         booking.status === 'checked_in' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400' :
                           'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                       }`}>
-                      {booking.status.replace('_', ' ')}
+                      {translateStatus(booking.status)}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-xs font-bold dark:text-white">
-                    ฿{booking.totalAmount.toLocaleString()}
+                    {formatCurrency(booking.totalAmount)}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <button className="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
@@ -562,4 +542,3 @@ export default function AdminDashboard() {
     </AdminLayout>
   )
 }
-
