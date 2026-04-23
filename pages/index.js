@@ -12,6 +12,7 @@ import BoutiqueTheme from '@/components/themes/BoutiqueTheme';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE } from '@/lib/api';
+import { apiPaths } from '@/lib/apiPaths';
 
 export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
   const router = useRouter();
@@ -88,7 +89,7 @@ export async function getServerSideProps(context) {
   } else {
     // Fetch SaaS Settings
     try {
-      const res = await fetch(`${backend}/public-settings`);
+      const res = await fetch(`${backend}${apiPaths.publicSettings}`);
       if (res.ok) {
         saasSettings = await res.json();
       }

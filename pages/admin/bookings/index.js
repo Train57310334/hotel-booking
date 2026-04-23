@@ -1,6 +1,7 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
+import { apiPaths } from '@/lib/apiPaths'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/contexts/AdminContext'
 import { Search, Plus, CreditCard, Eye, User, MessageSquare } from 'lucide-react'
@@ -48,7 +49,7 @@ export default function BookingManagement() {
             query.append('order', sortConfig.direction)
           }
           try {
-            const res = await apiFetch(`/bookings/admin/all?${query.toString()}`)
+          const res = await apiFetch(apiPaths.adminBookings(Object.fromEntries(query.entries())))
             if (res.data) {
               setBookings(res.data)
               setMeta(res.meta)
@@ -91,7 +92,7 @@ export default function BookingManagement() {
         query.append('order', sortConfig.direction)
       }
 
-      const res = await apiFetch(`/bookings/admin/all?${query.toString()}`)
+      const res = await apiFetch(apiPaths.adminBookings(Object.fromEntries(query.entries())))
       if (res && res.data) {
         setBookings(res.data)
         setMeta(res.meta)
@@ -125,9 +126,7 @@ export default function BookingManagement() {
         try {
           // Use currentHotel.id if available, otherwise fallback (though currentHotel should be set)
           const hotelId = currentHotel?.id || user?.roleAssignments?.[0]?.hotelId;
-          const query = hotelId ? `?hotelId=${hotelId}` : '';
-
-          await apiFetch(`/bookings/admin/${id}/status${query}`, {
+          await apiFetch(apiPaths.adminBookingStatus({ bookingId: id, hotelId }), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })

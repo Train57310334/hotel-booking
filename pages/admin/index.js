@@ -6,6 +6,7 @@ import { useAdmin } from '@/contexts/AdminContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/router'
 import { InfoTooltip } from '@/components/Tooltip'
+import { apiPaths } from '@/lib/apiPaths'
 import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import SuperAdminDashboard from '@/components/SuperAdminDashboard'
@@ -121,10 +122,9 @@ export default function AdminDashboard() {
         return
       }
 
-      const statsData = await apiFetch(`/bookings/admin/dashboard?period=${timeRange}&hotelId=${hotelId}`)
-      const query = search ? `?search=${search}&hotelId=${hotelId}` : `?hotelId=${hotelId}`
-      const bookingsData = await apiFetch(`/bookings/admin/all${query}`)
-      const dailyOpsData = await apiFetch(`/bookings/admin/daily-operations?hotelId=${hotelId}`)
+      const statsData = await apiFetch(apiPaths.adminDashboard({ period: timeRange, hotelId }))
+      const bookingsData = await apiFetch(apiPaths.adminBookings({ hotelId, search }))
+      const dailyOpsData = await apiFetch(apiPaths.adminDailyOperations({ hotelId }))
 
       const bookingsList = Array.isArray(bookingsData) ? bookingsData : (bookingsData?.data || [])
 
@@ -178,9 +178,7 @@ export default function AdminDashboard() {
       onConfirm: async () => {
         try {
           const hotelId = currentHotel?.id || user?.roleAssignments?.[0]?.hotelId
-          const query = hotelId ? `?hotelId=${hotelId}` : ''
-
-          await apiFetch(`/bookings/admin/${id}/status${query}`, {
+          await apiFetch(apiPaths.adminBookingStatus({ bookingId: id, hotelId }), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })

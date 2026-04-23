@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import toast from 'react-hot-toast'
 import { apiFetch } from '@/lib/api'
+import { apiPaths } from '@/lib/apiPaths'
 
 export default function GuestRegisterPage({ branding }) {
     const router = useRouter()
@@ -299,7 +300,7 @@ export async function getServerSideProps() {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/public-settings`);
+        const res = await fetch(`${API_BASE}${apiPaths.publicSettings}`);
         if (res.ok) {
             const data = await res.json();
             branding.siteName = data.siteName || branding.siteName;

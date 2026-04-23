@@ -7,6 +7,7 @@ import { CreditCard, QrCode, Building, Lock, CheckCircle, Tag, X, Copy, Globe, I
 import Script from 'next/script';
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
+import { apiPaths } from '@/lib/apiPaths';
 
 // Dynamic import — avoids SSR issues with browser-only canvas/qrcode APIs
 const PromptPayQR = dynamic(() => import('@/components/PromptPayQR'), { ssr: false });
@@ -228,7 +229,7 @@ export default function PaymentPage() {
       let hotelPubKeys = {};
       if (currentBookingData.hotelId) {
         try {
-          const res = await apiFetch(`/hotels/${currentBookingData.hotelId}`);
+          const res = await apiFetch(apiPaths.hotelById(currentBookingData.hotelId));
           setHotelDetails(res);
           hotelPubKeys = {
             stripePublicKey: res.stripePublicKey,
@@ -238,7 +239,7 @@ export default function PaymentPage() {
       }
 
       // 3. Fetch Global Settings Fallback and Init Gateways
-      apiFetch('/public-settings').then(config => {
+      apiFetch(apiPaths.publicSettings).then(config => {
         const finalStripeKey = hotelPubKeys.stripePublicKey || config.stripePublicKey;
         const finalOmiseKey = hotelPubKeys.omisePublicKey || config.omisePublicKey;
 

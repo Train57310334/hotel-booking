@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { apiFetch } from '@/lib/api'
+import { apiPaths } from '@/lib/apiPaths'
 import { X, CreditCard, Lock, Banknote, Building, Loader2, QrCode } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -80,7 +81,7 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
     // 1. Fetch Key & Init Stripe
     useEffect(() => {
         if (isOpen && activeTab === 'card') {
-            apiFetch('/public-settings')
+            apiFetch(apiPaths.publicSettings)
                 .then(settings => {
                     if (settings.stripePublicKey) {
                         loadStripe(settings.stripePublicKey).then(setStripePromise)

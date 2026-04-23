@@ -1,10 +1,12 @@
+import { apiPaths } from '@/lib/apiPaths'
+
 export default async function handler(req, res) {
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api';
     const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || `https://${req.headers.host}`;
 
     try {
         // Fetch platform settings to get custom robots rules
-        const response = await fetch(`${API_BASE}/settings/public`);
+        const response = await fetch(`${API_BASE}${apiPaths.publicSettings}`);
         const settings = response.ok ? await response.json() : {};
 
         const defaultRules = `User-agent: *

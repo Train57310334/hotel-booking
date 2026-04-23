@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import { Lock, ArrowRight, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
+import { apiPaths } from '@/lib/apiPaths'
 
 export default function ResetPasswordPage({ branding }) {
     const router = useRouter()
@@ -197,7 +198,7 @@ export async function getServerSideProps() {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/public-settings`);
+        const res = await fetch(`${API_BASE}${apiPaths.publicSettings}`);
         if (res.ok) {
             const data = await res.json();
             branding.siteName = data.siteName || branding.siteName;

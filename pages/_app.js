@@ -7,6 +7,7 @@ import Head from 'next/head'
 import Script from 'next/script'
 import { useRouter } from 'next/router'
 import { useState, useEffect, useRef } from 'react'
+import { apiPaths } from '@/lib/apiPaths'
 
 import { Toaster } from 'react-hot-toast'
 
@@ -150,7 +151,7 @@ export default function MyApp({ Component, pageProps }) {
 
   useEffect(() => {
     // Fetch platform-level SEO settings (always)
-    fetch(`${API_BASE}/settings/public`)
+    fetch(`${API_BASE}${apiPaths.publicSettings}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformSettings(data) })
       .catch(() => { })

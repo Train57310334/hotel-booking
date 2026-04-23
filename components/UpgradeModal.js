@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { apiFetch } from '@/lib/api'
+import { apiPaths } from '@/lib/apiPaths'
 import { useAdmin } from '@/contexts/AdminContext'
 import toast from 'react-hot-toast'
 
@@ -86,7 +87,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
     // 1. Fetch Key & Init Stripe
     useEffect(() => {
         if (isOpen) {
-            apiFetch('/public-settings')
+            apiFetch(apiPaths.publicSettings)
                 .then(settings => {
                     if (settings.stripePublicKey) {
                         loadStripe(settings.stripePublicKey).then(setStripePromise)
