@@ -112,7 +112,7 @@ export default function ChannelManagerPage() {
                         <h2 className="font-bold text-lg">Your Outbound iCal Feed</h2>
                     </div>
                     <p className="text-slate-400 text-sm mb-4">
-                        Paste this URL into Airbnb, Vrbo, or any OTA to export your existing bookings. They'll automatically see your blocked dates.
+                        Paste this URL into Airbnb, Vrbo, or any OTA to export your existing bookings. They&apos;ll automatically see your blocked dates.
                     </p>
                     <div className="flex items-center bg-white/10 rounded-xl overflow-hidden border border-white/20">
                         <span className="text-xs font-mono text-slate-300 px-4 py-3 flex-1 truncate">
@@ -192,7 +192,7 @@ export default function ChannelManagerPage() {
                         <li><b>Booking.com:</b> Extranet → Calendar → Sync → Export calendar</li>
                         <li><b>Airbnb:</b> Calendar → Availability → Import/Export → Export Calendar</li>
                     </ul>
-                    <p className="mt-3 text-blue-600 text-xs">Sync runs automatically every 30 minutes. You can also click "Sync All Now" to sync immediately.</p>
+                    <p className="mt-3 text-blue-600 text-xs">Sync runs automatically every 30 minutes. You can also click &quot;Sync All Now&quot; to sync immediately.</p>
                 </div>
             </div>
         </AdminLayout>

@@ -131,6 +131,7 @@ export default function Calendar() {
             ]).then(([ev, rm]) => { setEvents(ev); setRooms(rm) }).catch(console.error)
         }, 15000)
         return () => clearInterval(iv)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentDate, viewMode, user, currentHotel, createModal.isOpen, isDetailOpen])
 
     // Handle GlobalSearch jump-to-date via query params
@@ -146,6 +147,7 @@ export default function Calendar() {
         if (router.query.date || router.query.highlight) {
             router.replace('/admin/calendar', undefined, { shallow: true });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.query.date, router.query.highlight]);
 
 
@@ -1085,7 +1087,7 @@ export default function Calendar() {
                                 </span>
                             </div>
                             {hoveredBooking.specialRequests && (
-                                <div className="mt-1 p-1.5 bg-slate-800 rounded text-slate-300 italic text-[9px]">"{hoveredBooking.specialRequests}"</div>
+                                <div className="mt-1 p-1.5 bg-slate-800 rounded text-slate-300 italic text-[9px]">&quot;{hoveredBooking.specialRequests}&quot;</div>
                             )}
                         </div>
                     </div>

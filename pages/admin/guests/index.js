@@ -17,6 +17,7 @@ export default function GuestManagement() {
       if (currentHotel) fetchGuests()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, currentHotel])
 
   const fetchGuests = async () => {

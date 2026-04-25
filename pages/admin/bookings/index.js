@@ -70,7 +70,8 @@ export default function BookingManagement() {
       if (user) fetchBookings()
     }, 300)
     return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery, statusFilter, sortConfig, user, page, useAdmin()?.currentHotel?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, statusFilter, sortConfig, user, page, currentHotel?.id])
 
   const fetchBookings = async () => {
     if (!isLiveMode) setLoading(true)

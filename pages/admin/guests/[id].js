@@ -22,6 +22,7 @@ export default function GuestProfile() {
 
     useEffect(() => {
         if (id) fetchGuest()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id])
 
     const fetchGuest = async () => {

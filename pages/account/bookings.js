@@ -88,7 +88,7 @@ export default function MyBookings() {
               <CalendarDays size={40} />
             </div>
             <h3 className="text-2xl font-bold text-slate-900 mb-3">No bookings yet</h3>
-            <p className="text-slate-500 mb-8 max-w-md mx-auto">It looks like you haven't made any reservations with us yet. Start exploring our amazing hotels!</p>
+            <p className="text-slate-500 mb-8 max-w-md mx-auto">It looks like you haven&apos;t made any reservations with us yet. Start exploring our amazing hotels!</p>
             <button onClick={() => router.push('/search')} className="btn-primary inline-flex items-center gap-2">
               Explore Hotels <ArrowRight size={18} />
             </button>
