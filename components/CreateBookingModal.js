@@ -99,6 +99,7 @@ export default function CreateBookingModal({ onClose, onSuccess, initialData = {
                 .finally(() => setCalculatingPrice(false));
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.checkIn, form.checkOut, form.ratePlanId, selectedType, appliedPromo]);
 
     const handleApplyPromo = async () => {

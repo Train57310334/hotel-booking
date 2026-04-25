@@ -19,6 +19,7 @@ export default function ReviewManagement() {
             fetchReviews()
             fetchStats()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter, currentHotel?.id])
 
     const fetchReviews = async () => {

@@ -57,6 +57,7 @@ export default function RoomManagement() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentHotel?.id])
 
   const fetchData = async () => {

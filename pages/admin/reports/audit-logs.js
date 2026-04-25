@@ -46,6 +46,7 @@ export default function AuditLogsPage() {
         if (currentHotel || isPlatformAdmin) {
             fetchLogs();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel, page, filters, isPlatformAdmin]);
 
     const fetchLogs = async () => {

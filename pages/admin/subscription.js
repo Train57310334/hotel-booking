@@ -51,6 +51,7 @@ export default function SubscriptionPage() {
             // Clean up the URL
             router.replace('/admin/subscription', undefined, { shallow: true });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.isReady, router.query]);
 
     const iconMap = {

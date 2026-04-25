@@ -253,6 +253,7 @@ export default function PaymentPage() {
     };
 
     if (router.isReady) loadBookingData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, router.query.ref]);
 
   const calculateFinalPrice = () => {

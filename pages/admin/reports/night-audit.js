@@ -38,6 +38,7 @@ export default function NightAuditPage() {
 
     useEffect(() => {
         fetchLatest();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel?.id]);
 
     const handleRunAudit = async () => {

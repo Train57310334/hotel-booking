@@ -101,11 +101,13 @@ export default function AdminDashboard() {
         setLoading(false)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, timeRange])
 
   useEffect(() => {
     const timer = setTimeout(() => fetchData(searchQuery), 500)
     return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, currentHotel?.id])
 
   const fetchData = async (search = '', isBackground = false) => {

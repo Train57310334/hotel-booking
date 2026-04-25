@@ -29,6 +29,7 @@ export default function SuperAdminSEO() {
         if (user === null) { router.push('/auth/login'); return; }
         if (!user?.roles?.includes('platform_admin')) { router.push('/admin'); return; }
         fetchSettings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const fetchSettings = async () => {

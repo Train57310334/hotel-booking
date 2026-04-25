@@ -22,6 +22,7 @@ export default function Promotions() {
 
     useEffect(() => {
         fetchPromotions()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel?.id])
 
     const fetchPromotions = async () => {

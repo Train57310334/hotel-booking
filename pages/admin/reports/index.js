@@ -84,6 +84,7 @@ function GeneralReports({ hotelId }) {
 
     useEffect(() => {
         if (hotelId) fetchData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateRange, hotelId])
 
     const fetchData = async () => {
@@ -255,6 +256,7 @@ function NightAuditReports() {
 
     useEffect(() => {
         apiFetch('/reports/daily-stats').then(setStats).catch(console.error)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (

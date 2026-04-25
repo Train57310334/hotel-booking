@@ -16,6 +16,7 @@ export default function AnalyticsDashboard() {
     useEffect(() => {
         if (!currentHotel) return;
         fetchHotel(currentHotel.id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel]);
 
     const fetchHotel = async (id) => {

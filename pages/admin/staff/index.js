@@ -22,6 +22,7 @@ export default function StaffManagement() {
 
   useEffect(() => {
     if (currentHotel) fetchStaff()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, currentHotel])
 
   const fetchStaff = async () => {

@@ -143,6 +143,7 @@ export default function PaymentModal({ isOpen, onClose, booking, onSuccess }) {
         return () => {
             if (pollingInterval.current) clearInterval(pollingInterval.current);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, activeTab, booking]);
 
     const startPolling = () => {

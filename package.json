@@ -35,8 +35,8 @@
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.4",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "puppeteer": "^24.37.2"
   }
 }

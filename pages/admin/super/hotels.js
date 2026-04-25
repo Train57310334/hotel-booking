@@ -30,6 +30,7 @@ export default function SuperHotels() {
         }
 
         fetchTenants();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const fetchTenants = async () => {

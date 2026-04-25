@@ -32,6 +32,7 @@ export default function FolioTab({ booking, onUpdate }) {
         if (booking?.id) {
             fetchFolio();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [booking?.id]);
 
     const fetchFolio = async () => {

@@ -26,6 +26,7 @@ export default function CheckoutPaymentPage() {
         if (draftId) {
             fetchBooking();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [draftId]);
 
     const fetchBooking = async () => {

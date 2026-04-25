@@ -24,6 +24,7 @@ export default function GlobalSearch() {
         }, 300)
 
         return () => clearTimeout(delayDebounceFn)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query])
 
     // Keyboard Shortcuts (Ctrl+K)

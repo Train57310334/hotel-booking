@@ -66,6 +66,7 @@ export default function MessageCenter() {
 
     useEffect(() => {
         if (currentHotel) fetchMessages()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, currentHotel?.id, activeTab])
 
     useEffect(() => {

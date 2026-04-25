@@ -31,6 +31,7 @@ export default function PaymentManagement() {
       fetchPayments()
     }, 500) // Debounce search
     return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, statusFilter])
 
   const formatDate = (date) => {

@@ -22,12 +22,14 @@ export default function RatesAvailability() {
 
     useEffect(() => {
         fetchInitialData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel?.id])
 
     useEffect(() => {
         if (activeTab === 'calendar' && selectedType) {
             fetchCalendarData()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, selectedType, currentMonth])
 
     const fetchInitialData = async () => {

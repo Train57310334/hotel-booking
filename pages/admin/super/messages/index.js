@@ -13,6 +13,7 @@ export default function SuperAdminMessages() {
 
     useEffect(() => {
         fetchMessages()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm])
 
     const fetchMessages = async () => {

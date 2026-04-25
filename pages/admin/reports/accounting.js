@@ -34,6 +34,7 @@ export default function AccountingDashboard() {
         if (currentHotel) {
             fetchData()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel?.id, dateRange])
 
     const fetchData = async () => {

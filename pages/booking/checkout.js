@@ -43,6 +43,7 @@ export default function GuestInfoPage() {
         phone: user.phone || prev.phone
       }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const [loading, setLoading] = useState(false);

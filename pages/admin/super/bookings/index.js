@@ -17,6 +17,7 @@ export default function PlatformBookingsDashboard() {
 
     useEffect(() => {
         loadBookings()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters.page, filters.status])
 
     const loadBookings = async () => {

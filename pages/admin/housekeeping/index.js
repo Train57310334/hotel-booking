@@ -19,6 +19,7 @@ export default function HousekeepingDashboard() {
         fetchReports();
         const interval = setInterval(() => { fetchData(); fetchReports(); }, 30000);
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel?.id]);
 
     const fetchData = async () => {

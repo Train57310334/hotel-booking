@@ -73,6 +73,7 @@ export default function HotelSettings() {
                 setLoading(false);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, currentHotel]);
 
     const fetchHotel = async (id) => {

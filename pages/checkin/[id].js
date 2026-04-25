@@ -32,6 +32,7 @@ export default function GuestWebCheckin() {
                 { name: booking.leadName, idType: 'passport', documentBase64: null }
             ]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [booking]);
 
     const handleVerify = async (e) => {

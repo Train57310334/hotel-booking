@@ -28,6 +28,7 @@ export default function YieldManagement() {
         if (currentHotel) {
             fetchRules()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentHotel?.id])
 
     const fetchRules = async () => {

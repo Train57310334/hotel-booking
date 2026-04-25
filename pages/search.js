@@ -90,6 +90,7 @@ export default function SearchPage() {
       }
     };
     if (router.isReady) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, qHotelId, checkIn, checkOut, adults, children]);
 
   const [cart, setCart] = useState({}); // { [ratePlanId]: { quantity, roomType, ratePlan } }

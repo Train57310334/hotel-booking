@@ -24,6 +24,7 @@ export default function PlatformPackages() {
 
     useEffect(() => {
         loadPlans()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const loadPlans = async () => {

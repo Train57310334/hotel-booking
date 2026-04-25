@@ -33,6 +33,7 @@ export default function SuperAdminNotifications() {
         if (!user?.roles?.includes('platform_admin')) { router.push('/admin'); return; }
         fetchSettings();
         setTestEmail(user.email || '');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const fetchSettings = async () => {
