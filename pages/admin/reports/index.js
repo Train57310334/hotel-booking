@@ -172,9 +172,9 @@ function GeneralReports({ hotelId }) {
                     )}
                 </div>
                 <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 items-center gap-2">
-                    <input type="date" value={dateRange.from} onChange={e => setDateRange({ ...dateRange, from: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
+                    <input type="date" lang="en-GB" value={dateRange.from} onChange={e => setDateRange({ ...dateRange, from: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
                     <span className="text-slate-400">-</span>
-                    <input type="date" value={dateRange.to} onChange={e => setDateRange({ ...dateRange, to: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
+                    <input type="date" lang="en-GB" value={dateRange.to} onChange={e => setDateRange({ ...dateRange, to: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
                     <button onClick={fetchData} className="text-blue-600 font-bold text-xs px-2 hover:bg-blue-50 rounded">Refresh</button>
                 </div>
             </div>
@@ -205,7 +205,7 @@ function GeneralReports({ hotelId }) {
                                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <XAxis dataKey="date" stroke="#94a3b8" fontSize={10} tickFormatter={d => new Date(d).toLocaleDateString()} />
+                        <XAxis dataKey="date" stroke="#94a3b8" fontSize={10} tickFormatter={d => new Date(d).toLocaleDateString('en-GB')} />
                         <YAxis stroke="#94a3b8" fontSize={10} />
                         <Tooltip />
                         <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fill="url(#colorRev)" strokeWidth={2} />
@@ -235,7 +235,7 @@ function GeneralReports({ hotelId }) {
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
                             {expenses.map(e => (
                                 <tr key={e.id}>
-                                    <td className="p-3 dark:text-slate-300">{new Date(e.date).toLocaleDateString()}</td>
+                                    <td className="p-3 dark:text-slate-300">{new Date(e.date).toLocaleDateString('en-GB')}</td>
                                     <td className="p-3 font-bold dark:text-white">{e.title}</td>
                                     <td className="p-3"><span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 uppercase">{e.category}</span></td>
                                     <td className="p-3 text-right text-rose-500 font-bold">-฿{e.amount.toLocaleString()}</td>
@@ -334,7 +334,7 @@ function NightAuditReports() {
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
                             {stats.map(s => (
                                 <tr key={s.id}>
-                                    <td className="p-3 font-mono text-slate-500">{new Date(s.date).toLocaleDateString()}</td>
+                                    <td className="p-3 font-mono text-slate-500">{new Date(s.date).toLocaleDateString('en-GB')}</td>
                                     <td className="p-3 text-center dark:text-white">{s.occupiedRooms}</td>
                                     <td className="p-3 text-center font-bold text-indigo-600">{s.occupancyRate.toFixed(1)}%</td>
                                     <td className="p-3 text-right dark:text-white">฿{s.adr.toLocaleString()}</td>
@@ -400,7 +400,7 @@ function AddExpenseModal({ isOpen, onClose, onSuccess }) {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Date</label>
-                            <input name="date" type="date" required defaultValue={toLocalISO(new Date())} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            <input name="date" type="date" lang="en-GB" required defaultValue={toLocalISO(new Date())} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
                         </div>
                     </div>
                     <div>

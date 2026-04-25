@@ -1,7 +1,9 @@
 import { User, Maximize2, Coffee, Minus, Plus, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useState } from 'react'
 
 export default function RoomCard({ roomType, ratePlans = [], onSelect, selectedCounts = {} }) {
+    const { t } = useLanguage();
     const isAvailable = roomType.isAvailable !== false;
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -28,7 +30,7 @@ export default function RoomCard({ roomType, ratePlans = [], onSelect, selectedC
             {!isAvailable && (
                 <div className="flex items-center gap-2 px-5 py-2.5 bg-red-500 text-white text-sm font-bold">
                     <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                    SOLD OUT — ไม่มีห้องว่างในวันที่เลือก
+                    {t('roomCard.soldOut')}
                     <span className="ml-auto text-xs font-normal opacity-80">{roomType.availabilityReason || 'No availability'}</span>
                 </div>
             )}

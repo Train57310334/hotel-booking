@@ -88,7 +88,7 @@ export default function SearchFilters({ onFilterChange, initialFilters }) {
                     <EyeOff size={18} className={hideFullRooms ? 'text-white' : 'text-theme-accent'} />
                     <div>
                         <div className={`font-bold text-sm ${hideFullRooms ? 'text-white' : 'text-theme-text'}`}>Available Rooms Only</div>
-                        <div className={`text-xs ${hideFullRooms ? 'text-white/70' : 'text-theme-muted'}`}>ซ่อนห้องที่เต็มแล้ว</div>
+                        <div className={`text-xs ${hideFullRooms ? 'text-white/70' : 'text-theme-muted'}`}>{t('filters.hideFullRooms')}</div>
                     </div>
                 </div>
                 <div className={`w-11 h-6 rounded-full transition-all duration-200 flex items-center px-1 ${

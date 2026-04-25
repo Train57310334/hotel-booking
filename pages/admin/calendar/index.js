@@ -13,6 +13,7 @@ import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import CreateBookingModal from '@/components/CreateBookingModal'
 import { useAdmin } from '@/contexts/AdminContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import toast from 'react-hot-toast'
 import AvailabilityMatrix from '@/components/admin/calendar/AvailabilityMatrix'
 
@@ -43,6 +44,7 @@ const ROOM_COL = 120
 export default function Calendar() {
     const { user } = useAuth()
     const { currentHotel } = useAdmin() || {}
+    const { t } = useLanguage()
     const router = useRouter()
     const [currentDate, setCurrentDate] = useState(new Date())
     const [rooms, setRooms] = useState([])
@@ -932,7 +934,7 @@ export default function Calendar() {
                                                                     }
                                                                 }}
                                                                 onDrop={(e) => { e.preventDefault(); handleDrop(room, day); }}
-                                                                title={free ? (isSelected ? 'Release to book selected days' : 'ว่าง — คลิกและลากเพื่อจอง') : 'มีการจองแล้ว'}
+                                                                title={free ? (isSelected ? t('calendar.releaseToBook') : t('calendar.availableClickDrag')) : t('calendar.booked')}
                                                                 style={{ minWidth: COL_MIN_W }}
                                                                 className={`flex-1 border-r border-slate-50 dark:border-slate-700/30 h-full cursor-pointer transition-colors relative group overflow-hidden select-none ${
                                                                     isSelected ? 'bg-blue-500/20 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.5)] z-20' : ''

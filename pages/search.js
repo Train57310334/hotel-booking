@@ -314,7 +314,7 @@ export default function SearchPage() {
                       </span>
                       {hideFullRooms && soldOutCount > 0 && (
                         <span className="text-xs font-sans font-medium text-theme-muted bg-theme-bg px-2.5 py-1 rounded-full border border-theme-border flex items-center gap-1">
-                          <EyeOff size={11} /> {soldOutCount} ซ่อน
+                          <EyeOff size={11} /> {soldOutCount} {t('search.hide')}
                         </span>
                       )}
                     </h3>
@@ -381,10 +381,10 @@ export default function SearchPage() {
                         {hideFullRooms && soldOutCount > 0 ? (
                           <>
                             <EyeOff className="w-16 h-16 text-theme-muted mx-auto mb-4 opacity-40" />
-                            <h4 className="text-xl font-display font-bold text-theme-text mb-2">ทุกห้องเต็มแล้ว</h4>
-                            <p className="text-theme-muted max-w-md mx-auto mb-6">ลอง<strong>ปิด</strong> "Available Rooms Only" เพื่อดูห้องทั้งหมด หรือเปลี่ยนวันที่</p>
+                            <h4 className="text-xl font-display font-bold text-theme-text mb-2">{t('search.allRoomsFull')}</h4>
+                            <p className="text-theme-muted max-w-md mx-auto mb-6">{t('search.tryToggleAvailable1')}<strong>{t('search.tryToggleAvailableStrong')}</strong>{t('search.tryToggleAvailable2')}</p>
                             <button onClick={() => setHideFullRooms(false)} className="px-5 py-2.5 bg-theme-accent text-white rounded-xl font-bold text-sm hover:opacity-90 transition">
-                              แสดงห้องทั้งหมด
+                              {t('search.showAllRooms')}
                             </button>
                           </>
                         ) : (
@@ -507,6 +507,7 @@ export default function SearchPage() {
 // Clicking a day updates checkIn/checkOut in the URL. No extra API calls needed.
 
 function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
+  const { t } = useLanguage();
   const today = new Date();
   const selectedIn = new Date(checkIn);
   const selectedOut = new Date(checkOut);
@@ -574,7 +575,7 @@ function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
           <div className="font-display font-bold text-lg text-theme-text">
             {calMonth.toLocaleString('th-TH', { month: 'long', year: 'numeric' })}
           </div>
-          <div className="text-xs text-theme-muted mt-0.5">คลิกวันที่เพื่อเปลี่ยนวัน Check-in</div>
+          <div className="text-xs text-theme-muted mt-0.5">{t('search.clickToChangeCheckIn')}</div>
         </div>
         <button
           onClick={nextMonth}
@@ -626,7 +627,7 @@ function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
               key={d.toISOString()}
               onClick={() => handleDayClick(d)}
               className={cellClass}
-              title={past ? 'วันที่ผ่านไปแล้ว' : `เลือก Check-in: ${d.toLocaleDateString('th-TH')}`}
+              title={past ? t('search.pastDate') : `${t('search.selectCheckIn')} ${d.toLocaleDateString('th-TH')}`}
             >
               <span>{d.getDate()}</span>
               {isToday && !cIn && !cOut && (
@@ -650,18 +651,18 @@ function AvailabilityCalendar({ checkIn, checkOut, rooms, router, query }) {
         <div className="flex items-center gap-2">
           {allSoldOut ? (
             <span className="flex items-center gap-1.5 text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">
-              ● ห้องเต็มในวันที่เลือก
+              {t('search.noRoomsSelectedDate')}
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-xs font-bold text-theme-accent bg-theme-accent/10 px-3 py-1.5 rounded-full border border-theme-accent/20">
-              ● มีห้องว่าง {rooms.filter(r => r.isAvailable !== false).length} ประเภท
+              {t('search.availableRoomTypesPrefix')}{rooms.filter(r => r.isAvailable !== false).length}{t('search.availableRoomTypesSuffix')}
             </span>
           )}
           <button
             onClick={() => router.push({ pathname: '/search', query })}
             className="text-xs font-bold text-theme-accent hover:underline"
           >
-            ดูรายการห้อง →
+            {t('search.viewRoomList')}
           </button>
         </div>
       </div>
