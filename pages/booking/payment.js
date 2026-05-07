@@ -124,7 +124,7 @@ const StripePaymentForm = ({ total, onSuccess, isProcessing, setIsProcessing }) 
       // Payment Successful
       onSuccess(paymentIntent.id);
     } else {
-      setErrorMessage('Payment failed. Please try again.');
+      setErrorMessage(t('payment.failed'));
       setIsProcessing(false);
     }
   };
@@ -248,7 +248,7 @@ export default function PaymentPage() {
         setMsg('');
       }).catch(err => {
         console.error('Failed to load payment config', err);
-        setMsg('Failed to load payment configuration.');
+        setMsg(t('payment.promoFailed'));
       });
     };
 
@@ -305,16 +305,16 @@ export default function PaymentPage() {
     try {
       const result = await apiFetch('/promotions/validate', {
         method: 'POST',
-        body: JSON.stringify({ code: promoCode, amount: bookingData.totalPrice, hotelId: bookingData.hotelId })
+        body: JSON.stringify({ code: promoCode, amount: bookingData.subtotal || bookingData.totalPrice, hotelId: bookingData.hotelId })
       });
 
       if (result.valid) {
         setAppliedPromo(result);
       } else {
-        setPromoError('Invalid promotion code');
+        setPromoError(t('payment.invalidPromo'));
       }
     } catch (err) {
-      setPromoError(err.message || 'Failed to validate promotion');
+      setPromoError(err.message || t('payment.promoFailed'));
     } finally {
       setPromoLoading(false);
     }
@@ -517,7 +517,7 @@ export default function PaymentPage() {
                         </Elements>
                       ) : (
                         <div className="flex items-center justify-center h-48 text-slate-400">
-                          <Loader2 className="animate-spin mr-2" size={20} /> {msg || 'Loading Secure Gateway...'}
+                          <Loader2 className="animate-spin mr-2" size={20} /> {msg || t('payment.loadingGateway')}
                         </div>
                       )}
                     </div>
@@ -525,7 +525,7 @@ export default function PaymentPage() {
 
                   {paymentMethod === 'omise' && (
                     <div className="min-h-[300px]">
-                      <h3 className="text-lg font-bold text-slate-900 mb-4">Pay via Omise</h3>
+                      <h3 className="text-lg font-bold text-slate-900 mb-4">{t('payment.omiseTitle')}</h3>
                       {omiseKey ? (
                         <OmisePaymentForm
                           total={finalPrice}
@@ -535,7 +535,7 @@ export default function PaymentPage() {
                         />
                       ) : (
                         <div className="flex items-center justify-center h-48 text-slate-400">
-                          <Loader2 className="animate-spin mr-2" size={20} /> Loading Omise...
+                          <Loader2 className="animate-spin mr-2" size={20} /> {t('payment.loadingOmise')}
                         </div>
                       )}
                     </div>
@@ -553,19 +553,19 @@ export default function PaymentPage() {
                       ) : (
                         <div className="w-60 h-60 mx-auto flex flex-col items-center justify-center bg-amber-50 rounded-2xl border-2 border-dashed border-amber-200 text-amber-600 text-center p-4">
                           <span className="text-4xl mb-3">⚙️</span>
-                          <p className="font-bold">PromptPay Not Configured</p>
-                          <p className="text-xs mt-1 text-amber-500">Hotel admin needs to set a PromptPay ID in Settings</p>
+                          <p className="font-bold">{t('payment.promptPayNotConfigured')}</p>
+                          <p className="text-xs mt-1 text-amber-500">{t('payment.promptPayAdminNote')}</p>
                         </div>
                       )}
                       <p className="text-sm text-slate-600 max-w-sm mx-auto">
-                        Scan this QR code with any banking app that supports PromptPay.
+                        {t('payment.promptPayScanNote')}
                       </p>
                       <button
                         onClick={handleManualPayment}
                         disabled={isProcessing}
                         className="w-full px-8 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition disabled:opacity-50"
                       >
-                        {isProcessing ? 'Processing...' : 'I have paid ✓'}
+                        {isProcessing ? t('payment.processingShort') : `${t('payment.iHavePaid')} ✓`}
                       </button>
                     </div>
                   )}
@@ -577,7 +577,7 @@ export default function PaymentPage() {
                           <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">B</div>
                           <div>
                             <p className="font-bold text-slate-900">{hotelDetails?.bankName || 'Bank Name'}</p>
-                            <p className="text-sm text-slate-500">Savings Account</p>
+                            <p className="text-sm text-slate-500">{t('payment.savingsAccount')}</p>
                           </div>
                         </div>
                         <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
@@ -591,7 +591,7 @@ export default function PaymentPage() {
                         disabled={isProcessing}
                         className="w-full px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition"
                       >
-                        {isProcessing ? 'Processing' : 'I have transferred'}
+                        {isProcessing ? t('payment.processingShort') : t('payment.iHaveTransferred')}
                       </button>
                     </div>
                   )}
@@ -682,7 +682,7 @@ export default function PaymentPage() {
                 <div className="space-y-3 font-medium relative z-10">
                   <div className="flex justify-between text-sm px-2">
                     <span className="text-slate-500">{t('payment.subtotal')}</span>
-                    <span className="font-bold text-slate-900">฿{bookingData?.totalPrice?.toLocaleString()}</span>
+                    <span className="font-bold text-slate-900">฿{(bookingData?.subtotal || bookingData?.totalPrice)?.toLocaleString()}</span>
                   </div>
                   {appliedPromo && (
                     <div className="flex justify-between text-sm text-green-600 px-2 animate-in slide-in-from-right-2 fade-in">
@@ -711,11 +711,11 @@ export default function PaymentPage() {
         isOpen={showError}
         onClose={() => setShowError(false)}
         onConfirm={() => setShowError(false)}
-        title="Error"
+        title={t('payment.errorTitle')}
         message={errorMessage}
         type="warning"
         singleButton={true}
-        confirmText="OK"
+        confirmText={t('payment.ok')}
       />
     </Layout>
   );

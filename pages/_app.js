@@ -3,11 +3,14 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { AdminProvider } from '@/contexts/AdminContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import { OnboardingProvider } from '@/contexts/OnboardingContext'
 import Head from 'next/head'
 import Script from 'next/script'
 import { useRouter } from 'next/router'
 import { useState, useEffect, useRef } from 'react'
 import { apiPaths } from '@/lib/apiPaths'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+
 
 import { Toaster } from 'react-hot-toast'
 
@@ -138,9 +141,7 @@ function SeoHead({ hotel, platformSettings }) {
   )
 }
 
-import { ThemeProvider } from '@/contexts/ThemeContext'
 
-// ... existing code ...
 
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter()
@@ -183,7 +184,9 @@ export default function MyApp({ Component, pageProps }) {
               {/* Note: The 'theme-*' wrapper is already injected by ThemeProvider */}
               <div className="flex flex-col flex-1 transition-colors">
                 <main className="flex-1">
-                  <Component {...pageProps} />
+                  <OnboardingProvider>
+                    <Component {...pageProps} />
+                  </OnboardingProvider>
                 </main>
               </div>
               <Toaster position="top-center" toastOptions={{ className: 'dark:bg-slate-800 dark:text-white' }} />

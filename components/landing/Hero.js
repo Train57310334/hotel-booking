@@ -4,9 +4,11 @@ import { ArrowRight, CheckCircle, PlayCircle } from 'lucide-react';
 import DemoModal from './DemoModal';
 import MockDashboard from './MockDashboard';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Hero({ title, description, ctaText }) {
     const [isDemoOpen, setIsDemoOpen] = useState(false);
+    const { t } = useLanguage();
 
     return (
         <div className="relative overflow-hidden bg-[#0A0F1C] pt-6 pb-24">
@@ -33,7 +35,9 @@ export default function Hero({ title, description, ctaText }) {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
                         </span>
-                        BookingKub v1.0 is Live
+                        <span className="font-bold text-primary-400">{t('hero.badge') || 'NEW'}</span>
+                        <span className="w-px h-3 bg-slate-600 mx-1"></span>
+                        {t('hero.badgeText') || 'Smart Calendar 2.0 is now live'}
                     </motion.div>
 
                     <motion.h1
@@ -46,9 +50,9 @@ export default function Hero({ title, description, ctaText }) {
                             <div dangerouslySetInnerHTML={{ __html: title.replace(/\n/g, '<br/>') }} />
                         ) : (
                             <>
-                                Everything You Need to <br />
+                                {t('hero.title1') || 'Automate Your Hotel.'} <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 via-blue-400 to-teal-400">
-                                    Run Your Hotel.
+                                    {t('hero.title2') || 'Maximize Your Revenue.'}
                                 </span>
                             </>
                         )}
@@ -60,7 +64,7 @@ export default function Hero({ title, description, ctaText }) {
                         transition={{ duration: 0.5, delay: 0.3 }}
                         className="text-lg md:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto"
                     >
-                        {description || "Manage bookings, guests, and payments in one place. No more spreadsheets, no more double bookings. Start with our Lite Plan for free."}
+                        {description || t('hero.subtitle') || "Manage bookings, guests, and payments in one place. No more spreadsheets, no more double bookings. Start with our Lite Plan for free."}
                     </motion.p>
 
                     <motion.div
@@ -70,14 +74,14 @@ export default function Hero({ title, description, ctaText }) {
                         className="flex flex-col sm:flex-row gap-5 justify-center items-center pt-6"
                     >
                         <Link href="/auth/register" className="px-8 py-4 bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white font-bold rounded-2xl shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)] hover:shadow-[0_0_60px_-15px_rgba(16,185,129,0.7)] transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1">
-                            {ctaText || "Start for Free"} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                            {ctaText || t('hero.ctaPrimary') || "Start for Free"} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <button
                             onClick={() => setIsDemoOpen(true)}
                             className="px-8 py-4 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-700/50 text-white font-bold rounded-2xl border border-slate-700 hover:border-slate-600 transition-all duration-300 flex items-center gap-2 group hover:shadow-xl"
                         >
                             <PlayCircle size={22} className="text-blue-400 group-hover:scale-110 transition-transform" />
-                            View Demo
+                            {t('hero.ctaSecondary') || "View Demo"}
                         </button>
                     </motion.div>
 

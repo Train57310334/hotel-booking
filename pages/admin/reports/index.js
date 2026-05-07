@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch, API_BASE } from '@/lib/api'
 import { DollarSign, Plus, Trash2, Calendar, FileText, TrendingUp, TrendingDown, Moon, Activity, BedDouble, Download, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
+import DatePicker from '@/components/DatePicker'
 
 import {
     LineChart,
@@ -172,9 +173,9 @@ function GeneralReports({ hotelId }) {
                     )}
                 </div>
                 <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 items-center gap-2">
-                    <input type="date" lang="en-GB" value={dateRange.from} onChange={e => setDateRange({ ...dateRange, from: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
+                    <DatePicker value={dateRange.from} onChange={dates => setDateRange({ ...dateRange, from: dates[0] || '' })} options={{ dateFormat: 'd/m/Y' }} className="!bg-transparent !border-none !text-xs !font-medium focus:!ring-0 !cursor-pointer dark:!text-white !p-0 !pl-8 !w-32" />
                     <span className="text-slate-400">-</span>
-                    <input type="date" lang="en-GB" value={dateRange.to} onChange={e => setDateRange({ ...dateRange, to: e.target.value })} className="text-xs bg-transparent dark:text-white outline-none" />
+                    <DatePicker value={dateRange.to} onChange={dates => setDateRange({ ...dateRange, to: dates[0] || '' })} options={{ dateFormat: 'd/m/Y' }} className="!bg-transparent !border-none !text-xs !font-medium focus:!ring-0 !cursor-pointer dark:!text-white !p-0 !pl-8 !w-32" />
                     <button onClick={fetchData} className="text-blue-600 font-bold text-xs px-2 hover:bg-blue-50 rounded">Refresh</button>
                 </div>
             </div>
@@ -352,6 +353,12 @@ function NightAuditReports() {
 }
 
 function AddExpenseModal({ isOpen, onClose, onSuccess }) {
+    const [selectedDate, setSelectedDate] = useState(toLocalISO(new Date()))
+
+    useEffect(() => {
+        if (isOpen) setSelectedDate(toLocalISO(new Date()))
+    }, [isOpen])
+
     if (!isOpen) return null
 
     const handleSubmit = async (e) => {
@@ -369,7 +376,7 @@ function AddExpenseModal({ isOpen, onClose, onSuccess }) {
                     hotelId: hotels[0].id,
                     title: formData.get('title'),
                     amount: Number(formData.get('amount')),
-                    date: formData.get('date'),
+                    date: selectedDate,
                     category: formData.get('category')
                 })
             })
@@ -400,7 +407,12 @@ function AddExpenseModal({ isOpen, onClose, onSuccess }) {
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Date</label>
-                            <input name="date" type="date" lang="en-GB" required defaultValue={toLocalISO(new Date())} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+                            <DatePicker 
+                                value={selectedDate} 
+                                onChange={dates => setSelectedDate(dates[0] || '')} 
+                                options={{ dateFormat: 'd/m/Y' }} 
+                                className="!w-full !p-2 !border !rounded-lg dark:!bg-slate-700 dark:!border-slate-600 dark:!text-white !pl-10" 
+                            />
                         </div>
                     </div>
                     <div>

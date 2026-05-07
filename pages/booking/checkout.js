@@ -120,7 +120,7 @@ export default function GuestInfoPage() {
                     <input
                       ref={nameRef}
                       type="text"
-                      placeholder="e.g. John Doe"
+                      placeholder={t('payment.placeholderName')}
                       className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 outline-none transition-all shadow-sm font-medium placeholder:text-slate-400"
                       value={guest.name}
                       onChange={(e) => setGuest({ ...guest, name: e.target.value })}
@@ -136,7 +136,7 @@ export default function GuestInfoPage() {
                       <input
                         ref={emailRef}
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder={t('payment.placeholderEmail')}
                         className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 outline-none transition-all shadow-sm font-medium placeholder:text-slate-400"
                         value={guest.email}
                         onChange={(e) => setGuest({ ...guest, email: e.target.value })}
@@ -150,7 +150,7 @@ export default function GuestInfoPage() {
                       <input
                         ref={phoneRef}
                         type="tel"
-                        placeholder="+66 81 234 5678"
+                        placeholder={t('payment.placeholderPhone')}
                         className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-[3px] focus:ring-primary-100 focus:border-primary-500 outline-none transition-all shadow-sm font-medium placeholder:text-slate-400"
                         value={guest.phone}
                         onChange={(e) => setGuest({ ...guest, phone: e.target.value })}

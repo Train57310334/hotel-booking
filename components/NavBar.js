@@ -15,7 +15,7 @@ export default function NavBar(props) {
   // Determine the active hotel ID from the URL or local storage
   const activeHotelId = router.query.hotelId || guestHotelId;
 
-  // ... (keep existing useEffects and constants) ...
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
@@ -62,9 +62,16 @@ export default function NavBar(props) {
           <div className="hidden md:flex items-center gap-8">
             {isSaas ? (
               <>
-                <a href="#features" className={`text-sm font-medium transition-colors ${linkColor}`}>Features</a>
-                <a href="#pricing" className={`text-sm font-medium transition-colors ${linkColor}`}>Pricing</a>
-                <a href="#contact" className={`text-sm font-medium transition-colors ${linkColor}`}>Contact</a>
+                <a href="#features" className={`text-sm font-medium transition-colors ${linkColor}`}>{t('footer.features') || 'Features'}</a>
+                <a href="#pricing" className={`text-sm font-medium transition-colors ${linkColor}`}>{t('footer.pricing') || 'Pricing'}</a>
+                <a href="#contact" className={`text-sm font-medium transition-colors ${linkColor}`}>{t('footer.contact') || 'Contact'}</a>
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
+                  className={`flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-lg transition-colors hover:bg-slate-100/10 ${textColor}`}
+                >
+                  <Globe size={16} />
+                  {language.toUpperCase()}
+                </button>
               </>
             ) : (
               <>
@@ -134,14 +141,23 @@ export default function NavBar(props) {
             {props.mode === 'saas' ? (
               <>
                 <a href="#features" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Features
+                  {t('footer.features') || 'Features'}
                 </a>
                 <a href="#pricing" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Pricing
+                  {t('footer.pricing') || 'Pricing'}
                 </a>
                 <a href="#contact" className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Contact
+                  {t('footer.contact') || 'Contact'}
                 </a>
+                <button
+                  onClick={() => {
+                    setLanguage(language === 'en' ? 'th' : 'en');
+                  }}
+                  className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left text-slate-600"
+                >
+                  <Globe size={20} className="text-slate-400" />
+                  Switch to {language === 'en' ? 'Thai (TH)' : 'English (EN)'}
+                </button>
               </>
             ) : (
               <>

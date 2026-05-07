@@ -249,11 +249,16 @@ export default function BookingManagement() {
                   return (
                     <tr key={booking.id} className={`transition-colors group ${isNew ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
                       <td className="px-4 py-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
                             #{booking.id.slice(-6).toUpperCase()}
                           </span>
                           {isNew && <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">NEW</span>}
+                          {booking.source === 'OTA' && (
+                            <span className="bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase" title={booking.otaReferenceId ? `OTA Ref: ${booking.otaReferenceId}` : ''}>
+                              {booking.channelName || 'OTA'}
+                            </span>
+                          )}
                         </div>
                         <div className="text-[10px] text-slate-400 mt-1">
                           {new Date(booking.createdAt).toLocaleString()}

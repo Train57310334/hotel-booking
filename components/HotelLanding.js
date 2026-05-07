@@ -24,7 +24,7 @@ export default function HotelLanding({ hotel }) {
     tmr.setDate(now.getDate() + 1);
     const formatDate = (d) => d.toISOString().split('T')[0];
 
-    const defaultParams = `checkIn=${formatDate(now)}&checkOut=${formatDate(tmr)}&guests=1`;
+    const defaultParams = `checkIn=${formatDate(now)}&checkOut=${formatDate(tmr)}&guests=1&hotelId=${hotel.id}`;
 
     // 🔌 SAAS MODE: If hotel has no room types, show Coming Soon
     if (!hotel.roomTypes || hotel.roomTypes.length === 0) {
@@ -43,7 +43,7 @@ export default function HotelLanding({ hotel }) {
                 backgroundImage={heroImage}
                 backgroundVideo={heroVideo}
             >
-                <SearchBar />
+                <SearchBar query={{ hotelId: hotel.id }} />
             </Hero>
 
             {/* Featured Rooms Section */}

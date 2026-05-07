@@ -30,7 +30,7 @@ export default function FindBookingPage() {
             if (data && data.id) {
                 // If found, redirect to confirmation page 
                 // Alternatively, we could show it here, but confirmation page already handles display well
-                router.push(`/booking-confirmation?id=${data.id}`);
+                router.push(`/booking/confirmation?id=${data.id}`);
             } else {
                 setError("Booking not found. Please check your reference number and email.");
             }

@@ -11,6 +11,7 @@ import BookingDetailModal from '@/components/BookingDetailModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import SuperAdminDashboard from '@/components/SuperAdminDashboard'
 import toast from 'react-hot-toast'
+import { useOnboardingContext } from '@/contexts/OnboardingContext'
 import {
   Calendar as CalendarIcon,
   DollarSign,
@@ -51,6 +52,8 @@ export default function AdminDashboard() {
   const { language, t } = useLanguage()
   const router = useRouter()
   const locale = language === 'th' ? 'th-TH' : 'en-US'
+
+  const onboarding = useOnboardingContext()
 
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -133,6 +136,7 @@ export default function AdminDashboard() {
       setStats(prev => (statsData && JSON.stringify(prev) !== JSON.stringify(statsData)) ? statsData : prev)
       setBookings(prev => JSON.stringify(prev) !== JSON.stringify(bookingsList) ? bookingsList : prev)
       setDailyOps(prev => (dailyOpsData && JSON.stringify(prev) !== JSON.stringify(dailyOpsData)) ? dailyOpsData : prev)
+
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
     } finally {

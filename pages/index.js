@@ -6,6 +6,10 @@ import Features from '@/components/landing/Features';
 import Pricing from '@/components/landing/Pricing';
 import ContactSection from '@/components/landing/ContactSection';
 import Footer from '@/components/landing/Footer';
+import TrustStats from '@/components/landing/TrustStats';
+import Integrations from '@/components/landing/Integrations';
+import Testimonials from '@/components/landing/Testimonials';
+
 import HotelLanding from '@/components/HotelLanding';
 import ModernTheme from '@/components/themes/ModernTheme';
 import BoutiqueTheme from '@/components/themes/BoutiqueTheme';
@@ -18,6 +22,12 @@ export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
   const router = useRouter();
   const { user } = useAuth();
 
+  // Inject dynamic brand color from SaaS settings as CSS custom properties
+  if (typeof window !== 'undefined' && saasSettings?.primaryColor) {
+    document.documentElement.style.setProperty('--color-brand', saasSettings.primaryColor);
+  }
+
+
   // If we have a specific hotel and we are NOT in SaaS mode, show the hotel landing
   if (!isSaaSLanding && hotel && !error) {
     if (hotel.theme === 'modern') {
@@ -29,16 +39,36 @@ export default function Home({ hotel, error, isSaaSLanding, saasSettings }) {
     return <HotelLanding hotel={hotel} />;
   }
 
-  // --- SaaS Landing Page ---
+  // Build SEO props from saasSettings
+  const siteName = saasSettings?.siteName || 'BookingKub';
+  const seoTitle = saasSettings?.landingHeroTitle
+    ? `${saasSettings.landingHeroTitle} | ${siteName}`
+    : `${siteName} — Hotel Management & Booking System`;
+  const seoDesc = saasSettings?.landingHeroDescription ||
+    'The all-in-one hotel management platform. Manage bookings, sync with Agoda & Booking.com, boost direct sales with 0% commission.';
+
   return (
-    <Layout navbarProps={{ brandName: saasSettings?.siteName || 'BookingKub', logo: saasSettings?.logoUrl, mode: 'saas' }} hideFooter>
+    <Layout
+      navbarProps={{ brandName: siteName, logo: saasSettings?.logoUrl, mode: 'saas' }}
+      seoProps={{
+        title: seoTitle,
+        description: seoDesc,
+        keywords: 'hotel management system, channel manager, booking engine, yield management, housekeeping, PMS',
+        image: saasSettings?.logoUrl || '/og-image.png',
+        canonicalUrl: saasSettings?.siteUrl || undefined,
+      }}
+      hideFooter
+    >
       <Hero
         title={saasSettings?.landingHeroTitle}
         description={saasSettings?.landingHeroDescription}
         ctaText={saasSettings?.landingCTA}
       />
+      <Integrations />
       <Features saasSettings={saasSettings} />
+      <TrustStats />
       <Pricing saasSettings={saasSettings} />
+      <Testimonials />
       <ContactSection />
       <Footer saasSettings={saasSettings} />
     </Layout>

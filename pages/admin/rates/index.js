@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { Calendar as CalendarIcon, Save, Plus, Trash2, Edit, AlertCircle, Lock } from 'lucide-react'
 import { useAdmin } from '@/contexts/AdminContext'
 import { useRoleAccess } from '@/hooks/useRoleAccess'
+import DatePicker from '@/components/DatePicker'
 
 export default function RatesAvailability() {
     // const { success, error } = useToast() // Removed
@@ -103,7 +104,7 @@ export default function RatesAvailability() {
 
                 <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden p-6">
                     {activeTab === 'plans' ? (
-                        <RatePlansView plans={ratePlans} roomTypes={roomTypes} refresh={() => fetchPlans(currentHotel?.id)} isReception={isReception} />
+                        <RatePlansView plans={ratePlans} roomTypes={roomTypes} refresh={() => fetchPlans(currentHotel?.id)} isReception={isReception} currentHotel={currentHotel} />
                     ) : (
                         <CalendarView
                             month={currentMonth}
@@ -125,7 +126,7 @@ export default function RatesAvailability() {
 
 import ConfirmationModal from '@/components/ConfirmationModal'
 
-function RatePlansView({ plans, roomTypes, refresh, isReception }) {
+function RatePlansView({ plans, roomTypes, refresh, isReception, currentHotel }) {
     // const { success, error } = useToast()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingPlan, setEditingPlan] = useState(null)
@@ -617,22 +618,20 @@ function CalendarView({ month, setMonth, inventory, overrides, ratePlans, onRefr
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">From Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    <DatePicker
                                         value={bulkData.startDate}
-                                        onChange={e => setBulkData({ ...bulkData, startDate: e.target.value })}
+                                        onChange={dates => setBulkData({ ...bulkData, startDate: dates[0] || '' })}
+                                        options={{ dateFormat: 'd/m/Y' }}
+                                        className="!w-full !p-2 !border !rounded-lg dark:!bg-slate-700 dark:!border-slate-600 dark:!text-white !pl-10"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">To Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    <DatePicker
                                         value={bulkData.endDate}
-                                        onChange={e => setBulkData({ ...bulkData, endDate: e.target.value })}
+                                        onChange={dates => setBulkData({ ...bulkData, endDate: dates[0] || '' })}
+                                        options={{ dateFormat: 'd/m/Y' }}
+                                        className="!w-full !p-2 !border !rounded-lg dark:!bg-slate-700 dark:!border-slate-600 dark:!text-white !pl-10"
                                     />
                                 </div>
                             </div>

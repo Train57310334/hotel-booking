@@ -22,7 +22,7 @@ export default function BoutiqueTheme({ hotel }) {
     // New boutique video from Pexels
     const heroVideo = hotel.heroVideoUrl || "https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4";
 
-    const defaultParams = `checkIn=${new Date().toISOString().split('T')[0]}&checkOut=${new Date(Date.now() + 86400000).toISOString().split('T')[0]}&guests=1`;
+    const defaultParams = `checkIn=${new Date().toISOString().split('T')[0]}&checkOut=${new Date(Date.now() + 86400000).toISOString().split('T')[0]}&guests=1&hotelId=${hotel.id}`;
 
     return (
         <div className="bg-[#FAF9F6] min-h-screen text-slate-800 font-sans selection:bg-amber-600/30 selection:text-amber-900">
@@ -73,7 +73,7 @@ export default function BoutiqueTheme({ hotel }) {
                         transition={{ duration: 0.8, delay: 0.5 }}
                         className="max-w-4xl mx-auto bg-white/80 backdrop-blur-xl border border-amber-900/10 p-4 shadow-xl"
                     >
-                        <SearchBar />
+                        <SearchBar query={{ hotelId: hotel.id }} />
                     </motion.div>
                 </div>
             </div>

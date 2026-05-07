@@ -25,7 +25,7 @@ export default function ModernTheme({ hotel }) {
     const heroImage = hotel.imageUrl || "/images/hero-bg.png";
     const heroVideo = hotel.heroVideoUrl || "https://videos.pexels.com/video-files/3121459/3121459-uhd_2560_1440_24fps.mp4"; // Modern city skyline fallback
 
-    const defaultParams = `checkIn=${new Date().toISOString().split('T')[0]}&checkOut=${new Date(Date.now() + 86400000).toISOString().split('T')[0]}&guests=1`;
+    const defaultParams = `checkIn=${new Date().toISOString().split('T')[0]}&checkOut=${new Date(Date.now() + 86400000).toISOString().split('T')[0]}&guests=1&hotelId=${hotel.id}`;
 
     return (
         <div className="bg-slate-950 min-h-screen text-slate-50 font-sans selection:bg-blue-500/30">
@@ -82,7 +82,7 @@ export default function ModernTheme({ hotel }) {
                         {/* We use the SearchBar component here but it will inherit some root styles if any, 
                             ideally we'd style it specifically for dark mode but standard SearchBar should work okay */}
                         <div className="dark-mode-search-wrapper">
-                            <SearchBar />
+                            <SearchBar query={{ hotelId: hotel.id }} />
                         </div>
                     </motion.div>
                 </div>

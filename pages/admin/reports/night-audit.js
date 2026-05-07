@@ -7,6 +7,7 @@ import {
     Moon, TrendingUp, Users, LogIn, LogOut, BedDouble,
     TriangleAlert, CheckCircle2, Printer, RefreshCw, Clock
 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const fmt = (n) => `฿${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 const pct = (n) => `${Number(n || 0).toFixed(1)}%`;
@@ -19,6 +20,7 @@ const STATUS_BADGE = {
 };
 
 export default function NightAuditPage() {
+    const { t } = useLanguage();
     const { currentHotel } = useAdmin() || {};
     const [loading, setLoading] = useState(true);
     const [running, setRunning] = useState(false);
@@ -42,9 +44,7 @@ export default function NightAuditPage() {
     }, [currentHotel?.id]);
 
     const handleRunAudit = async () => {
-        const confirmed = window.confirm(
-            'Run Night Audit?\n\nThis will:\n• Auto-checkout overdue guests\n• Snapshot today\'s KPIs\n• Mark their rooms as Dirty\n\nContinue?'
-        );
+        const confirmed = window.confirm(t('reports.nightAudit.confirmRun'));
         if (!confirmed) return;
 
         setRunning(true);
@@ -78,7 +78,7 @@ export default function NightAuditPage() {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <Moon size={22} className="text-indigo-500" />
-                            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Night Audit</h1>
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('reports.nightAudit.title')}</h1>
                         </div>
                         <p className="text-slate-500 dark:text-slate-400 text-sm">{today}</p>
                     </div>
@@ -87,14 +87,13 @@ export default function NightAuditPage() {
                             onClick={() => window.print()}
                             className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-sm transition-all"
                         >
-                            <Printer size={15} /> Print Report
+                            <Printer size={15} /> {t('reports.nightAudit.printBtn')}
                         </button>
-                        <button
                             onClick={handleRunAudit}
                             disabled={running}
                             className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all disabled:opacity-60 shadow-sm"
                         >
-                            {running ? <><RefreshCw size={15} className="animate-spin" /> Running...</> : <><Moon size={15} /> Run Night Audit</>}
+                            {running ? <><RefreshCw size={15} className="animate-spin" /> {t('reports.nightAudit.running')}</> : <><Moon size={15} /> {t('reports.nightAudit.runBtn')}</>}
                         </button>
                     </div>
                 </div>
@@ -103,12 +102,12 @@ export default function NightAuditPage() {
                 {data?.hasRun ? (
                     <div className="flex items-center gap-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-500/30 text-teal-700 dark:text-teal-400 rounded-2xl px-5 py-3 mb-6 text-sm font-medium">
                         <CheckCircle2 size={18} />
-                        Night Audit has been run for today. KPIs are locked in.
+                        {t('reports.nightAudit.statusRun')}
                     </div>
                 ) : (
                     <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-2xl px-5 py-3 mb-6 text-sm font-medium">
                         <TriangleAlert size={18} />
-                        Night Audit has not been run yet today. KPIs below are live estimates.
+                        {t('reports.nightAudit.statusPending')}
                     </div>
                 )}
 
@@ -116,12 +115,12 @@ export default function NightAuditPage() {
                 {data?.kpis ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                         {[
-                            { label: 'Occupied Rooms', value: `${data.kpis.occupiedCount} / ${data.kpis.totalRooms}`, icon: BedDouble, color: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-500/20' },
-                            { label: 'Occupancy Rate', value: pct(data.kpis.occupancyRate), icon: TrendingUp, color: 'text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-500/20' },
-                            { label: "Today's Revenue", value: fmt(data.kpis.totalRevenue), icon: TrendingUp, color: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-500/20' },
-                            { label: 'ADR', value: fmt(data.kpis.adr), icon: TrendingUp, color: 'text-violet-600 bg-violet-50 border-violet-100 dark:bg-violet-900/20 dark:border-violet-500/20' },
-                            { label: 'RevPAR', value: fmt(data.kpis.revPar), icon: TrendingUp, color: 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-900/20 dark:border-rose-500/20' },
-                            { label: 'Total Rooms', value: data.kpis.totalRooms, icon: BedDouble, color: 'text-slate-600 bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-slate-700' },
+                            { label: t('reports.nightAudit.occupiedRooms'), value: `${data.kpis.occupiedCount} / ${data.kpis.totalRooms}`, icon: BedDouble, color: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-500/20' },
+                            { label: t('reports.nightAudit.occupancyRate'), value: pct(data.kpis.occupancyRate), icon: TrendingUp, color: 'text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-500/20' },
+                            { label: t('reports.nightAudit.todayRevenue'), value: fmt(data.kpis.totalRevenue), icon: TrendingUp, color: 'text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-500/20' },
+                            { label: t('reports.nightAudit.adr'), value: fmt(data.kpis.adr), icon: TrendingUp, color: 'text-violet-600 bg-violet-50 border-violet-100 dark:bg-violet-900/20 dark:border-violet-500/20' },
+                            { label: t('reports.nightAudit.revpar'), value: fmt(data.kpis.revPar), icon: TrendingUp, color: 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-900/20 dark:border-rose-500/20' },
+                            { label: t('reports.nightAudit.totalRooms'), value: data.kpis.totalRooms, icon: BedDouble, color: 'text-slate-600 bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-slate-700' },
                         ].map(card => (
                             <div key={card.label} className={`rounded-2xl border p-5 ${card.color}`}>
                                 <p className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">{card.label}</p>
@@ -140,22 +139,22 @@ export default function NightAuditPage() {
                 {/* Booking Tables */}
                 <div className="space-y-8">
                     <BookingSection
-                        title="Check-ins Today"
+                        title={t('reports.nightAudit.checkins')}
                         icon={<LogIn size={16} className="text-blue-500" />}
                         bookings={data?.checkIns || []}
-                        emptyMsg="No check-ins today"
+                        emptyMsg={t('admin.hotel.noGuests')}
                     />
                     <BookingSection
-                        title="Check-outs Today"
+                        title={t('reports.nightAudit.checkouts')}
                         icon={<LogOut size={16} className="text-red-400" />}
                         bookings={data?.checkOuts || []}
-                        emptyMsg="No check-outs today"
+                        emptyMsg={t('admin.hotel.noGuests')}
                     />
                     <BookingSection
-                        title="Staying Over"
+                        title={t('reports.nightAudit.staying')}
                         icon={<Clock size={16} className="text-amber-500" />}
                         bookings={data?.staying || []}
-                        emptyMsg="No guests staying over"
+                        emptyMsg={t('admin.hotel.noGuests')}
                     />
                 </div>
 

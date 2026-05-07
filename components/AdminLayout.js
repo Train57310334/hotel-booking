@@ -48,6 +48,8 @@ import { useSocket } from '@/hooks/useSocket'
 import { useRoleAccess } from '@/hooks/useRoleAccess'
 import { toast } from 'react-hot-toast'
 import { apiFetch } from '@/lib/api'
+import OnboardingGuide from './onboarding/OnboardingGuide'
+import { useOnboardingContext } from '@/contexts/OnboardingContext'
 
 const menuLabelKeys = {
     'Dashboard': 'admin.nav.dashboard',
@@ -752,6 +754,64 @@ export default function AdminLayout({ children }) {
                 onClose={() => setGuideOpen(false)}
                 data={currentGuide}
             />
+
+            {/* ─── Onboarding Setup Guide (persists across all admin pages) ─── */}
+            <OnboardingFloatingGuide language={language} />
         </div>
+    )
+}
+
+// Separate component so it can consume OnboardingContext cleanly
+function OnboardingFloatingGuide({ language }) {
+    const onboarding = useOnboardingContext()
+    
+    // If the user has no onboarding steps assigned to their role, or no hotel selected, don't show the guide
+    if (!onboarding.hotelId || !onboarding.filteredSteps || onboarding.filteredSteps.length === 0) return null;
+
+    const remainingSteps = onboarding.totalSteps - onboarding.completedCount
+
+    return (
+        <>
+            {/* Floating Setup Guide Button — hidden once all done */}
+            {!onboarding.allDone && (
+                <button
+                    onClick={onboarding.openGuide}
+                    className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold px-4 py-3 rounded-2xl shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-all duration-200"
+                >
+                    <div className="flex flex-col items-start">
+                        <span className="text-sm leading-none">{language === 'th' ? 'คู่มือตั้งค่า' : 'Setup Guide'}</span>
+                        <span className="text-[11px] text-blue-200 mt-0.5">
+                            {remainingSteps} {language === 'th' ? 'ขั้นตอนที่ยังเหลือ' : 'steps to complete'}
+                        </span>
+                    </div>
+                    <div className="relative flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black text-sm">
+                            {onboarding.completedCount}/{onboarding.totalSteps}
+                        </div>
+                        {remainingSteps > 0 && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full animate-ping" />
+                        )}
+                    </div>
+                </button>
+            )}
+
+            {/* Onboarding Modal — mounts once, stays alive across all pages */}
+            <OnboardingGuide
+                isOpen={onboarding.isOpen}
+                onClose={onboarding.closeGuide}
+                currentStep={onboarding.currentStep}
+                goToStep={onboarding.goToStep}
+                goNext={onboarding.goNext}
+                goPrev={onboarding.goPrev}
+                isStepComplete={onboarding.isStepComplete}
+                progressPercent={onboarding.progressPercent}
+                completedCount={onboarding.completedCount}
+                totalSteps={onboarding.totalSteps}
+                allDone={onboarding.allDone}
+                language={language}
+                rawData={onboarding.rawData}
+                filteredSteps={onboarding.filteredSteps}
+            />
+        </>
     )
 }

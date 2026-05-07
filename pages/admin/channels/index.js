@@ -11,18 +11,22 @@ export default function ChannelManagerPage() {
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
     const [editUrls, setEditUrls] = useState({}); // roomTypeId -> url string
+    const [editApiIds, setEditApiIds] = useState({}); // roomTypeId -> channelManagerRoomId string
 
     const fetchStatus = useCallback(async () => {
         if (!currentHotel?.id) return;
         try {
             const res = await apiFetch(`/channels/${currentHotel.id}`);
             setData(res);
-            // Initialize edit URLs from fetched data
-            const initial = {};
+            // Initialize edit state
+            const initialUrls = {};
+            const initialApiIds = {};
             (res.roomTypes || []).forEach(rt => {
-                initial[rt.id] = rt.icalUrl || '';
+                initialUrls[rt.id] = rt.icalUrl || '';
+                initialApiIds[rt.id] = rt.channelManagerRoomId || '';
             });
-            setEditUrls(initial);
+            setEditUrls(initialUrls);
+            setEditApiIds(initialApiIds);
         } catch (e) {
             toast.error('Failed to load channel status');
         } finally {
@@ -32,15 +36,16 @@ export default function ChannelManagerPage() {
 
     useEffect(() => { fetchStatus(); }, [fetchStatus]);
 
-    const handleSaveUrl = async (roomTypeId) => {
+    const handleSaveMapping = async (roomTypeId) => {
         const url = editUrls[roomTypeId]?.trim() || null;
+        const channelManagerRoomId = editApiIds[roomTypeId]?.trim() || null;
         const t = toast.loading('Saving connection...');
         try {
-            await apiFetch(`/channels/roomtype/${roomTypeId}/ical`, {
+            await apiFetch(`/channels/roomtype/${roomTypeId}/mapping`, {
                 method: 'PUT',
-                body: JSON.stringify({ url }),
+                body: JSON.stringify({ url, channelManagerRoomId }),
             });
-            toast.success(url ? 'iCal feed connected!' : 'iCal feed disconnected', { id: t });
+            toast.success('Connection settings saved!', { id: t });
             fetchStatus();
         } catch (e) {
             toast.error('Failed to save', { id: t });
@@ -153,23 +158,42 @@ export default function ChannelManagerPage() {
                                     </span>
                                 </div>
 
-                                <div className="flex gap-2">
-                                    <input
-                                        type="url"
-                                        placeholder="Paste iCal URL from Agoda, Booking.com, Airbnb..."
-                                        value={editUrls[rt.id] || ''}
-                                        onChange={e => setEditUrls(p => ({ ...p, [rt.id]: e.target.value }))}
-                                        className="flex-1 text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                                    />
-                                    <button
-                                        onClick={() => handleSaveUrl(rt.id)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 shrink-0 transition-all ${editUrls[rt.id]?.trim()
-                                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                            : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'
-                                        }`}
-                                    >
-                                        {editUrls[rt.id]?.trim() ? <><CheckCircle size={14}/> Save</> : <><Unlink size={14}/> Disconnect</>}
-                                    </button>
+                                <div className="space-y-3">
+                                    {/* Webhook/API Mapping */}
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Channel Manager Room ID</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. ext-room-123 (from Channex/SiteMinder)"
+                                            value={editApiIds[rt.id] || ''}
+                                            onChange={e => setEditApiIds(p => ({ ...p, [rt.id]: e.target.value }))}
+                                            className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                                        />
+                                    </div>
+                                    
+                                    {/* iCal Mapping */}
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Inbound iCal URL (Legacy)</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="url"
+                                                placeholder="Paste iCal URL from Agoda, Booking.com..."
+                                                value={editUrls[rt.id] || ''}
+                                                onChange={e => setEditUrls(p => ({ ...p, [rt.id]: e.target.value }))}
+                                                className="flex-1 text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                                            />
+                                            <button
+                                                onClick={() => handleSaveMapping(rt.id)}
+                                                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+                                                    (editUrls[rt.id]?.trim() || editApiIds[rt.id]?.trim())
+                                                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                                    : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'
+                                                }`}
+                                            >
+                                                {(editUrls[rt.id]?.trim() || editApiIds[rt.id]?.trim()) ? <><CheckCircle size={14}/> Save</> : <><Unlink size={14}/> Clear</>}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}

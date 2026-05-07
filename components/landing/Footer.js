@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Footer({ saasSettings }) {
     const siteName = saasSettings?.siteName || 'BookingKub';
     const logoUrl = saasSettings?.logoUrl;
+    const { t } = useLanguage();
+    
     return (
         <footer className="bg-[#0A0F1C] border-t border-white/5 text-slate-400 pt-16 pb-10 relative z-20">
             <div className="container mx-auto px-4">
@@ -23,7 +26,7 @@ export default function Footer({ saasSettings }) {
                             <span className="text-2xl font-display font-bold">{siteName}</span>
                         </Link>
                         <p className="max-w-md leading-relaxed mb-8">
-                            The all-in-one hotel management platform designed to help you grow your business and delight your guests.
+                            {t('footer.description') || "The all-in-one hotel management platform designed to help you grow your business and delight your guests."}
                         </p>
                         <div className="flex gap-4">
                             {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
@@ -36,19 +39,19 @@ export default function Footer({ saasSettings }) {
 
                     {/* Links */}
                     <div>
-                        <h4 className="text-white font-bold mb-6">Product</h4>
+                        <h4 className="text-white font-bold mb-6">{t('footer.product') || "Product"}</h4>
                         <ul className="space-y-4">
-                            <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                            <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                            <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-                            <li><a href="#" className="hover:text-white transition-colors">Changelog</a></li>
-                            <li><a href="/admin/settings/widget" className="hover:text-white transition-colors">WordPress Plugin</a></li>
+                            <li><a href="#features" className="hover:text-white transition-colors">{t('footer.features') || "Features"}</a></li>
+                            <li><a href="#pricing" className="hover:text-white transition-colors">{t('footer.pricing') || "Pricing"}</a></li>
+                            <li><a href="#" className="hover:text-white transition-colors">{t('footer.integrations') || "Integrations"}</a></li>
+                            <li><Link href="/help" className="hover:text-white transition-colors text-primary-400 font-medium flex items-center gap-2">{t('footer.helpCenter') || "Help Center"} <span className="px-2 py-0.5 rounded text-[10px] bg-primary-500/20 text-primary-400">NEW</span></Link></li>
+                            <li><a href="/admin/settings/widget" className="hover:text-white transition-colors">{t('footer.wpPlugin') || "WordPress Plugin"}</a></li>
                         </ul>
                     </div>
 
                     {/* Contact */}
                     <div>
-                        <h4 className="text-white font-bold mb-6">Contact</h4>
+                        <h4 className="text-white font-bold mb-6">{t('footer.contact') || "Contact"}</h4>
                         <ul className="space-y-4">
                             <li className="flex gap-3">
                                 <Mail size={20} className="shrink-0 text-primary-500" />
@@ -67,10 +70,10 @@ export default function Footer({ saasSettings }) {
                 </div>
 
                 <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-                    <p>&copy; {new Date().getFullYear()} {siteName}. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} {siteName}. {t('footer.allRightsReserved') || "All rights reserved."}</p>
                     <div className="flex gap-8">
-                        <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+                        <a href="#" className="hover:text-white transition-colors">{t('footer.privacyPolicy') || "Privacy Policy"}</a>
+                        <a href="#" className="hover:text-white transition-colors">{t('footer.termsOfService') || "Terms of Service"}</a>
                     </div>
                 </div>
             </div>

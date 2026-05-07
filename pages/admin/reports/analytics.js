@@ -6,7 +6,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiFetch } from '@/lib/api';
 import { BarChart2, ExternalLink, Settings, CheckCircle, Circle, ArrowRight } from 'lucide-react';
 
+import { useLanguage } from '@/contexts/LanguageContext';
+
 export default function AnalyticsDashboard() {
+    const { t } = useLanguage();
     const { user } = useAuth();
     const router = useRouter();
     const { currentHotel } = useAdmin() || {};
@@ -68,10 +71,10 @@ export default function AnalyticsDashboard() {
                 <div className="mb-8">
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
                         <BarChart2 className="text-blue-500" size={28} />
-                        Analytics Dashboard
+                        {t('reports.analytics.title')}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400">
-                        View your hotel&apos;s traffic and conversion data powered by Google Analytics.
+                        {t('reports.analytics.subtitle')}
                     </p>
                 </div>
 
@@ -80,22 +83,22 @@ export default function AnalyticsDashboard() {
                     <div className={`flex items-center gap-3 p-4 rounded-xl border ${hasGaId ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                         {hasGaId ? <CheckCircle size={20} className="text-blue-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
                         <div>
-                            <p className={`text-sm font-bold ${hasGaId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>GA4 Tracking</p>
-                            <p className="text-xs text-slate-500">{hasGaId ? hotel.googleAnalyticsId : 'Not configured'}</p>
+                            <p className={`text-sm font-bold ${hasGaId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{t('reports.analytics.ga4')}</p>
+                            <p className="text-xs text-slate-500">{hasGaId ? hotel.googleAnalyticsId : t('reports.analytics.notConfigured')}</p>
                         </div>
                     </div>
                     <div className={`flex items-center gap-3 p-4 rounded-xl border ${hotel?.googleTagManagerId ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                         {hotel?.googleTagManagerId ? <CheckCircle size={20} className="text-blue-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
                         <div>
-                            <p className={`text-sm font-bold ${hotel?.googleTagManagerId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>GTM</p>
-                            <p className="text-xs text-slate-500">{hotel?.googleTagManagerId || 'Not configured'}</p>
+                            <p className={`text-sm font-bold ${hotel?.googleTagManagerId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{t('reports.analytics.gtm')}</p>
+                            <p className="text-xs text-slate-500">{hotel?.googleTagManagerId || t('reports.analytics.notConfigured')}</p>
                         </div>
                     </div>
                     <div className={`flex items-center gap-3 p-4 rounded-xl border ${hotel?.facebookPixelId ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                         {hotel?.facebookPixelId ? <CheckCircle size={20} className="text-blue-500 shrink-0" /> : <Circle size={20} className="text-slate-400 shrink-0" />}
                         <div>
-                            <p className={`text-sm font-bold ${hotel?.facebookPixelId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>Facebook Pixel</p>
-                            <p className="text-xs text-slate-500">{hotel?.facebookPixelId || 'Not configured'}</p>
+                            <p className={`text-sm font-bold ${hotel?.facebookPixelId ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'}`}>{t('reports.analytics.pixel')}</p>
+                            <p className="text-xs text-slate-500">{hotel?.facebookPixelId || t('reports.analytics.notConfigured')}</p>
                         </div>
                     </div>
                 </div>
@@ -126,8 +129,8 @@ export default function AnalyticsDashboard() {
                     /* Setup Guide */
                     <div className="space-y-6">
                         <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 shadow-sm">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Set Up Your Analytics Dashboard</h3>
-                            <p className="text-slate-500 dark:text-slate-400 mb-8">Follow these steps to connect your Google Analytics data and view it directly in your admin panel.</p>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('reports.analytics.setupTitle')}</h3>
+                            <p className="text-slate-500 dark:text-slate-400 mb-8">{t('reports.analytics.setupDesc')}</p>
                             <div className="space-y-4">
                                 {setupSteps.map((step, idx) => (
                                     <div key={idx} className={`flex gap-4 p-4 rounded-xl border transition-all ${step.done ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600'}`}>

@@ -4,12 +4,21 @@ import { apiFetch } from '@/lib/api'
 import { Search, Plus, BedDouble, Trash2, Edit, Upload, X, Check, Image as ImageIcon, ChevronDown, ChevronRight, Globe } from 'lucide-react'
 import { InfoTooltip } from '@/components/Tooltip'
 import { useAdmin } from '@/contexts/AdminContext'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { useRoleAccess } from '@/hooks/useRoleAccess'
 
 export default function RoomManagement() {
   const { searchQuery, currentHotel, openUpgradeModal } = useAdmin() || { searchQuery: '' }
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('inventory') // 'inventory' | 'types'
+  // Support ?tab= from onboarding guide deep links
+  useEffect(() => {
+    if (router.query.tab === 'types') setActiveTab('types')
+    else if (router.query.tab === 'inventory') setActiveTab('inventory')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.tab])
+
   const [rooms, setRooms] = useState([])
   const [roomTypes, setRoomTypes] = useState([])
   const [hotels, setHotels] = useState([])

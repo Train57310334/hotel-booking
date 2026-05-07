@@ -14,6 +14,16 @@ export default function HotelSettings() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
+    // Support ?tab= from onboarding guide deep links
+    useEffect(() => {
+        if (router.query.tab) {
+            const validTabs = ['general', 'branding', 'web', 'payment', 'seo'];
+            if (validTabs.includes(router.query.tab)) {
+                setActiveTab(router.query.tab);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router.query.tab]);
     const [hotel, setHotel] = useState(null);
     const [systemSettings, setSystemSettings] = useState({});
     const [errors, setErrors] = useState({});

@@ -6,16 +6,27 @@ import { Github, Twitter, Instagram, Heart } from 'lucide-react'
 export default function Layout({ children, navbarProps, seoProps, hideFooter = false, hideNavbar = false }) {
     return (
         <div className="min-h-screen flex flex-col w-full text-theme-text bg-theme-bg font-theme">
-            <Head>
-                <title>{seoProps?.title || navbarProps?.brandName || 'BookingKub'}</title>
-                <meta name="description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
-                {seoProps?.keywords && <meta name="keywords" content={seoProps.keywords} />}
-                <meta property="og:title" content={seoProps?.title || navbarProps?.brandName || 'BookingKub'} />
-                <meta property="og:description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
-                {(seoProps?.image || navbarProps?.logo) && <meta property="og:image" content={seoProps?.image || navbarProps?.logo} />}
-                {seoProps?.canonicalUrl && <link rel="canonical" href={seoProps.canonicalUrl} />}
-                {seoProps?.robotsIndex === false && <meta name="robots" content="noindex,nofollow" />}
-            </Head>
+        <Head>
+            <title>{seoProps?.title || navbarProps?.brandName || 'BookingKub'}</title>
+            <meta name="description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
+            {seoProps?.keywords && <meta name="keywords" content={seoProps.keywords} />}
+            {seoProps?.robotsIndex === false && <meta name="robots" content="noindex,nofollow" />}
+            {seoProps?.canonicalUrl && <link rel="canonical" href={seoProps.canonicalUrl} />}
+
+            {/* Open Graph */}
+            <meta property="og:type" content="website" />
+            <meta property="og:title" content={seoProps?.title || navbarProps?.brandName || 'BookingKub'} />
+            <meta property="og:description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
+            {(seoProps?.image || navbarProps?.logo) && <meta property="og:image" content={seoProps?.image || navbarProps?.logo} />}
+            {seoProps?.canonicalUrl && <meta property="og:url" content={seoProps.canonicalUrl} />}
+            <meta property="og:site_name" content={navbarProps?.brandName || 'BookingKub'} />
+
+            {/* Twitter Card */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content={seoProps?.title || navbarProps?.brandName || 'BookingKub'} />
+            <meta name="twitter:description" content={seoProps?.description || navbarProps?.footerDescription || 'Book your perfect stay.'} />
+            {(seoProps?.image || navbarProps?.logo) && <meta name="twitter:image" content={seoProps?.image || navbarProps?.logo} />}
+        </Head>
             {!hideNavbar && <NavBar {...navbarProps} />}
             <main className="flex-1 w-full">
                 {children}

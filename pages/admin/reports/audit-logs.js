@@ -5,7 +5,7 @@ import { apiFetch } from '@/lib/api';
 import { CalendarDays, Filter, RefreshCcw, Activity, User, MonitorSmartphone, MapPin, ChevronLeft, ChevronRight, Clock, Trash2, Edit, CreditCard, UserPlus, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
-
+import DatePicker from '@/components/DatePicker';
 // Helper to determine icon based on action
 function getActionIcon(action) {
     if (action.includes('BOOKING_CREATED')) return <CalendarDays size={18} className="text-teal-500" />;
@@ -145,22 +145,22 @@ export default function AuditLogsPage() {
                 <div className="flex-1">
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Date Range</label>
                     <div className="flex items-center gap-2">
-                        <input 
-                            type="date" 
-                            name="startDate"
-                            lang="en-GB"
+                        <DatePicker
                             value={filters.startDate}
-                            onChange={handleFilterChange}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm dark:text-white"
+                            onChange={(dates) => handleFilterChange({ target: { name: 'startDate', value: dates[0] || '' } })}
+                            options={{ dateFormat: 'd/m/Y' }}
+                            placeholder="Start Date"
+                            className="!py-2 !pl-10 !pr-4 !bg-slate-50 dark:!bg-slate-900/50 !border !border-slate-200 dark:!border-slate-700 !text-sm !rounded-xl"
+                            wrapperClassName="flex-1"
                         />
                         <span className="text-slate-400">to</span>
-                        <input 
-                            type="date" 
-                            name="endDate"
-                            lang="en-GB"
+                        <DatePicker
                             value={filters.endDate}
-                            onChange={handleFilterChange}
-                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm dark:text-white"
+                            onChange={(dates) => handleFilterChange({ target: { name: 'endDate', value: dates[0] || '' } })}
+                            options={{ dateFormat: 'd/m/Y' }}
+                            placeholder="End Date"
+                            className="!py-2 !pl-10 !pr-4 !bg-slate-50 dark:!bg-slate-900/50 !border !border-slate-200 dark:!border-slate-700 !text-sm !rounded-xl"
+                            wrapperClassName="flex-1"
                         />
                     </div>
                 </div>
