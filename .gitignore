@@ -44,3 +44,11 @@ Desktop.ini
 
 # Debug
 .cache
+
+# Local Tools & Executables
+stripe.exe
+
+# Editor / AI Agent Data
+.agents/
+.windsurf/
+skills-lock.json
