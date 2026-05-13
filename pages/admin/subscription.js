@@ -75,7 +75,11 @@ export default function SubscriptionPage() {
         try {
             const data = await apiFetch('/subscriptions/checkout-session', {
                 method: 'POST',
-                body: JSON.stringify({ hotelId: currentHotel.id, planId: planId })
+                body: JSON.stringify({ 
+                    hotelId: currentHotel.id, 
+                    planId: planId,
+                    returnUrl: window.location.origin + window.location.pathname
+                })
             })
 
             if (data.url) {
