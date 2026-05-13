@@ -112,7 +112,21 @@ export default function SubscriptionPage() {
         return `w-full py-3 px-4 rounded-xl font-bold text-white shadow-lg bg-${color}-500 hover:bg-${color}-600 transition-colors`
     }
 
-    if (!currentHotel) return null
+    if (!currentHotel) {
+        return (
+            <AdminLayout>
+                <div className="flex flex-col items-center justify-center h-[70vh] text-center space-y-4">
+                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400 mb-4">
+                        <Building2 size={40} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Select a Hotel First</h2>
+                    <p className="text-slate-500 max-w-md">
+                        You need to select a hotel from the top navigation bar before you can manage its subscription plan.
+                    </p>
+                </div>
+            </AdminLayout>
+        )
+    }
 
     return (
         <AdminLayout>
@@ -145,10 +159,10 @@ export default function SubscriptionPage() {
                             const isLoading = loadingPlan === plan.id
 
                             // To handle Tailwind dynamic classes robustly we map them explicitly here
-                            const bgColors = { slate: 'bg-slate-500', teal: 'bg-teal-500', indigo: 'bg-indigo-500' }
-                            const textColors = { slate: 'text-slate-500', teal: 'text-teal-500', indigo: 'text-indigo-500' }
-                            const borderColors = { slate: 'border-slate-500', teal: 'border-teal-500', indigo: 'border-indigo-500' }
-                            const shadowColors = { slate: 'shadow-slate-500/20', teal: 'shadow-teal-500/20', indigo: 'shadow-indigo-500/20' }
+                            const bgColors = { slate: 'bg-slate-500', teal: 'bg-teal-500', indigo: 'bg-indigo-500', blue: 'bg-blue-500', amber: 'bg-amber-500', emerald: 'bg-emerald-500', rose: 'bg-rose-500', purple: 'bg-purple-500' }
+                            const textColors = { slate: 'text-slate-500', teal: 'text-teal-500', indigo: 'text-indigo-500', blue: 'text-blue-500', amber: 'text-amber-500', emerald: 'text-emerald-500', rose: 'text-rose-500', purple: 'text-purple-500' }
+                            const borderColors = { slate: 'border-slate-500', teal: 'border-teal-500', indigo: 'border-indigo-500', blue: 'border-blue-500', amber: 'border-amber-500', emerald: 'border-emerald-500', rose: 'border-rose-500', purple: 'border-purple-500' }
+                            const shadowColors = { slate: 'shadow-slate-500/20', teal: 'shadow-teal-500/20', indigo: 'shadow-indigo-500/20', blue: 'shadow-blue-500/20', amber: 'shadow-amber-500/20', emerald: 'shadow-emerald-500/20', rose: 'shadow-rose-500/20', purple: 'shadow-purple-500/20' }
 
                             let wrapperClasses = 'relative overflow-hidden rounded-3xl border-2 transition-all p-8 flex flex-col bg-white dark:bg-slate-800'
                             if (isActive) {

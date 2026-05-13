@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '@/components/AdminLayout'
-import { CreditCard, Save, AlertCircle, Key, Webhook } from 'lucide-react'
+import { CreditCard, Save, AlertCircle, Key, Webhook, Eye, EyeOff, Shield } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import toast from 'react-hot-toast'
 import Head from 'next/head'
@@ -13,9 +13,13 @@ export default function PlatformBillingSettings() {
     const [settings, setSettings] = useState({
         stripeKey: '',
         stripeSecret: '',
+        stripeWebhookSecret: '',
         omisePublicKey: '',
         omiseSecretKey: ''
     })
+    const [showStripeSecret, setShowStripeSecret] = useState(false)
+    const [showStripeWebhook, setShowStripeWebhook] = useState(false)
+    const [showOmiseSecret, setShowOmiseSecret] = useState(false)
 
     useEffect(() => {
         loadSettings()
@@ -31,6 +35,7 @@ export default function PlatformBillingSettings() {
             setSettings({
                 stripeKey: data.stripeKey || '',
                 stripeSecret: data.stripeSecret || '',
+                stripeWebhookSecret: data.stripeWebhookSecret || '',
                 omisePublicKey: data.omisePublicKey || '',
                 omiseSecretKey: data.omiseSecretKey || ''
             })
@@ -99,81 +104,159 @@ export default function PlatformBillingSettings() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                <span className="text-indigo-500">Stripe</span> Configuration
-                            </h2>
-                        </div>
-                        <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-lg uppercase">Global Gateway</span>
-                    </div>
-                    <div className="p-6 space-y-6">
-                        <div className="grid grid-cols-1 gap-6">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800/50">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-[#635BFF]/10 flex items-center justify-center shadow-inner">
+                                <svg className="w-6 h-6 text-[#635BFF]" fill="currentColor" viewBox="0 0 40 40">
+                                    <path d="M19.1 14.1c0-2.3 1.9-3.3 4.8-3.3 3.6 0 7.4 1.4 10.3 3.4l2.8-9.4C33.7 2.3 28.5.8 23.5.8c-9.5 0-16.1 4.9-16.1 13.6 0 14.4 20.3 12.1 20.3 18.7 0 2.7-2.3 3.8-5.7 3.8-4.4 0-9.2-1.9-12.7-4.5L6.1 42c4.1 2.3 10.3 4 16.5 4 10 0 16.5-4.8 16.5-13.8-.1-15.1-20-12.7-20-18.1z"/>
+                                </svg>
+                            </div>
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                    <Key size={14} className="text-slate-400" />
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                    Stripe Configuration
+                                </h2>
+                                <p className="text-sm text-slate-500 mt-1">Primary global payment gateway for processing tenant subscriptions.</p>
+                            </div>
+                        </div>
+                        <span className="px-4 py-1.5 bg-[#635BFF]/10 text-[#635BFF] text-xs font-black rounded-xl uppercase tracking-wider whitespace-nowrap self-start md:self-auto shadow-sm">Global Gateway</span>
+                    </div>
+                    
+                    <div className="p-6 md:p-8 space-y-8">
+                        {/* Publishable Key */}
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-start">
+                            <div className="md:w-1/3">
+                                <label className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1.5">
+                                    <Key size={16} className="text-slate-400" />
                                     Publishable Key
                                 </label>
+                                <p className="text-xs text-slate-500 leading-relaxed pr-4">Public-facing key used to securely transmit credit card details from the frontend to Stripe.</p>
+                            </div>
+                            <div className="md:w-2/3">
                                 <input
                                     type="text"
                                     name="stripeKey"
                                     value={settings.stripeKey}
                                     onChange={handleChange}
                                     placeholder="pk_test_..."
-                                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white font-mono text-sm"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#635BFF]/50 focus:border-[#635BFF] dark:text-white font-mono text-sm transition-all shadow-sm"
                                 />
-                                <p className="text-xs text-slate-500 mt-2">Public key used on the frontend checkout.</p>
                             </div>
+                        </div>
 
-                            <div>
-                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                                    <Key size={14} className="text-slate-400" />
+                        <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50"></div>
+
+                        {/* Secret Key */}
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-start">
+                            <div className="md:w-1/3">
+                                <label className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1.5">
+                                    <Shield size={16} className="text-rose-500" />
                                     Secret Key
                                 </label>
+                                <p className="text-xs text-slate-500 leading-relaxed pr-4">Highly sensitive key used by the backend to create charges and manage subscriptions. Keep this safe.</p>
+                            </div>
+                            <div className="md:w-2/3 relative">
                                 <input
-                                    type="password"
+                                    type={showStripeSecret ? "text" : "password"}
                                     name="stripeSecret"
                                     value={settings.stripeSecret}
                                     onChange={handleChange}
                                     placeholder="sk_test_..."
-                                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white font-mono text-sm"
+                                    className="w-full px-4 py-3.5 pr-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#635BFF]/50 focus:border-[#635BFF] dark:text-white font-mono text-sm transition-all shadow-sm"
                                 />
-                                <p className="text-xs text-slate-500 mt-2">Secret key used strictly on the server.</p>
+                                <button type="button" onClick={() => setShowStripeSecret(!showStripeSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    {showStripeSecret ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50"></div>
+
+                        {/* Webhook Secret */}
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-start">
+                            <div className="md:w-1/3">
+                                <label className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1.5">
+                                    <Webhook size={16} className="text-emerald-500" />
+                                    Webhook Secret
+                                </label>
+                                <p className="text-xs text-slate-500 leading-relaxed pr-4">Used to verify that webhook events (like payment success) actually came from Stripe.</p>
+                            </div>
+                            <div className="md:w-2/3 relative">
+                                <input
+                                    type={showStripeWebhook ? "text" : "password"}
+                                    name="stripeWebhookSecret"
+                                    value={settings.stripeWebhookSecret}
+                                    onChange={handleChange}
+                                    placeholder="whsec_..."
+                                    className="w-full px-4 py-3.5 pr-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#635BFF]/50 focus:border-[#635BFF] dark:text-white font-mono text-sm transition-all shadow-sm"
+                                />
+                                <button type="button" onClick={() => setShowStripeWebhook(!showStripeWebhook)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    {showStripeWebhook ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Omise (Optional Future Gateway) */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden opacity-70">
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-700">
-                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">Omise Configuration (Optional)</h2>
-                        <p className="text-xs text-slate-500 mt-1">Alternative payment gateway for Asian markets.</p>
-                    </div>
-                    <div className="p-6 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden opacity-80 hover:opacity-100 transition-opacity">
+                    <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800/50">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center shadow-inner">
+                                <CreditCard size={24} className="text-blue-500" />
+                            </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Omise Public Key</label>
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white">Omise Configuration <span className="font-medium text-slate-400 text-sm">(Optional)</span></h2>
+                                <p className="text-sm text-slate-500 mt-1">Alternative payment gateway primarily for Asian markets (PromptPay support).</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="p-6 md:p-8 space-y-8">
+                        {/* Omise Public Key */}
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-start">
+                            <div className="md:w-1/3">
+                                <label className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1.5">
+                                    <Key size={16} className="text-slate-400" />
+                                    Public Key
+                                </label>
+                                <p className="text-xs text-slate-500 leading-relaxed pr-4">Used on the frontend checkout for tokenizing cards securely.</p>
+                            </div>
+                            <div className="md:w-2/3">
                                 <input
                                     type="text"
                                     name="omisePublicKey"
                                     value={settings.omisePublicKey}
                                     onChange={handleChange}
                                     placeholder="pkey_test_..."
-                                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white font-mono text-sm"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:text-white font-mono text-sm transition-all shadow-sm"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Omise Secret Key</label>
+                        </div>
+
+                        <div className="h-px w-full bg-slate-100 dark:bg-slate-700/50"></div>
+
+                        {/* Omise Secret Key */}
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8 md:items-start">
+                            <div className="md:w-1/3">
+                                <label className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1.5">
+                                    <Shield size={16} className="text-rose-500" />
+                                    Secret Key
+                                </label>
+                                <p className="text-xs text-slate-500 leading-relaxed pr-4">Used by the backend to create charges. Never expose this to the public.</p>
+                            </div>
+                            <div className="md:w-2/3 relative">
                                 <input
-                                    type="password"
+                                    type={showOmiseSecret ? "text" : "password"}
                                     name="omiseSecretKey"
                                     value={settings.omiseSecretKey}
                                     onChange={handleChange}
                                     placeholder="skey_test_..."
-                                    className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white font-mono text-sm"
+                                    className="w-full px-4 py-3.5 pr-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:text-white font-mono text-sm transition-all shadow-sm"
                                 />
+                                <button type="button" onClick={() => setShowOmiseSecret(!showOmiseSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    {showOmiseSecret ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                         </div>
                     </div>
