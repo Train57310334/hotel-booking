@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
 import { useAdmin } from '@/contexts/AdminContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, resolveImageUrl } from '@/lib/api';
 import { Building2, Image as ImageIcon, Globe, Save, Upload, X, CreditCard, Mail, Bell, LayoutTemplate, BarChart2, Search, ToggleLeft, ToggleRight, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { InfoTooltip } from '@/components/Tooltip';
@@ -407,7 +407,7 @@ export default function HotelSettings() {
                                     <div className="flex items-center gap-6">
                                         <div className="w-32 h-32 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative group">
                                             {formData.logoUrl ? (
-                                                <img src={formData.logoUrl} className="w-full h-full object-contain" />
+                                                <img src={resolveImageUrl(formData.logoUrl)} className="w-full h-full object-contain" />
                                             ) : (
                                                 <span className="text-slate-400 text-xs">No Logo</span>
                                             )}
@@ -429,7 +429,7 @@ export default function HotelSettings() {
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">Main Cover Image <InfoTooltip content="The hero background photo at the top of your public booking page. This is the first image guests see. Use a high-quality exterior or interior shot. Recommended: 1920×1080px (16:9). Max 10MB." /></h3>
                                     <div className="w-full max-w-2xl h-64 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center overflow-hidden relative group">
                                         {formData.imageUrl ? (
-                                            <img src={formData.imageUrl} className="w-full h-full object-cover" />
+                                            <img src={resolveImageUrl(formData.imageUrl)} className="w-full h-full object-cover" />
                                         ) : (
                                             <span className="text-slate-400">No Cover Image</span>
                                         )}
@@ -458,7 +458,7 @@ export default function HotelSettings() {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {formData.images.map((img, idx) => (
                                             <div key={idx} className="aspect-video bg-slate-100 rounded-lg overflow-hidden relative group">
-                                                <img src={img} className="w-full h-full object-cover" />
+                                                <img src={resolveImageUrl(img)} className="w-full h-full object-cover" />
                                                 <button
                                                     onClick={() => handleRemoveImage(idx)}
                                                     className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"

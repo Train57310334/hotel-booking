@@ -1,9 +1,11 @@
 import AdminLayout from '@/components/AdminLayout'
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api'
+import { useAdmin } from '@/contexts/AdminContext'
 import { Search, CreditCard, DollarSign, Calendar, Filter, CheckCircle, XCircle, Clock, Eye } from 'lucide-react'
 
 export default function PaymentManagement() {
+  const { currentHotel } = useAdmin() || { currentHotel: null }
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -13,7 +15,14 @@ export default function PaymentManagement() {
   const fetchPayments = async () => {
     setLoading(true)
     try {
+      const hotelId = currentHotel?.id
+      if (!hotelId) {
+        setLoading(false)
+        return
+      }
+
       const query = new URLSearchParams()
+      query.append('hotelId', hotelId)
       if (searchTerm) query.append('search', searchTerm)
       if (statusFilter !== 'All') query.append('status', statusFilter.toLowerCase())
 
@@ -32,7 +41,25 @@ export default function PaymentManagement() {
     }, 500) // Debounce search
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, statusFilter])
+  }, [searchTerm, statusFilter, currentHotel?.id])
+
+  const handleVerify = async (id) => {
+    try {
+      await apiFetch(`/payments/${id}/verify`, { method: 'POST' })
+      fetchPayments()
+    } catch (e) {
+      console.error('Verify failed:', e)
+    }
+  }
+
+  const handleReject = async (id) => {
+    try {
+      await apiFetch(`/payments/${id}/reject`, { method: 'POST' })
+      fetchPayments()
+    } catch (e) {
+      console.error('Reject failed:', e)
+    }
+  }
 
   const formatDate = (date) => {
     return new Date(date).toLocaleString('th-TH', {
