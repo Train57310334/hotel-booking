@@ -49,6 +49,15 @@ export function AdminProvider({ children }) {
         if (target) setCurrentHotel(target);
     }
 
+    // Sync currentHotel.id → localStorage so apiFetch sends it as x-hotel-id header
+    useEffect(() => {
+        if (currentHotel?.id) {
+            localStorage.setItem('hotelId', currentHotel.id);
+        } else {
+            localStorage.removeItem('hotelId');
+        }
+    }, [currentHotel?.id]);
+
     const refreshHotelData = async () => {
         if (!user) return;
         const isPlatformAdmin = user.roles?.includes('platform_admin');
